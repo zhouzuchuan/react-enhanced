@@ -2,7 +2,7 @@
     "name": "react-enhanced",
     "version": "0.0.2",
     "description": "## react 增强器",
-    "main": "src",
+    "main": "es",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
@@ -10,11 +10,7 @@
         "type": "git",
         "url": "git+https://github.com/zhouzuchuan/react-enhanced.git"
     },
-    "keywords": [
-        "react",
-        "redux",
-        "context"
-    ],
+    "keywords": ["react", "redux", "context"],
     "author": "fezzc",
     "license": "MIT",
     "bugs": {
