@@ -1,6 +1,6 @@
 {
     "name": "react-enhanced",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "## react 增强器",
     "main": "es",
     "scripts": {
@@ -10,11 +10,7 @@
         "type": "git",
         "url": "git+https://github.com/zhouzuchuan/react-enhanced.git"
     },
-    "keywords": [
-        "react",
-        "redux",
-        "context"
-    ],
+    "keywords": ["react", "redux", "context"],
     "author": "fezzc",
     "license": "MIT",
     "bugs": {
@@ -29,7 +25,7 @@
         "react-loadable": "^5.4.0",
         "react-redux": "^5.0.7",
         "react-router-redux": "^4.0.8",
-        "redux": "^4.0.0",
+        "redux": "3.7.2",
         "redux-devtools-extension": "^2.13.2",
         "redux-saga": "^0.16.0"
     },
