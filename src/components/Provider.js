@@ -1,10 +1,10 @@
-import { Provider } from 'react-redux'
-import React from 'react'
+import { Provider } from 'react-redux';
+import React from 'react';
 
-import TransferContext from './TransferContext'
+import TransferContext from './TransferContext';
 
 const XRProvider = props => {
-    return <Provider {...props} />
-}
+    return <Provider {...props} />;
+};
 
-export default TransferContext(3, ['XR'])(XRProvider)
+export default TransferContext(3, ['XR'])(XRProvider);

@@ -1,11 +1,10 @@
-import { configureStore } from './configureStore'
-import React from 'react'
-export { default as registerModel } from './registerModel'
-export { default as AsyncComponent } from './AsyncComponent'
+import { configureStore } from './configureStore';
+import React from 'react';
+import XRProvider from './components/Provider';
+export { default as registerModel } from './registerModel';
+export { default as AsyncComponent } from './AsyncComponent';
 
-import XRProvider from './components/Provider'
-
-export { default as ExtendsContext } from './components/ExtendsContext'
+export { default as ExtendsContext } from './components/ExtendsContext';
 
 const aa = ({ store, registerModel, AsyncComponent }) => WrappedComponent => {
     return class A extends React.Component {
@@ -18,14 +17,14 @@ const aa = ({ store, registerModel, AsyncComponent }) => WrappedComponent => {
                         ...this.props
                     }}
                 />
-            )
+            );
         }
-    }
-}
+    };
+};
 
 export const init = () => {
     return {
         Provider: aa(configureStore())(XRProvider)
         // ExtendsContext
-    }
-}
+    };
+};

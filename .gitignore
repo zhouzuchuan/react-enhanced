@@ -57,3 +57,8 @@ typings/
 # dotenv environment variables file
 .env
 
+webpack.config.js
+rollup.config.js
+*.lock
+src/.*
+
