@@ -1,8 +1,8 @@
 import createSagaMiddleware from 'redux-saga';
 import React from 'react';
 import { routerReducer, routerMiddleware } from 'react-router-redux';
-import lo from 'lodash';
 import { Provider } from 'react-redux';
+import lo from 'lodash';
 
 /** Detect free variable `global` from Node.js. */
 var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
@@ -3667,11 +3667,8 @@ var ContextStore = React.createContext();
  * 传递context
  * */
 
-var TransferContext = (function (type) {
-    var transferKey = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
-    var cust = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+var CreateInstall = (function (value) {
     return function (WrappedComponent) {
-        // console.log(WrappedComponent)
         return function (_React$Component) {
             inherits(HOCComponent2, _React$Component);
 
@@ -3683,15 +3680,10 @@ var TransferContext = (function (type) {
             createClass(HOCComponent2, [{
                 key: 'render',
                 value: function render() {
-                    console.log(this.props);
                     return React.createElement(
                         ContextStore.Provider,
-                        {
-                            value: _extends$3({
-                                __RE__: this.props.__RE__
-                            }, lo.pick(this.props, transferKey), this.props.CONTEXT || {}, cust)
-                        },
-                        React.createElement(WrappedComponent, lo.omit(this.props, [].concat(toConsumableArray(transferKey), ['CONTEXT'])))
+                        { value: value },
+                        React.createElement(WrappedComponent, this.props)
                     );
                 }
             }]);
@@ -3700,40 +3692,36 @@ var TransferContext = (function (type) {
     };
 });
 
-var XRProvider = function XRProvider(props) {
-    return React.createElement(Provider, props);
-};
-
-var REProvider = TransferContext(3, ['XR'])(XRProvider);
-
 var CreateProvider = function CreateProvider(_ref, contextID) {
     var store = _ref.store,
         registerModel = _ref.registerModel,
         AsyncComponent = _ref.AsyncComponent;
-    return function (WrappedComponent) {
-        return function (_React$Component) {
-            inherits(A, _React$Component);
 
-            function A() {
-                classCallCheck(this, A);
-                return possibleConstructorReturn(this, (A.__proto__ || Object.getPrototypeOf(A)).apply(this, arguments));
+    var REProvider = function (_React$Component) {
+        inherits(REProvider, _React$Component);
+
+        function REProvider() {
+            classCallCheck(this, REProvider);
+            return possibleConstructorReturn(this, (REProvider.__proto__ || Object.getPrototypeOf(REProvider)).apply(this, arguments));
+        }
+
+        createClass(REProvider, [{
+            key: 'render',
+            value: function render() {
+                return React.createElement(Provider, _extends$3({
+                    store: store
+                }, this.props));
             }
+        }]);
+        return REProvider;
+    }(React.Component);
 
-            createClass(A, [{
-                key: 'render',
-                value: function render() {
-                    return React.createElement(WrappedComponent, _extends$3({
-                        store: store,
-                        __RE__: { registerModel: registerModel, AsyncComponent: AsyncComponent },
-                        __CONTEXT__: contextID.reduce(function (r, v) {
-                            return _extends$3({}, r, defineProperty({}, v, React.createContext()));
-                        }, {})
-                    }, this.props));
-                }
-            }]);
-            return A;
-        }(React.Component);
-    };
+    return CreateInstall({
+        __RE__: { registerModel: registerModel, AsyncComponent: AsyncComponent },
+        __CONTEXT__: contextID.reduce(function (r, v) {
+            return _extends$3({}, r, defineProperty({}, v, React.createContext()));
+        }, {})
+    })(REProvider);
 };
 
 /**
@@ -3745,6 +3733,7 @@ var CreateProvider = function CreateProvider(_ref, contextID) {
 
 var Install = (function () {
     var inject = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+    var CONTEXT = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
     return function (WrappedComponent) {
         return function (_React$Component) {
             inherits(HOCComponent, _React$Component);
@@ -3768,7 +3757,9 @@ var Install = (function () {
                         ContextStore.Consumer,
                         null,
                         function (context) {
-                            var newProps = _extends$3({}, _this2.props, lo.pick(context.__RE__, inject));
+                            var newProps = _extends$3({}, _this2.props, lo.pick(context.__RE__, inject), {
+                                __CONTEXT__: lo.pick(context.__CONTEXT__, CONTEXT)
+                            });
                             return React.createElement(WrappedComponent, newProps);
                         }
                     );
@@ -3779,16 +3770,100 @@ var Install = (function () {
     };
 });
 
-var init = function init() {
-    for (var _len = arguments.length, params = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-        params[_key - 1] = arguments[_key];
-    }
+/**
+ * 继承context
+ * type: 当前类型，查看ContextStore
+ * limit：获取CONTEXT中指定的key
+ *
+ * */
 
-    var contextID = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+var Pull = (function (id) {
+    var limit = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+    return function (WrappedComponent) {
+        var Pull = function (_React$Component) {
+            inherits(Pull, _React$Component);
+
+            function Pull() {
+                classCallCheck(this, Pull);
+                return possibleConstructorReturn(this, (Pull.__proto__ || Object.getPrototypeOf(Pull)).apply(this, arguments));
+            }
+
+            createClass(Pull, [{
+                key: 'render',
+                value: function render() {
+                    var _props = this.props,
+                        __CONTEXT__ = _props.__CONTEXT__,
+                        props = objectWithoutProperties(_props, ['__CONTEXT__']);
+
+                    var ContextStore = __CONTEXT__[id];
+
+                    if (!ContextStore) {
+                        console.warn('HOC传值有误！');
+                        return React.createElement(WrappedComponent, this.props);
+                    }
+
+                    return React.createElement(
+                        ContextStore.Consumer,
+                        null,
+                        function (context) {
+                            var newProps = _extends$3({}, props, lo.pick(context, limit));
+                            return React.createElement(WrappedComponent, newProps);
+                        }
+                    );
+                }
+            }]);
+            return Pull;
+        }(React.Component);
+
+        return Install([], [id])(Pull);
+    };
+});
+
+/**
+ * 传递context
+ * */
+
+var Push = (function (id, fn) {
+    return function (WrappedComponent) {
+        var Push = function (_React$Component) {
+            inherits(Push, _React$Component);
+
+            function Push() {
+                classCallCheck(this, Push);
+                return possibleConstructorReturn(this, (Push.__proto__ || Object.getPrototypeOf(Push)).apply(this, arguments));
+            }
+
+            createClass(Push, [{
+                key: 'render',
+                value: function render() {
+                    var _props = this.props,
+                        __CONTEXT__ = _props.__CONTEXT__,
+                        props = objectWithoutProperties(_props, ['__CONTEXT__']);
+
+                    var ContextStore = __CONTEXT__[id];
+                    var dealValue = fn(props);
+                    return React.createElement(
+                        ContextStore.Provider,
+                        { value: dealValue },
+                        React.createElement(WrappedComponent, props)
+                    );
+                }
+            }]);
+            return Push;
+        }(React.Component);
+
+        return Install([], [id])(Push);
+    };
+});
+
+var init = function init(_ref) {
+    var _ref$contextID = _ref.contextID,
+        contextID = _ref$contextID === undefined ? [] : _ref$contextID,
+        params = objectWithoutProperties(_ref, ['contextID']);
 
     return {
-        Provider: CreateProvider(configureStore(params), contextID)(REProvider)
+        Provider: CreateProvider(configureStore(params), contextID)
     };
 };
 
-export { init, Install };
+export { init, Install, Pull, Push };

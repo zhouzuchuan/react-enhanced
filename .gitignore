@@ -58,7 +58,7 @@ typings/
 .env
 
 webpack.config.js
-rollup.config.js
+.npmignore
 *.lock
 src/.*
 

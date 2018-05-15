@@ -1,7 +1,7 @@
 {
     "name": "react-enhanced",
-    "version": "0.0.5",
-    "description": "## react 增强器",
+    "version": "0.0.6",
+    "description": "## react 无侵入增强器",
     "main": "es",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"

@@ -4,27 +4,27 @@
  * limit：获取CONTEXT中指定的key
  *
  * */
+import Install from './Install'
 import React from 'react'
 import lo from 'lodash'
-import ContextStore from './ContextStore'
 
-export default (type, limit = []) => WrappedComponent => {
-    return class HOCComponent extends React.Component {
+export default (id, limit = []) => WrappedComponent => {
+    class Pull extends React.Component {
         render() {
+            const { __CONTEXT__, ...props } = this.props
+            const ContextStore = __CONTEXT__[id]
+
             if (!ContextStore) {
                 console.warn('HOC传值有误！')
                 return <WrappedComponent {...this.props} />
             }
+
             return (
                 <ContextStore.Consumer>
                     {context => {
                         const newProps = {
-                            ...this.props,
-                            CONTEXT: {
-                                ...(lo.isEmpty(limit)
-                                    ? context
-                                    : lo.pick(context, limit))
-                            }
+                            ...props,
+                            ...lo.pick(context, limit)
                         }
                         return <WrappedComponent {...newProps} />
                     }}
@@ -32,4 +32,5 @@ export default (type, limit = []) => WrappedComponent => {
             )
         }
     }
+    return Install([], [id])(Pull)
 }
