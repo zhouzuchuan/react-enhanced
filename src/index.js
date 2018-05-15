@@ -1,30 +1,11 @@
-import { configureStore } from './configureStore';
-import React from 'react';
-import XRProvider from './components/Provider';
-export { default as registerModel } from './registerModel';
-export { default as AsyncComponent } from './AsyncComponent';
+import { configureStore } from './configureStore'
+import REProvider from './components/Provider'
+import { CreateProvider } from './components/CreateProvider'
 
-export { default as ExtendsContext } from './components/ExtendsContext';
-
-const aa = ({ store, registerModel, AsyncComponent }) => WrappedComponent => {
-    return class A extends React.Component {
-        render() {
-            return (
-                <WrappedComponent
-                    {...{
-                        store,
-                        XR: { registerModel, AsyncComponent },
-                        ...this.props
-                    }}
-                />
-            );
-        }
-    };
-};
-
-export const init = () => {
+export const init = (contextID = [], ...params) => {
     return {
-        Provider: aa(configureStore())(XRProvider)
-        // ExtendsContext
-    };
-};
+        Provider: CreateProvider(configureStore(params), contextID)(REProvider)
+    }
+}
+
+export { default as Install } from './components/Install'
