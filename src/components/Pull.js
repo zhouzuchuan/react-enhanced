@@ -15,8 +15,10 @@ export default (id, limit = []) => WrappedComponent => {
             const ContextStore = __CONTEXT__[id]
 
             if (!ContextStore) {
-                console.warn('HOC传值有误！')
-                return <WrappedComponent {...this.props} />
+                console.error(
+                    '当前 Pull id 不存在，请在 init contextID 中注册！'
+                )
+                return <WrappedComponent {...props} />
             }
 
             return (
