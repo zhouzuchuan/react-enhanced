@@ -58,8 +58,14 @@ typings/
 .env
 
 webpack.config.js
-src/.*
+rollup.config.js
+.gitignore
+*.lock
+src/*
+example/*
+config/*
+public/*
+scripts/*
 releaseNotes.md
 plan.md
-
 

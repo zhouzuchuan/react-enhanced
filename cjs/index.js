@@ -51,11 +51,10 @@ function getRawTag(value) {
 
   try {
     value[symToStringTag] = undefined;
-    var unmasked = true;
   } catch (e) {}
 
   var result = nativeObjectToString.call(value);
-  if (unmasked) {
+  {
     if (isOwn) {
       value[symToStringTag] = tag;
     } else {
@@ -2113,11 +2112,23 @@ var toConsumableArray = function (arr) {
   }
 };
 
-var isFunction = function isFunction(f) {
-    return typeof f === 'function';
+var getType = function getType(obj) {
+    return Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
 };
 
-var axiosMiddleware = (function (store) {
+var isFunction = function isFunction(o) {
+    return getType(o) === 'function';
+};
+var isObject = function isObject(o) {
+    return getType(o) === 'object';
+};
+var isString = function isString(o) {
+    return getType(o) === 'string';
+};
+
+var requestMiddleware = (function (_ref, store) {
+    var requestCallback = _ref.requestCallback,
+        requestError = _ref.requestError;
     return function (next) {
         return function (action) {
             var dispatch = store.dispatch,
@@ -2129,38 +2140,50 @@ var axiosMiddleware = (function (store) {
                 return;
             }
 
-            var promise = action.promise,
-                type = action.type,
-                payload = action.payload,
+            var request = action.request,
+                before = action.before,
+                error = action.error,
                 callback = action.callback,
-                rest = objectWithoutProperties(action, ['promise', 'type', 'payload', 'callback']);
+                rest = objectWithoutProperties(action, ['request', 'before', 'error', 'callback']);
 
 
-            if (!action.promise) {
+            if (!request) {
                 return next(action);
             }
 
-            if (!isFunction(promise)) {
-                console.error('promise must be a function');
+            if (!isFunction(request)) {
+                console.error('request must be a function!');
             }
 
-            return promise().then(function (_ref) {
-                var data = _ref.data;
-                var result = data.result,
-                    status = data.status;
+            if (isObject(before) && isString(before.type)) {
+                next(before);
+            }
 
-                if (status === '1') {
-                    location.hash = '#/';
+            var mergeCallback = callback || requestCallback;
+            var mergeError = error || requestError;
+
+            return request().then(function (_ref2) {
+                var data = _ref2.data;
+
+                if (isFunction(mergeCallback)) {
+                    mergeCallback(data, rest, dispatch, getState);
+                } else if (isString(mergeCallback)) {
+                    next(_extends$3({
+                        type: mergeCallback
+                    }, rest));
+                } else {
+                    console.warn('请求成功，请添加处理逻辑！');
                 }
-                if (type && status === '0') {
-                    next(_extends$3({}, rest, {
-                        type: type,
-                        payload: isFunction(payload) ? payload(result) : result
-                    }));
+            }).catch(function (err) {
+                if (isFunction(mergeError)) {
+                    mergeError(err);
+                } else if (isString(mergeError)) {
+                    next(_extends$3({
+                        type: mergeError
+                    }, rest));
+                } else {
+                    console.error('请求失败，请添加处理逻辑！');
                 }
-                callback && callback(dispatch, getState, data);
-            }).catch(function (error) {
-                console.error('MIDDLEWARE ERROR:', error);
             });
         };
     };
@@ -3613,21 +3636,23 @@ var sagaMiddleware = createSagaMiddleware();
 
 function configureStore() {
     var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-        _ref$initialState = _ref.initialState,
-        initialState = _ref$initialState === undefined ? {} : _ref$initialState,
+        _ref$state = _ref.state,
+        state = _ref$state === undefined ? {} : _ref$state,
         _ref$reducers = _ref.reducers,
         reducers = _ref$reducers === undefined ? {} : _ref$reducers,
-        _ref$sagas = _ref.sagas,
-        sagas = _ref$sagas === undefined ? [] : _ref$sagas,
+        _ref$effects = _ref.effects,
+        effects = _ref$effects === undefined ? [] : _ref$effects,
         _ref$middlewares = _ref.middlewares,
-        middlewares = _ref$middlewares === undefined ? [] : _ref$middlewares;
+        middlewares = _ref$middlewares === undefined ? [] : _ref$middlewares,
+        requestCallback = _ref.requestCallback,
+        requestError = _ref.requestError;
 
     // 中间件列表
-    var middleware = [historyMiddleware, sagaMiddleware, axiosMiddleware].concat(toConsumableArray(middlewares || []));
+    var middleware = [historyMiddleware, sagaMiddleware, requestMiddleware.bind(null, { requestCallback: requestCallback, requestError: requestError })].concat(toConsumableArray(middlewares || []));
 
     var store = createStore(combineReducers(_extends$3({}, reducers, {
         route: reactRouterRedux.routerReducer
-    })), initialState, reduxDevtoolsExtension_1(applyMiddleware.apply(undefined, toConsumableArray(middleware))));
+    })), state, reduxDevtoolsExtension_1(applyMiddleware.apply(undefined, toConsumableArray(middleware))));
 
     // 处理saga
     sagaMiddleware.run( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
@@ -3636,7 +3661,7 @@ function configureStore() {
                 switch (_context.prev = _context.next) {
                     case 0:
                         _context.next = 2;
-                        return all(sagas);
+                        return all(effects);
 
                     case 2:
                     case 'end':
@@ -3804,8 +3829,8 @@ var Pull = (function (id) {
                     var ContextStore = __CONTEXT__[id];
 
                     if (!ContextStore) {
-                        console.warn('HOC传值有误！');
-                        return React.createElement(WrappedComponent, this.props);
+                        console.error('当前 Pull id 不存在，请在 init contextID 中注册！');
+                        return React.createElement(WrappedComponent, props);
                     }
 
                     return React.createElement(
@@ -3847,6 +3872,11 @@ var Push = (function (id, fn) {
                         props = objectWithoutProperties(_props, ['__CONTEXT__']);
 
                     var ContextStore = __CONTEXT__[id];
+
+                    if (!ContextStore) {
+                        console.error('当前 Push id 不存在，请在 init contextID 中注册！');
+                        return React.createElement(WrappedComponent, props);
+                    }
                     var dealValue = fn(props);
                     return React.createElement(
                         ContextStore.Provider,
@@ -3862,7 +3892,9 @@ var Push = (function (id, fn) {
     };
 });
 
-var init = function init(_ref) {
+var init = function init() {
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
     var _ref$contextID = _ref.contextID,
         contextID = _ref$contextID === undefined ? [] : _ref$contextID,
         params = objectWithoutProperties(_ref, ['contextID']);

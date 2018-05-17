@@ -12,6 +12,10 @@ export default {
         {
             file: 'es/index.js',
             format: 'es'
+        },
+        {
+            file: 'example/react-enhanced.js',
+            format: 'es'
         }
     ],
     external: [
