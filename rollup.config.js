@@ -14,7 +14,7 @@ export default {
             format: 'es'
         },
         {
-            file: 'example/react-enhanced.js',
+            file: 'example/src/react-enhanced.js',
             format: 'es'
         }
     ],

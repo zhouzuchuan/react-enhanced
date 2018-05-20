@@ -18,13 +18,26 @@ yarn add react-enhanced
 
 ## 设计思想
 
-*    降低 react 开发门槛，以及提高开发效率
-*    无侵入使用，对已使用的框架友好
-*    实现 model 层，方便管理异步操作以及复用
+*   降低 react 开发门槛，以及提高开发效率
+*   无侵入使用，对已使用的框架友好，并且维护增加一些辅助开发的功能
+*   实现 model 层，方便管理异步操作以及复用
 
 ## 使用
 
-*   增强 Provider
+### `init`
+
+    增强器的载入入口
+
+*   `warehouse`： <Array|none> 创建仓库，
+*   `state`： <Object|none> 默认 state
+*   `reducers`： <Object|none> 全局 reducers
+*   `effects`： <Array|none> 全局 effects
+*   `middlewares`： <Array|none> saga 中间件
+*   `requestCallback`：<Function|none> 请求统一回调
+*   `requestError`：<Function|none> 请求统一错误处理
+*   `resultLimit`：<String|Array|none> 根据返回的数据数据格式，统一自定义返回
+
+返回个一个 react-redux 封装的 Provider，但是在这之上我们已经许多工作，如 store 的绑定，以及基于 models 层的数据动态加载
 
     ```js
     import { init } from 'react-enhanced';
@@ -39,7 +52,9 @@ yarn add react-enhanced
     );
     ```
 
--   异步组件以及 model 注册
+### `AsyncComponent`
+
+高阶组件，用来异步组件以及 model 注册
 
     ```js
     import React from 'react';
@@ -71,4 +86,89 @@ yarn add react-enhanced
             );
         }
     }
+    ```
+
+#### models 层数据格式
+
+```js
+export default {
+    namespace: 'home',
+
+    state: {
+        nameList: []
+    },
+
+    effects: {
+        *getNames({ payload }) {
+            //各种操作
+        }
+    },
+    reducers: {
+        getNamesSuccess: (state, { payload }) => {
+            return {
+                ...state
+                // 替换操作
+            };
+        }
+    }
+};
+```
+
+### `Push`
+
+    高阶组件，向注册的仓库提交数据（仓库名需要在 init 中注册仓库）
+
+第二个可以字符串，该字符串是 props 中数据的 key，会直接获取传递
+
+    ```js
+    import React from 'react';
+    import { Push } from 'react-enhanced';
+
+    @Push('home', 'getName')
+    export default class App extends Component {
+        render() {
+            //...
+        }
+    }
+    ```
+
+也可以是数组，既可以传递多个
+
+    ```js
+    @Push('home',[ 'getName', 'getAge'])
+    ```
+
+也可以是函数，会将该组件所能获取到 props 传入，然后根据需求来传递以及自定义传递
+
+    ```js
+    @Push('home',props => {
+        return {
+            // 各种操作
+        }
+    })
+    ```
+
+### `Pull`
+
+    高阶组件，向注册的仓库拉取数据（仓库名需要在 init 中注册仓库）
+
+第二个可以字符串，该字符串是 props 中数据的 key，会直接获取传递
+
+    ```js
+    import React from 'react';
+    import { Pull } from 'react-enhanced';
+
+    @Pull('home', 'getName')
+    export default class Name extends Component {
+        render() {
+            const { getName } = this.props;
+            return <div onClick={getName}>获取名字</div>;
+        }
+    }
+    ```
+
+也可以是数组，既可以传递多个
+
+    ```js
+    @Pull('home', ['getName', 'getAge'])
     ```

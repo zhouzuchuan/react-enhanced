@@ -1,28 +1,25 @@
-import { createStore, applyMiddleware, combineReducers, compose } from 'redux'
-import createSagaMiddleware from 'redux-saga'
-// import lo from 'lodash';
-// import { createReducer } from 'react-router-redux'
+import { combineReducers } from 'redux';
 
-import { fork, takeLatest, all } from 'redux-saga/effects'
+import { fork, takeLatest, all } from 'redux-saga/effects';
 
 export function createReducer(initialState, handlers) {
     return function reducer(state = initialState, action) {
         if (handlers.hasOwnProperty(action.type)) {
-            return handlers[action.type](state, action)
+            return handlers[action.type](state, action);
         } else {
-            return state
+            return state;
         }
-    }
+    };
 }
 
 const addNameSpace = (obj = {}, namespace) =>
     Object.entries(obj).reduce(
         (r, [n, m]) => ({ ...r, [`${namespace}/${n}`]: m }),
         {}
-    )
+    );
 
 export function injectAsyncReducers(store, asyncReducers, initialState) {
-    let flag = false
+    let flag = false;
 
     if (asyncReducers) {
         for (let [n, m] of Object.entries(asyncReducers)) {
@@ -31,12 +28,12 @@ export function injectAsyncReducers(store, asyncReducers, initialState) {
                     store.asyncReducers[n] = createReducer(
                         initialState[n] || {},
                         m
-                    )
-                    flag = true
+                    );
+                    flag = true;
                 }
             }
         }
-        flag && store.replaceReducer(combineReducers(store.asyncReducers))
+        flag && store.replaceReducer(combineReducers(store.asyncReducers));
     }
 }
 
@@ -45,8 +42,8 @@ export function injectAsyncSagas(store, sagas, sagaMiddleware) {
         for (let [n, m] of Object.entries(sagas)) {
             if (Object.prototype.hasOwnProperty.call(sagas, n)) {
                 if (store && !(store.asyncSagas || {})[n]) {
-                    store.asyncSagas[n] = m
-                    sagaMiddleware.run(m)
+                    store.asyncSagas[n] = m;
+                    sagaMiddleware.run(m);
                 }
             }
         }
@@ -63,7 +60,7 @@ export default function registerModel(store, sagaMiddleware, models) {
         // })
         .reduce((r, { namespace, effects = {}, reducers = {}, state = {} }) => {
             if (typeof namespace === 'undefined') {
-                return r
+                return r;
             }
             return {
                 state: {
@@ -78,10 +75,10 @@ export default function registerModel(store, sagaMiddleware, models) {
                     ...(r.reducers || {}),
                     [namespace]: addNameSpace(reducers, namespace)
                 }
-            }
-        }, {})
+            };
+        }, {});
 
-    injectAsyncReducers(store, deal.reducers, deal.state)
+    injectAsyncReducers(store, deal.reducers, deal.state);
     injectAsyncSagas(
         store,
         Object.entries(deal.sagas).reduce((r, [name, fns]) => {
@@ -91,13 +88,13 @@ export default function registerModel(store, sagaMiddleware, models) {
                     yield all([
                         fork(function*() {
                             yield Object.entries(fns).map(([n, m]) => {
-                                return takeLatest(n, m)
-                            })
+                                return takeLatest(n, m);
+                            });
                         })
-                    ])
+                    ]);
                 }
-            }
+            };
         }, {}),
         sagaMiddleware
-    )
+    );
 }

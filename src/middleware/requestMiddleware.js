@@ -1,16 +1,12 @@
-const getType = obj =>
-    Object.prototype.toString
-        .call(obj)
-        .slice(8, -1)
-        .toLowerCase();
+import get from 'lodash.get';
+import { isFunction, isArray, isObject, isString, isUndefined } from '../utils';
 
-const isFunction = o => getType(o) === 'function';
-const isObject = o => getType(o) === 'object';
-const isString = o => getType(o) === 'string';
-const isUndefined = o => getType(o) === 'undefined';
-const isArray = o => getType(o) === 'array';
+const take = (obj, path) => get(obj, path);
 
-export default ({ requestCallback, requestError }, store) => next => action => {
+export default (
+    { requestCallback, requestError, resultLimit },
+    store
+) => next => action => {
     const { dispatch, getState } = store;
 
     if (isFunction(action)) {
@@ -18,7 +14,7 @@ export default ({ requestCallback, requestError }, store) => next => action => {
         return;
     }
 
-    const { request, before, error, callback, ...rest } = action;
+    const { request, will, error, callback, did, ...rest } = action;
 
     if (!request) {
         return next(action);
@@ -28,24 +24,76 @@ export default ({ requestCallback, requestError }, store) => next => action => {
         console.error('request must be a function!');
     }
 
-    if (isObject(before) && isString(before.type)) {
-        next(before);
+    if (isObject(will) && isString(will.type)) {
+        next(will);
+    } else if (isString(will)) {
+        next({
+            type: will
+        });
     }
 
-    const mergeCallback = callback || requestCallback;
     const mergeError = error || requestError;
 
     return request()
-        .then(({ data }) => {
-            if (isFunction(mergeCallback)) {
-                mergeCallback(data, rest, dispatch, getState);
-            } else if (isString(mergeCallback)) {
+        .then(result => {
+            const { data } = result;
+            const transferData = data || result;
+            const limitData = isString(resultLimit)
+                ? take(transferData, resultLimit)
+                : isArray(resultLimit)
+                    ? resultLimit.reduce((r, v) => {
+                          if (!isString(v)) {
+                              console.warn(
+                                  `${JSON.stringify(
+                                      v
+                                  )} 不符合字段截取规则；请使用"result.data"这种规则！`
+                              );
+                              return r;
+                          }
+                          return [...r, take(transferData, v) || []];
+                      }, [])
+                    : transferData;
+
+            if (isUndefined(limitData)) {
+                console.warn('设置的 resultLimit 获取不到有效的数据');
+            }
+
+            if (isFunction(requestCallback)) {
+                requestCallback(transferData, rest, dispatch, getState);
+            } else if (isString(requestCallback)) {
                 next({
-                    type: mergeCallback,
+                    type: requestCallback,
+                    payload: transferData,
                     ...rest
                 });
-            } else {
-                console.warn('请求成功，请添加处理逻辑！');
+            }
+
+            if (isObject(did) && isString(did.type)) {
+                const { type, payload, ...rest2 } = did;
+                next({
+                    type: did.type,
+                    payload: isUndefined(payload)
+                        ? limitData
+                        : isFunction(payload)
+                            ? payload(limitData)
+                            : payload,
+                    ...rest2
+                });
+            } else if (isString(did)) {
+                next({
+                    type: did,
+                    payload: limitData
+                });
+            }
+
+            if (isFunction(callback)) {
+                callback(limitData);
+            } else if (isString(requecallbacktCallback)) {
+                next({
+                    type: callback,
+                    payload: limitData,
+                    ...rest
+                });
             }
         })
         .catch(err => {
@@ -56,8 +104,6 @@ export default ({ requestCallback, requestError }, store) => next => action => {
                     type: mergeError,
                     ...rest
                 });
-            } else {
-                console.error('请求失败，请添加处理逻辑！');
             }
         });
 };

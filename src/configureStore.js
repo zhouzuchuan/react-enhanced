@@ -12,7 +12,6 @@ import { all } from 'redux-saga/effects';
 import { composeWithDevTools } from 'redux-devtools-extension';
 
 import requestMiddleware from './middleware/requestMiddleware';
-
 import registerModel from './registerModel';
 import AsyncComponent from './AsyncComponent';
 
@@ -22,21 +21,43 @@ const historyMiddleware = routerMiddleware(createHistory());
 // 创建saga中间件
 const sagaMiddleware = createSagaMiddleware();
 
+/**
+ *
+ *
+ * @export
+ * @param {any} [{
+ *     state： 默认state,
+ *     reducers： 全局reducers,
+ *     effects： 全局effects,
+ *     middlewares： saga中间件,
+ *     requestCallback：请求统一回调,
+ *     requestError：请求统一错误处理,
+ *     resultLimit：根据返回的数据数据格式，统一自定义返回
+ * }={}]
+ * @returns
+ */
 export function configureStore({
     state = {},
     reducers = {},
     effects = [],
     middlewares = [],
     requestCallback,
-    requestError
+    requestError,
+    resultLimit
 } = {}) {
     // 中间件列表
     const middleware = [
         historyMiddleware,
         sagaMiddleware,
-        requestMiddleware.bind(null, { requestCallback, requestError }),
+        requestMiddleware.bind(null, {
+            requestCallback,
+            requestError,
+            resultLimit
+        }),
         ...(middlewares || [])
     ];
+
+    const operApplyMiddleware = applyMiddleware(...middleware);
 
     const store = createStore(
         combineReducers({
@@ -44,7 +65,9 @@ export function configureStore({
             route: routerReducer
         }),
         state,
-        composeWithDevTools(applyMiddleware(...middleware))
+        process.env.NODE_ENV === 'development'
+            ? composeWithDevTools(operApplyMiddleware)
+            : operApplyMiddleware
     );
 
     // 处理saga

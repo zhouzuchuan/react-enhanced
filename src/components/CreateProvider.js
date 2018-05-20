@@ -1,6 +1,6 @@
-import React from 'react'
-import { Provider } from 'react-redux'
-import CreateInstall from './CreateInstall'
+import React from 'react';
+import { Provider } from 'react-redux';
+import CreateInstall from './CreateInstall';
 
 export const CreateProvider = (
     { store, registerModel, AsyncComponent },
@@ -15,7 +15,7 @@ export const CreateProvider = (
                         ...this.props
                     }}
                 />
-            )
+            );
         }
     }
 
@@ -25,7 +25,7 @@ export const CreateProvider = (
             return {
                 ...r,
                 [v]: React.createContext()
-            }
+            };
         }, {})
-    })(REProvider)
-}
+    })(REProvider);
+};

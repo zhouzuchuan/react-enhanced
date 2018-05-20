@@ -2,8 +2,8 @@
  * 传递context
  * */
 
-import React from 'react'
-import ContextStore from './ContextStore'
+import React from 'react';
+import ContextStore from './ContextStore';
 
 export default value => WrappedComponent => {
     return class HOCComponent2 extends React.Component {
@@ -12,7 +12,7 @@ export default value => WrappedComponent => {
                 <ContextStore.Provider {...{ value }}>
                     <WrappedComponent {...this.props} />
                 </ContextStore.Provider>
-            )
+            );
         }
-    }
-}
+    };
+};
