@@ -4,23 +4,39 @@
 
 import Loadable from 'react-loadable';
 import React from 'react';
+import { isFunction, isArray } from './utils';
 
-export default (registerModel, fn, params = {}) => {
-    const { props: props2 = {}, ...reset } = params;
-    const isMore = typeof fn === 'object';
+export default (registerModel, params = {}) => {
+    const isMore = isFunction(params);
 
-    return (!isMore ? Loadable : Loadable.Map)({
-        loader: fn,
+    const defaultParams = {
         loading: () => {
             return <div>dddd</div>;
-        },
-        ...(isMore && {
-            render({ component, model }, props) {
+        }
+    };
+
+    if (isMore) {
+        return Loadable({
+            ...defaultParams,
+            loader: params
+        });
+    } else {
+        const { props: props2 = {}, component, model, ...rest } = params;
+        return Loadable.Map({
+            ...defaultParams,
+            ...rest,
+            loader: (isArray(model) ? model : [model]).reduce(
+                (r, v, i) => ({ ...r, [i]: v }),
+                { component }
+            ),
+            render({ component, ...models }, props) {
                 const ReturnCompoment = component.default;
-                model && registerModel(model.default);
+                models &&
+                    Object.values(models).forEach(v =>
+                        registerModel(v.default)
+                    );
                 return <ReturnCompoment {...{ ...props2, ...props }} />;
             }
-        }),
-        ...reset
-    });
+        });
+    }
 };

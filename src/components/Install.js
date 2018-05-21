@@ -7,6 +7,7 @@
 import React from 'react';
 import pick from 'lodash.pick';
 import ContextStore from './ContextStore';
+import { isString, isArray } from '../utils';
 
 export default (inject = [], CONTEXT = []) => WrappedComponent => {
     return class HOCComponent extends React.Component {
@@ -21,7 +22,9 @@ export default (inject = [], CONTEXT = []) => WrappedComponent => {
                     {context => {
                         const newProps = {
                             ...this.props,
-                            ...pick(context.__RE__, inject),
+                            ...(isString(inject) || isArray(inject)
+                                ? pick(context.__RE__, inject)
+                                : {}),
                             __CONTEXT__: pick(context.__CONTEXT__, CONTEXT)
                         };
                         return <WrappedComponent {...newProps} />;

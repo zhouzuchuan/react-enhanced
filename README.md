@@ -39,56 +39,67 @@ yarn add react-enhanced
 
 返回个一个 react-redux 封装的 Provider，但是在这之上我们已经许多工作，如 store 的绑定，以及基于 models 层的数据动态加载
 
-    ```js
-    import { init } from 'react-enhanced';
+```js
+import { init } from 'react-enhanced';
 
-    const { Provider } = init();
+const { Provider } = init();
 
-    ReactDOM.render(
-        <Provider>
-            <App />
-        </Provider>,
-        document.getElementById('root')
-    );
-    ```
+ReactDOM.render(
+    <Provider>
+        <App />
+    </Provider>,
+    document.getElementById('root')
+);
+```
 
-### `AsyncComponent`
+### `Install`
 
-高阶组件，用来异步组件以及 model 注册
+高阶组件，向组件注入方法，如注入 AsyncComponent
 
-    ```js
-    import React from 'react';
-    import { Route, Switch } from 'react-router-dom';
-    import { Install } from 'react-enhanced';
+#### `AsyncComponent`
 
-    @Install(['AsyncComponent'])
-    export default class App extends Component {
-        render() {
-            const { AsyncComponent } = this.props;
-            return (
-                <Route
-                    render={({ location }) => {
-                        return (
-                            <Switch>
-                                <Route
-                                    component={AsyncComponent({
-                                        component: () =>
-                                            import('../containers/list'),
-                                        model: () => import('../models/list')
-                                    })}
-                                    exact
-                                    path="/"
-                                />
-                            </Switch>
-                        );
-                    }}
-                />
-            );
-        }
+用来异步组件以及 model 注册
+
+```js
+import React from 'react';
+import { Route, Switch } from 'react-router-dom';
+import { Install } from 'react-enhanced';
+
+@Install(['AsyncComponent'])
+export default class App extends Component {
+    render() {
+        const { AsyncComponent } = this.props;
+        return (
+            <Route
+                render={({ location }) => {
+                    return (
+                        <Switch>
+                            <Route
+                                component={AsyncComponent({
+                                    component: () =>
+                                        import('../containers/list'),
+                                    model: () => import('../models/list')
+                                })}
+                                exact
+                                path="/"
+                            />
+                        </Switch>
+                    );
+                }}
+            />
+        );
     }
-    ```
+}
+```
 
 #### models 层数据格式
+
+ 借鉴 elm 概念，通过 reducers, effects 组织 model
+
+*   namespace：models 标识
+*   state：models 数据状态
+*   effects：声明各种需要处理的 action
+*   reducers：声明更改 state 的 action（必须为纯函数）
 
 ```js
 export default {
@@ -120,33 +131,33 @@ export default {
 
 第二个可以字符串，该字符串是 props 中数据的 key，会直接获取传递
 
-    ```js
-    import React from 'react';
-    import { Push } from 'react-enhanced';
+```js
+import React from 'react';
+import { Push } from 'react-enhanced';
 
-    @Push('home', 'getName')
-    export default class App extends Component {
-        render() {
-            //...
-        }
+@Push('home', 'getName')
+export default class App extends Component {
+    render() {
+        //...
     }
-    ```
+}
+```
 
 也可以是数组，既可以传递多个
 
-    ```js
-    @Push('home',[ 'getName', 'getAge'])
-    ```
+```js
+@Push('home',[ 'getName', 'getAge'])
+```
 
 也可以是函数，会将该组件所能获取到 props 传入，然后根据需求来传递以及自定义传递
 
-    ```js
-    @Push('home',props => {
-        return {
-            // 各种操作
-        }
-    })
-    ```
+```js
+@Push('home',props => {
+    return {
+        // 各种操作
+    }
+})
+```
 
 ### `Pull`
 
@@ -154,21 +165,54 @@ export default {
 
 第二个可以字符串，该字符串是 props 中数据的 key，会直接获取传递
 
-    ```js
-    import React from 'react';
-    import { Pull } from 'react-enhanced';
+```js
+import React from 'react';
+import { Pull } from 'react-enhanced';
 
-    @Pull('home', 'getName')
-    export default class Name extends Component {
-        render() {
-            const { getName } = this.props;
-            return <div onClick={getName}>获取名字</div>;
-        }
+@Pull('home', 'getName')
+export default class Name extends Component {
+    render() {
+        const { getName } = this.props;
+        return <div onClick={getName}>获取名字</div>;
     }
-    ```
+}
+```
 
 也可以是数组，既可以传递多个
 
-    ```js
-    @Pull('home', ['getName', 'getAge'])
-    ```
+```js
+@Pull('home', ['getName', 'getAge'])
+```
+
+### `request` 内置 saga 请求封装
+
+*   `request`： <Function> 请求函数
+*   `will`： <String|Object> 请求前执行
+*   `did`： <String|Object> 请求成功后执行
+*   `callback`： <Function> 请求成功后执行（在 `did` 后面）
+*   `error`： <Function> 请求失败调用（会覆盖 init 中`requestError`在该 action 上的执行）
+
+`did`以及`will`可以是字符串，`will` 不会传递 payload，而`did`则会将请求成功的 data（如果在 init 中设置了`requestLimit`， 会根据其取值）直接绑定到 payload .
+
+```js
+{
+    request: serveDeleteDs.bind(null, payload),
+    did: 'list/deleteDsSuccess',
+}
+```
+
+`did`以及`will`是对象，`will`直接执行，而`did`中如果 payload 是函数则其参数是获取到的 data 值（init 中设置了`requestLimit`， 会根据其取值）；如果不传 payload 则和`did`是字符串效果是一样的；如果是指定了值，则就是该值.
+
+```js
+{
+    request: serveDeleteDs.bind(null, payload),
+    did: {
+        type: 'list/deleteDsSuccess',
+        payload
+    }
+}
+```
+
+## License
+
+[MIT](https://tldrlegal.com/license/mit-license)

@@ -14,11 +14,14 @@ export default class App extends Component {
                         return (
                             <Switch>
                                 <Route
-                                    component={AsyncComponent({
-                                        component: () =>
-                                            import('@containers/Home' /* webpackChunkName: 'home' */),
-                                        model: () => import('@models/home')
-                                    })}
+                                    component={AsyncComponent(
+                                        {
+                                            component: () =>
+                                                import('@containers/Home' /* webpackChunkName : 'home'*/),
+                                            model: () => import('@models/home')
+                                        },
+                                        {}
+                                    )}
                                     exact
                                     path="/"
                                 />

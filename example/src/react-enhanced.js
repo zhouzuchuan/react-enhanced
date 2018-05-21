@@ -1651,6 +1651,9 @@ var sym = function sym(id) {
 var TASK = /*#__PURE__*/sym('TASK');
 var HELPER = /*#__PURE__*/sym('HELPER');
 var SELF_CANCELLATION = /*#__PURE__*/sym('SELF_CANCELLATION');
+var ident = function ident(v) {
+  return v;
+};
 
 function check(value, predicate, error) {
   if (!predicate(value)) {
@@ -1756,6 +1759,17 @@ function log(level, message) {
   }
 }
 
+function deprecate(fn, deprecationWarning) {
+  return function () {
+    if (process.env.NODE_ENV === 'development') log('warn', deprecationWarning);
+    return fn.apply(undefined, arguments);
+  };
+}
+
+var updateIncentive = function updateIncentive(deprecated, preferred) {
+  return deprecated + ' has been deprecated in favor of ' + preferred + ', please update your code';
+};
+
 var done = { done: true, value: undefined };
 var qEnd = {};
 
@@ -1846,9 +1860,12 @@ function takeLatest(patternOrChannel, worker) {
 
 var IO = /*#__PURE__*/sym('IO');
 var TAKE = 'TAKE';
+var PUT = 'PUT';
 var ALL = 'ALL';
+var CALL = 'CALL';
 var FORK = 'FORK';
 var CANCEL$1 = 'CANCEL';
+var SELECT = 'SELECT';
 
 var TEST_HINT = '\n(HINT: if you are getting this errors in tests, consider using createMockTask from redux-saga/utils)';
 
@@ -1879,6 +1896,27 @@ take.maybe = function () {
   return eff;
 };
 
+function put(channel, action) {
+  if (arguments.length > 1) {
+    check(channel, is.notUndef, 'put(channel, action): argument channel is undefined');
+    check(channel, is.channel, 'put(channel, action): argument ' + channel + ' is not a valid channel');
+    check(action, is.notUndef, 'put(channel, action): argument action is undefined');
+  } else {
+    check(channel, is.notUndef, 'put(action): argument action is undefined');
+    action = channel;
+    channel = null;
+  }
+  return effect(PUT, { channel: channel, action: action });
+}
+
+put.resolve = function () {
+  var eff = put.apply(undefined, arguments);
+  eff[PUT].resolve = true;
+  return eff;
+};
+
+put.sync = /*#__PURE__*/deprecate(put.resolve, /*#__PURE__*/updateIncentive('put.sync', 'put.resolve'));
+
 function all(effects) {
   return effect(ALL, effects);
 }
@@ -1902,6 +1940,14 @@ function getFnCallDesc(meth, fn, args) {
   check(fn, is.func, meth + ': argument ' + fn + ' is not a function');
 
   return { context: context, fn: fn, args: args };
+}
+
+function call(fn) {
+  for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    args[_key - 1] = arguments[_key];
+  }
+
+  return effect(CALL, getFnCallDesc('call', fn, args));
 }
 
 function fork(fn) {
@@ -1928,6 +1974,20 @@ function cancel() {
     check(task, is.task, 'cancel(task): argument ' + task + ' is not a valid Task object ' + TEST_HINT);
   }
   return effect(CANCEL$1, task || SELF_CANCELLATION);
+}
+
+function select(selector) {
+  for (var _len7 = arguments.length, args = Array(_len7 > 1 ? _len7 - 1 : 0), _key7 = 1; _key7 < _len7; _key7++) {
+    args[_key7 - 1] = arguments[_key7];
+  }
+
+  if (arguments.length === 0) {
+    selector = ident;
+  } else {
+    check(selector, is.notUndef, 'select(selector,[...]): argument selector is undefined');
+    check(selector, is.func, 'select(selector,[...]): argument ' + selector + ' is not a function');
+  }
+  return effect(SELECT, { selector: selector, args: args });
 }
 
 function takeLatest$2(patternOrChannel, worker) {
@@ -2915,12 +2975,6 @@ var isArray$1 = function isArray(o) {
     return getType(o) === 'array';
 };
 
-var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-  return typeof obj;
-} : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-};
-
 var classCallCheck = function (instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -3305,40 +3359,58 @@ function registerModel(store, sagaMiddleware, models) {
             name = _ref9[0],
             fns = _ref9[1];
 
-        return _extends$3({}, r, defineProperty({}, name, /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
-            return regeneratorRuntime.wrap(function _callee2$(_context2) {
+        return _extends$3({}, r, defineProperty({}, name, /*#__PURE__*/regeneratorRuntime.mark(function _callee3() {
+            return regeneratorRuntime.wrap(function _callee3$(_context3) {
                 while (1) {
-                    switch (_context2.prev = _context2.next) {
+                    switch (_context3.prev = _context3.next) {
                         case 0:
-                            _context2.next = 2;
-                            return all([fork( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-                                return regeneratorRuntime.wrap(function _callee$(_context) {
+                            _context3.next = 2;
+                            return all([fork( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
+                                return regeneratorRuntime.wrap(function _callee2$(_context2) {
                                     while (1) {
-                                        switch (_context.prev = _context.next) {
+                                        switch (_context2.prev = _context2.next) {
                                             case 0:
-                                                _context.next = 2;
+                                                _context2.next = 2;
                                                 return Object.entries(fns).map(function (_ref10) {
                                                     var _ref11 = slicedToArray(_ref10, 2),
                                                         n = _ref11[0],
                                                         m = _ref11[1];
 
-                                                    return takeLatest$2(n, m);
+                                                    return takeLatest$2(n, /*#__PURE__*/regeneratorRuntime.mark(function _callee(action) {
+                                                        return regeneratorRuntime.wrap(function _callee$(_context) {
+                                                            while (1) {
+                                                                switch (_context.prev = _context.next) {
+                                                                    case 0:
+                                                                        _context.next = 2;
+                                                                        return all([fork(m.bind(null, action, {
+                                                                            put: put,
+                                                                            select: select,
+                                                                            call: call
+                                                                        }))]);
+
+                                                                    case 2:
+                                                                    case 'end':
+                                                                        return _context.stop();
+                                                                }
+                                                            }
+                                                        }, _callee, this);
+                                                    }));
                                                 });
 
                                             case 2:
                                             case 'end':
-                                                return _context.stop();
+                                                return _context2.stop();
                                         }
                                     }
-                                }, _callee, this);
+                                }, _callee2, this);
                             }))]);
 
                         case 2:
                         case 'end':
-                            return _context2.stop();
+                            return _context3.stop();
                     }
                 }
-            }, _callee2, this);
+            }, _callee3, this);
         })));
     }, {}), sagaMiddleware);
 }
@@ -4574,16 +4646,12 @@ var Loadable = unwrapExports(lib);
  * 异步加载组件以及model
  * */
 
-var AsyncComponent = (function (registerModel, fn) {
-    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-    var _params$props = params.props,
-        props2 = _params$props === undefined ? {} : _params$props,
-        reset = objectWithoutProperties(params, ['props']);
+var AsyncComponent = (function (registerModel) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-    var isMore = (typeof fn === 'undefined' ? 'undefined' : _typeof$2(fn)) === 'object';
+    var isMore = isFunction$1(params);
 
-    return (!isMore ? Loadable : Loadable.Map)(_extends$3({
-        loader: fn,
+    var defaultParams = {
         loading: function loading() {
             return React.createElement(
                 'div',
@@ -4591,16 +4659,35 @@ var AsyncComponent = (function (registerModel, fn) {
                 'dddd'
             );
         }
-    }, isMore && {
-        render: function render(_ref, props) {
-            var component = _ref.component,
-                model = _ref.model;
+    };
 
-            var ReturnCompoment = component.default;
-            model && registerModel(model.default);
-            return React.createElement(ReturnCompoment, _extends$3({}, props2, props));
-        }
-    }, reset));
+    if (isMore) {
+        return Loadable(_extends$3({}, defaultParams, {
+            loader: params
+        }));
+    } else {
+        var _params$props = params.props,
+            props2 = _params$props === undefined ? {} : _params$props,
+            component = params.component,
+            model = params.model,
+            rest = objectWithoutProperties(params, ['props', 'component', 'model']);
+
+        return Loadable.Map(_extends$3({}, defaultParams, rest, {
+            loader: (isArray$1(model) ? model : [model]).reduce(function (r, v, i) {
+                return _extends$3({}, r, defineProperty({}, i, v));
+            }, { component: component }),
+            render: function render(_ref, props) {
+                var component = _ref.component,
+                    models = objectWithoutProperties(_ref, ['component']);
+
+                var ReturnCompoment = component.default;
+                models && Object.values(models).forEach(function (v) {
+                    return registerModel(v.default);
+                });
+                return React.createElement(ReturnCompoment, _extends$3({}, props2, props));
+            }
+        }));
+    }
 });
 
 // 创建 router histroy 中间件
@@ -5289,7 +5376,7 @@ var Install = (function () {
                         ContextStore.Consumer,
                         null,
                         function (context) {
-                            var newProps = _extends$3({}, _this2.props, lodash_pick(context.__RE__, inject), {
+                            var newProps = _extends$3({}, _this2.props, isString(inject) || isArray$1(inject) ? lodash_pick(context.__RE__, inject) : {}, {
                                 __CONTEXT__: lodash_pick(context.__CONTEXT__, CONTEXT)
                             });
                             return React.createElement(WrappedComponent, newProps);

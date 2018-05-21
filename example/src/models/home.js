@@ -2,7 +2,7 @@ import { fromJS } from 'immutable'
 import { put, call, select } from 'redux-saga/effects'
 
 export default {
-    namespace: 'dataSet',
+    namespace: 'home',
 
     state: fromJS({
         // 数据集 表（文件树））
@@ -10,7 +10,10 @@ export default {
     }),
 
     effects: {
-        *GET_TBINFO({ payload }) {}
+        *GET_TBINFO({ payload }) {},
+        *test({ payload }, a) {
+            console.log(payload, a)
+        }
     },
     reducers: {
         GET_SUCCESS: (state, { payload }) => {

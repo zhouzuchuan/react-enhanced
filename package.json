@@ -1,6 +1,6 @@
 {
     "name": "react-enhanced",
-    "version": "0.0.10-alpha.4",
+    "version": "0.0.10-alpha.5",
     "description": "## react 无侵入增强器",
     "main": "es",
     "scripts": {
@@ -19,7 +19,6 @@
     },
     "homepage": "https://github.com/zhouzuchuan/react-enhanced#readme",
     "dependencies": {
-        "babel-polyfill": "^6.26.0",
         "history": "^4.7.2",
         "lodash.get": "^4.4.2",
         "lodash.pick": "^4.4.0",
@@ -32,6 +31,7 @@
         "redux-saga": "^0.16.0"
     },
     "devDependencies": {
+        "babel-polyfill": "^6.26.0",
         "babel-core": "6.26.0",
         "babel-loader": "^7.1.4",
         "babel-plugin-external-helpers": "^6.22.0",

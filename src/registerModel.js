@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux';
 
-import { fork, takeLatest, all } from 'redux-saga/effects';
+import { fork, takeLatest, all, put, select, call } from 'redux-saga/effects';
 
 export function createReducer(initialState, handlers) {
     return function reducer(state = initialState, action) {
@@ -88,7 +88,17 @@ export default function registerModel(store, sagaMiddleware, models) {
                     yield all([
                         fork(function*() {
                             yield Object.entries(fns).map(([n, m]) => {
-                                return takeLatest(n, m);
+                                return takeLatest(n, function*(action) {
+                                    yield all([
+                                        fork(
+                                            m.bind(null, action, {
+                                                put,
+                                                select,
+                                                call
+                                            })
+                                        )
+                                    ]);
+                                });
                             });
                         })
                     ]);
