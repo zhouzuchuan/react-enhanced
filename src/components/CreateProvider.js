@@ -4,7 +4,8 @@ import CreateInstall from './CreateInstall';
 
 export const CreateProvider = (
     { store, registerModel, AsyncComponent },
-    contextID
+    contextID,
+    componentLoading
 ) => {
     class REProvider extends React.Component {
         render() {
@@ -20,7 +21,10 @@ export const CreateProvider = (
     }
 
     return CreateInstall({
-        __RE__: { registerModel, AsyncComponent },
+        __RE__: {
+            registerModel,
+            AsyncComponent: AsyncComponent.bind(null, componentLoading)
+        },
         __CONTEXT__: contextID.reduce((r, v) => {
             return {
                 ...r,

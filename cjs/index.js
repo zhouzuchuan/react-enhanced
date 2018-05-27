@@ -6,7 +6,6 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 
 var React = _interopDefault(require('react'));
 var createSagaMiddleware = _interopDefault(require('redux-saga'));
-var reactRouterRedux = require('react-router-redux');
 var reactRedux = require('react-redux');
 
 /** Detect free variable `global` from Node.js. */
@@ -795,6 +794,388 @@ function unwrapExports (x) {
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
+
+var reducer = createCommonjsModule(function (module, exports) {
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+exports.routerReducer = routerReducer;
+/**
+ * This action type will be dispatched when your history
+ * receives a location change.
+ */
+var LOCATION_CHANGE = exports.LOCATION_CHANGE = '@@router/LOCATION_CHANGE';
+
+var initialState = {
+  locationBeforeTransitions: null
+};
+
+/**
+ * This reducer will update the state with the most recent location history
+ * has transitioned to. This may not be in sync with the router, particularly
+ * if you have asynchronously-loaded routes, so reading from and relying on
+ * this state is discouraged.
+ */
+function routerReducer() {
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : initialState;
+
+  var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+      type = _ref.type,
+      payload = _ref.payload;
+
+  if (type === LOCATION_CHANGE) {
+    return _extends({}, state, { locationBeforeTransitions: payload });
+  }
+
+  return state;
+}
+});
+
+unwrapExports(reducer);
+var reducer_1 = reducer.routerReducer;
+var reducer_2 = reducer.LOCATION_CHANGE;
+
+var actions = createCommonjsModule(function (module, exports) {
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/**
+ * This action type will be dispatched by the history actions below.
+ * If you're writing a middleware to watch for navigation events, be sure to
+ * look for actions of this type.
+ */
+var CALL_HISTORY_METHOD = exports.CALL_HISTORY_METHOD = '@@router/CALL_HISTORY_METHOD';
+
+function updateLocation(method) {
+  return function () {
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    return {
+      type: CALL_HISTORY_METHOD,
+      payload: { method: method, args: args }
+    };
+  };
+}
+
+/**
+ * These actions correspond to the history API.
+ * The associated routerMiddleware will capture these events before they get to
+ * your reducer and reissue them as the matching function on your history.
+ */
+var push = exports.push = updateLocation('push');
+var replace = exports.replace = updateLocation('replace');
+var go = exports.go = updateLocation('go');
+var goBack = exports.goBack = updateLocation('goBack');
+var goForward = exports.goForward = updateLocation('goForward');
+
+var routerActions = exports.routerActions = { push: push, replace: replace, go: go, goBack: goBack, goForward: goForward };
+});
+
+unwrapExports(actions);
+var actions_1 = actions.CALL_HISTORY_METHOD;
+var actions_2 = actions.push;
+var actions_3 = actions.replace;
+var actions_4 = actions.go;
+var actions_5 = actions.goBack;
+var actions_6 = actions.goForward;
+var actions_7 = actions.routerActions;
+
+var sync = createCommonjsModule(function (module, exports) {
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+exports['default'] = syncHistoryWithStore;
+
+
+
+var defaultSelectLocationState = function defaultSelectLocationState(state) {
+  return state.routing;
+};
+
+/**
+ * This function synchronizes your history state with the Redux store.
+ * Location changes flow from history to the store. An enhanced history is
+ * returned with a listen method that responds to store updates for location.
+ *
+ * When this history is provided to the router, this means the location data
+ * will flow like this:
+ * history.push -> store.dispatch -> enhancedHistory.listen -> router
+ * This ensures that when the store state changes due to a replay or other
+ * event, the router will be updated appropriately and can transition to the
+ * correct router state.
+ */
+function syncHistoryWithStore(history, store) {
+  var _ref = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
+      _ref$selectLocationSt = _ref.selectLocationState,
+      selectLocationState = _ref$selectLocationSt === undefined ? defaultSelectLocationState : _ref$selectLocationSt,
+      _ref$adjustUrlOnRepla = _ref.adjustUrlOnReplay,
+      adjustUrlOnReplay = _ref$adjustUrlOnRepla === undefined ? true : _ref$adjustUrlOnRepla;
+
+  // Ensure that the reducer is mounted on the store and functioning properly.
+  if (typeof selectLocationState(store.getState()) === 'undefined') {
+    throw new Error('Expected the routing state to be available either as `state.routing` ' + 'or as the custom expression you can specify as `selectLocationState` ' + 'in the `syncHistoryWithStore()` options. ' + 'Ensure you have added the `routerReducer` to your store\'s ' + 'reducers via `combineReducers` or whatever method you use to isolate ' + 'your reducers.');
+  }
+
+  var initialLocation = void 0;
+  var isTimeTraveling = void 0;
+  var unsubscribeFromStore = void 0;
+  var unsubscribeFromHistory = void 0;
+  var currentLocation = void 0;
+
+  // What does the store say about current location?
+  var getLocationInStore = function getLocationInStore(useInitialIfEmpty) {
+    var locationState = selectLocationState(store.getState());
+    return locationState.locationBeforeTransitions || (useInitialIfEmpty ? initialLocation : undefined);
+  };
+
+  // Init initialLocation with potential location in store
+  initialLocation = getLocationInStore();
+
+  // If the store is replayed, update the URL in the browser to match.
+  if (adjustUrlOnReplay) {
+    var handleStoreChange = function handleStoreChange() {
+      var locationInStore = getLocationInStore(true);
+      if (currentLocation === locationInStore || initialLocation === locationInStore) {
+        return;
+      }
+
+      // Update address bar to reflect store state
+      isTimeTraveling = true;
+      currentLocation = locationInStore;
+      history.transitionTo(_extends({}, locationInStore, {
+        action: 'PUSH'
+      }));
+      isTimeTraveling = false;
+    };
+
+    unsubscribeFromStore = store.subscribe(handleStoreChange);
+    handleStoreChange();
+  }
+
+  // Whenever location changes, dispatch an action to get it in the store
+  var handleLocationChange = function handleLocationChange(location) {
+    // ... unless we just caused that location change
+    if (isTimeTraveling) {
+      return;
+    }
+
+    // Remember where we are
+    currentLocation = location;
+
+    // Are we being called for the first time?
+    if (!initialLocation) {
+      // Remember as a fallback in case state is reset
+      initialLocation = location;
+
+      // Respect persisted location, if any
+      if (getLocationInStore()) {
+        return;
+      }
+    }
+
+    // Tell the store to update by dispatching an action
+    store.dispatch({
+      type: reducer.LOCATION_CHANGE,
+      payload: location
+    });
+  };
+  unsubscribeFromHistory = history.listen(handleLocationChange);
+
+  // History 3.x doesn't call listen synchronously, so fire the initial location change ourselves
+  if (history.getCurrentLocation) {
+    handleLocationChange(history.getCurrentLocation());
+  }
+
+  // The enhanced history uses store as source of truth
+  return _extends({}, history, {
+    // The listeners are subscribed to the store instead of history
+    listen: function listen(listener) {
+      // Copy of last location.
+      var lastPublishedLocation = getLocationInStore(true);
+
+      // Keep track of whether we unsubscribed, as Redux store
+      // only applies changes in subscriptions on next dispatch
+      var unsubscribed = false;
+      var unsubscribeFromStore = store.subscribe(function () {
+        var currentLocation = getLocationInStore(true);
+        if (currentLocation === lastPublishedLocation) {
+          return;
+        }
+        lastPublishedLocation = currentLocation;
+        if (!unsubscribed) {
+          listener(lastPublishedLocation);
+        }
+      });
+
+      // History 2.x listeners expect a synchronous call. Make the first call to the
+      // listener after subscribing to the store, in case the listener causes a
+      // location change (e.g. when it redirects)
+      if (!history.getCurrentLocation) {
+        listener(lastPublishedLocation);
+      }
+
+      // Let user unsubscribe later
+      return function () {
+        unsubscribed = true;
+        unsubscribeFromStore();
+      };
+    },
+
+
+    // It also provides a way to destroy internal listeners
+    unsubscribe: function unsubscribe() {
+      if (adjustUrlOnReplay) {
+        unsubscribeFromStore();
+      }
+      unsubscribeFromHistory();
+    }
+  });
+}
+});
+
+unwrapExports(sync);
+
+var middleware = createCommonjsModule(function (module, exports) {
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports['default'] = routerMiddleware;
+
+
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+/**
+ * This middleware captures CALL_HISTORY_METHOD actions to redirect to the
+ * provided history object. This will prevent these actions from reaching your
+ * reducer or any middleware that comes after this one.
+ */
+function routerMiddleware(history) {
+  return function () {
+    return function (next) {
+      return function (action) {
+        if (action.type !== actions.CALL_HISTORY_METHOD) {
+          return next(action);
+        }
+
+        var _action$payload = action.payload,
+            method = _action$payload.method,
+            args = _action$payload.args;
+
+        history[method].apply(history, _toConsumableArray(args));
+      };
+    };
+  };
+}
+});
+
+unwrapExports(middleware);
+
+var lib = createCommonjsModule(function (module, exports) {
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.routerMiddleware = exports.routerActions = exports.goForward = exports.goBack = exports.go = exports.replace = exports.push = exports.CALL_HISTORY_METHOD = exports.routerReducer = exports.LOCATION_CHANGE = exports.syncHistoryWithStore = undefined;
+
+
+
+Object.defineProperty(exports, 'LOCATION_CHANGE', {
+  enumerable: true,
+  get: function get() {
+    return reducer.LOCATION_CHANGE;
+  }
+});
+Object.defineProperty(exports, 'routerReducer', {
+  enumerable: true,
+  get: function get() {
+    return reducer.routerReducer;
+  }
+});
+
+
+
+Object.defineProperty(exports, 'CALL_HISTORY_METHOD', {
+  enumerable: true,
+  get: function get() {
+    return actions.CALL_HISTORY_METHOD;
+  }
+});
+Object.defineProperty(exports, 'push', {
+  enumerable: true,
+  get: function get() {
+    return actions.push;
+  }
+});
+Object.defineProperty(exports, 'replace', {
+  enumerable: true,
+  get: function get() {
+    return actions.replace;
+  }
+});
+Object.defineProperty(exports, 'go', {
+  enumerable: true,
+  get: function get() {
+    return actions.go;
+  }
+});
+Object.defineProperty(exports, 'goBack', {
+  enumerable: true,
+  get: function get() {
+    return actions.goBack;
+  }
+});
+Object.defineProperty(exports, 'goForward', {
+  enumerable: true,
+  get: function get() {
+    return actions.goForward;
+  }
+});
+Object.defineProperty(exports, 'routerActions', {
+  enumerable: true,
+  get: function get() {
+    return actions.routerActions;
+  }
+});
+
+
+
+var _sync2 = _interopRequireDefault(sync);
+
+
+
+var _middleware2 = _interopRequireDefault(middleware);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+exports.syncHistoryWithStore = _sync2['default'];
+exports.routerMiddleware = _middleware2['default'];
+});
+
+unwrapExports(lib);
+var lib_1 = lib.routerMiddleware;
+var lib_2 = lib.routerActions;
+var lib_3 = lib.goForward;
+var lib_4 = lib.goBack;
+var lib_5 = lib.go;
+var lib_6 = lib.replace;
+var lib_7 = lib.push;
+var lib_8 = lib.CALL_HISTORY_METHOD;
+var lib_9 = lib.routerReducer;
+var lib_10 = lib.LOCATION_CHANGE;
+var lib_11 = lib.syncHistoryWithStore;
 
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -4311,7 +4692,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 });
 
-var lib = createCommonjsModule(function (module) {
+var lib$1 = createCommonjsModule(function (module) {
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
@@ -4646,25 +5027,57 @@ Loadable.preloadReady = function () {
 module.exports = Loadable;
 });
 
-var Loadable = unwrapExports(lib);
+var Loadable = unwrapExports(lib$1);
+
+function styleInject(css, ref) {
+  if ( ref === void 0 ) ref = {};
+  var insertAt = ref.insertAt;
+
+  if (!css || typeof document === 'undefined') { return; }
+
+  var head = document.head || document.getElementsByTagName('head')[0];
+  var style = document.createElement('style');
+  style.type = 'text/css';
+
+  if (insertAt === 'top') {
+    if (head.firstChild) {
+      head.insertBefore(style, head.firstChild);
+    } else {
+      head.appendChild(style);
+    }
+  } else {
+    head.appendChild(style);
+  }
+
+  if (style.styleSheet) {
+    style.styleSheet.cssText = css;
+  } else {
+    style.appendChild(document.createTextNode(css));
+  }
+}
+
+var css = ".RE-LOADING {\n    display: block;\n    text-align: center;\n}\n.RE-LOADING > span {\n    display: inline-block;\n    width: 30px;\n    height: 30px;\n    background-color: #1890ff;\n    -webkit-animation: rotateplane 1.2s infinite ease-in-out;\n    animation: rotateplane 1.2s infinite ease-in-out;\n}\n\n@-webkit-keyframes rotateplane {\n    0% {\n        -webkit-transform: perspective(120px);\n    }\n    50% {\n        -webkit-transform: perspective(120px) rotateY(180deg);\n    }\n    100% {\n        -webkit-transform: perspective(120px) rotateY(180deg) rotateX(180deg);\n    }\n}\n\n@keyframes rotateplane {\n    0% {\n        transform: perspective(120px) rotateX(0deg) rotateY(0deg);\n        -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg);\n    }\n    50% {\n        transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);\n        -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);\n    }\n    100% {\n        transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);\n        -webkit-transform: perspective(120px) rotateX(-180deg)\n            rotateY(-179.9deg);\n    }\n}\n";
+styleInject(css);
+
+var Loading = function Loading() {
+    return React.createElement(
+        'span',
+        { className: 'RE-LOADING' },
+        React.createElement('span', null)
+    );
+};
 
 /**
  * 异步加载组件以及model
  * */
 
-var AsyncComponent = (function (registerModel) {
-    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+var AsyncComponent = (function (registerModel, componentLoading) {
+    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
     var isMore = isFunction$1(params);
 
     var defaultParams = {
-        loading: function loading() {
-            return React.createElement(
-                'div',
-                null,
-                'dddd'
-            );
-        }
+        loading: componentLoading ? componentLoading : Loading
     };
 
     if (isMore) {
@@ -4697,7 +5110,7 @@ var AsyncComponent = (function (registerModel) {
 });
 
 // 创建 router histroy 中间件
-var historyMiddleware = reactRouterRedux.routerMiddleware(createHistory());
+var historyMiddleware = lib_1(createHistory());
 
 // 创建saga中间件
 var sagaMiddleware = createSagaMiddleware();
@@ -4741,7 +5154,7 @@ function configureStore() {
     var operApplyMiddleware = applyMiddleware.apply(undefined, toConsumableArray(middleware));
 
     var store = createStore(combineReducers(_extends$3({}, reducers, {
-        route: reactRouterRedux.routerReducer
+        route: lib_9
     })), state, process.env.NODE_ENV === 'development' ? reduxDevtoolsExtension_1(operApplyMiddleware) : operApplyMiddleware);
 
     // 处理saga
@@ -4813,7 +5226,7 @@ var CreateInstall = (function (value) {
     };
 });
 
-var CreateProvider = function CreateProvider(_ref, contextID) {
+var CreateProvider = function CreateProvider(_ref, contextID, componentLoading) {
     var store = _ref.store,
         registerModel = _ref.registerModel,
         AsyncComponent = _ref.AsyncComponent;
@@ -4838,7 +5251,10 @@ var CreateProvider = function CreateProvider(_ref, contextID) {
     }(React.Component);
 
     return CreateInstall({
-        __RE__: { registerModel: registerModel, AsyncComponent: AsyncComponent },
+        __RE__: {
+            registerModel: registerModel,
+            AsyncComponent: AsyncComponent.bind(null, componentLoading)
+        },
         __CONTEXT__: contextID.reduce(function (r, v) {
             return _extends$3({}, r, defineProperty({}, v, React.createContext()));
         }, {})
@@ -5361,14 +5777,14 @@ var Install = (function () {
     var CONTEXT = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
     return function (WrappedComponent) {
         return function (_React$Component) {
-            inherits(HOCComponent, _React$Component);
+            inherits(InstallHOC, _React$Component);
 
-            function HOCComponent() {
-                classCallCheck(this, HOCComponent);
-                return possibleConstructorReturn(this, (HOCComponent.__proto__ || Object.getPrototypeOf(HOCComponent)).apply(this, arguments));
+            function InstallHOC() {
+                classCallCheck(this, InstallHOC);
+                return possibleConstructorReturn(this, (InstallHOC.__proto__ || Object.getPrototypeOf(InstallHOC)).apply(this, arguments));
             }
 
-            createClass(HOCComponent, [{
+            createClass(InstallHOC, [{
                 key: 'render',
                 value: function render() {
                     var _this2 = this;
@@ -5390,7 +5806,7 @@ var Install = (function () {
                     );
                 }
             }]);
-            return HOCComponent;
+            return InstallHOC;
         }(React.Component);
     };
 });
@@ -5423,7 +5839,7 @@ var Pull = (function (id) {
                     var ContextStore = __CONTEXT__[id];
 
                     if (!ContextStore) {
-                        console.error('当前 Pull id 不存在，请在 init warehouse 中注册！');
+                        console.warn('组件${WrappedComponent.displayName} Pull 的 仓库id 不存在，请在 init 初始化中注册 warehouse！');
                         return React.createElement(WrappedComponent, props);
                     }
 
@@ -5469,7 +5885,7 @@ var Push = (function (id) {
                     var ContextStore = __CONTEXT__[id];
 
                     if (!ContextStore) {
-                        console.error('当前 Push id 不存在，请在 init warehouse 中注册！');
+                        console.warn('组件${WrappedComponent.displayName} Push 的 仓库id 不存在，请在 init 初始化中注册 warehouse！');
                         return React.createElement(WrappedComponent, props);
                     }
                     var dealValue = isFunction$1(fn) ? fn(props) : isArray$1(fn) || isString(fn) ? lodash_pick(props, fn) : {};
@@ -5492,14 +5908,17 @@ var init = function init() {
 
     var _ref$warehouse = _ref.warehouse,
         warehouse = _ref$warehouse === undefined ? [] : _ref$warehouse,
-        params = objectWithoutProperties(_ref, ['warehouse']);
+        componentLoading = _ref.componentLoading,
+        params = objectWithoutProperties(_ref, ['warehouse', 'componentLoading']);
 
     return {
-        Provider: CreateProvider(configureStore(params), warehouse)
+        Provider: CreateProvider(configureStore(params), warehouse, componentLoading)
     };
 };
 
+exports.connect = reactRedux.connect;
 exports.init = init;
 exports.Install = Install;
 exports.Pull = Pull;
 exports.Push = Push;
+exports.bindActionCreators = bindActionCreators;

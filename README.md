@@ -1,6 +1,6 @@
 # react-enhanced &middot; [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/facebook/react/blob/master/LICENSE) [![download](https://img.shields.io/npm/dm/react-enhanced.svg)](https://www.npmjs.com/search?q=react-enhanced) [![npm](https://img.shields.io/npm/v/react-enhanced.svg)](https://www.npmjs.com/search?q=react-enhanced)
 
-基于 redux、redux-saga 的 react 无侵入增强器。
+基于 redux、redux-saga、react-redux 的无侵入 react 架构增强器。
 
 ## 下载
 
@@ -33,9 +33,10 @@ yarn add react-enhanced
 *   `reducers`： <Object|none> 全局 reducers
 *   `effects`： <Array|none> 全局 effects
 *   `middlewares`： <Array|none> saga 中间件
-*   `requestCallback`：<Function|none> 请求统一回调
-*   `requestError`：<Function|none> 请求统一错误处理
-*   `resultLimit`：<String|Array|none> 根据返回的数据数据格式，统一自定义返回
+*   `requestCallback`：<Function|none> 请求统一回调（只能处理 request 中间层的请求）
+*   `requestError`：<Function|none> 请求统一错误处理（只能处理 request 中间层的请求）
+*   `resultLimit`：<String|Array|none> 根据返回的数据数据格式，统一自定义返回（只能处理 request 中间层的请求）
+*   `componentLoading`：<ReactElement|none> 统一处理组件异步加载的动画
 
 返回个一个 react-redux 封装的 Provider，但是在这之上我们已经许多工作，如 store 的绑定，以及基于 models 层的数据动态加载
 
@@ -59,6 +60,10 @@ ReactDOM.render(
 #### `AsyncComponent`
 
 用来异步组件以及 model 注册
+
+*   `component`： <Promise|none> 加载组件，
+*   `model`： <Promise|Array[Promise]|none> 加载 model，（采用数组的方式可以注册多个 model）
+*   `loading`： <ReactElement|none> 组件加载动画
 
 ```js
 import React from 'react';
@@ -184,7 +189,9 @@ export default class Name extends Component {
 @Pull('home', ['getName', 'getAge'])
 ```
 
-### `request` 内置 saga 请求封装
+### `request` 中间层
+
+用来简化请求 action 的流程
 
 *   `request`： <Function> 请求函数
 *   `will`： <String|Object> 请求前执行

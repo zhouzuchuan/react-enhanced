@@ -3,6 +3,8 @@ import { Route, Switch } from 'react-router-dom'
 
 import { Install } from 'react-enhanced'
 
+import Loading from './components/Loading.jsx'
+
 @Install(['AsyncComponent'])
 export default class App extends Component {
     render() {
@@ -16,9 +18,9 @@ export default class App extends Component {
                                 <Route
                                     component={AsyncComponent(
                                         {
-                                            component: () =>
-                                                import('@containers/Home' /* webpackChunkName : 'home'*/),
-                                            model: () => import('@models/home')
+                                            // component: () =>
+                                            //     import('@containers/Home' /* webpackChunkName : 'home'*/),
+                                            // model: () => import('@models/home')
                                         },
                                         {}
                                     )}

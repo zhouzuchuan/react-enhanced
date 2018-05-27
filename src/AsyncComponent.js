@@ -4,15 +4,14 @@
 
 import Loadable from 'react-loadable';
 import React from 'react';
+import Loading from './components/Loading.js';
 import { isFunction, isArray } from './utils';
 
-export default (registerModel, params = {}) => {
+export default (registerModel, componentLoading, params = {}) => {
     const isMore = isFunction(params);
 
     const defaultParams = {
-        loading: () => {
-            return <div>dddd</div>;
-        }
+        loading: componentLoading ? componentLoading : Loading
     };
 
     if (isMore) {

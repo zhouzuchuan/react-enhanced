@@ -1,6 +1,7 @@
 import babel from 'rollup-plugin-babel';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
+import postcss from 'rollup-plugin-postcss';
 
 export default {
     input: 'src/index.js',
@@ -23,11 +24,12 @@ export default {
         'react-dom',
         // 'redux',
         'react-redux',
-        'react-router-redux',
-        'lodash',
         'redux-saga'
     ],
     plugins: [
+        postcss({
+            extensions: ['.css']
+        }),
         resolve({
             jsnext: true
         }),

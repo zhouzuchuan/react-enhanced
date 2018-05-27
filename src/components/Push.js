@@ -14,8 +14,8 @@ export default (id, fn = []) => WrappedComponent => {
             const ContextStore = __CONTEXT__[id];
 
             if (!ContextStore) {
-                console.error(
-                    '当前 Push id 不存在，请在 init warehouse 中注册！'
+                console.warn(
+                    '组件${WrappedComponent.displayName} Push 的 仓库id 不存在，请在 init 初始化中注册 warehouse！'
                 );
                 return <WrappedComponent {...props} />;
             }

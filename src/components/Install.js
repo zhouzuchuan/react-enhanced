@@ -10,7 +10,7 @@ import ContextStore from './ContextStore';
 import { isString, isArray } from '../utils';
 
 export default (inject = [], CONTEXT = []) => WrappedComponent => {
-    return class HOCComponent extends React.Component {
+    return class InstallHOC extends React.Component {
         render() {
             if (!ContextStore) {
                 console.warn('HOC传值有误！');
