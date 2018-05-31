@@ -13,6 +13,7 @@ export default {
         *GET_TBINFO({ payload }) {},
         *test({ payload }, a) {
             console.log(payload, a)
+            return '22222222'
         }
     },
     reducers: {

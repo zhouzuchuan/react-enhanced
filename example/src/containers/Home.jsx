@@ -19,7 +19,8 @@ import { bindActionCreators } from 'redux'
                     type: 'home/test',
                     payload: {
                         a: 10
-                    }
+                    },
+                    RE_PROMISE: true
                 })
             },
             dispatch
@@ -35,7 +36,9 @@ export default class Home extends React.Component {
     }
     componentDidMount() {
         this.props.getTbInfo()
-        this.props.test()
+        this.props.test().then(d => {
+            console.log('ddddd', d)
+        })
     }
     _oper = () => {
         this.setState(({ visible }) => ({ visible: !visible }))

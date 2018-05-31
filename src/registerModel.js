@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux';
-
+import { isUndefined } from './utils';
 import { fork, takeLatest, all, put, select, call } from 'redux-saga/effects';
 
 export function createReducer(initialState, handlers) {
@@ -13,10 +13,7 @@ export function createReducer(initialState, handlers) {
 }
 
 const addNameSpace = (obj = {}, namespace) =>
-    Object.entries(obj).reduce(
-        (r, [n, m]) => ({ ...r, [`${namespace}/${n}`]: m }),
-        {}
-    );
+    Object.entries(obj).reduce((r, [n, m]) => ({ ...r, [`${namespace}/${n}`]: m }), {});
 
 export function injectAsyncReducers(store, asyncReducers, initialState) {
     let flag = false;
@@ -25,10 +22,7 @@ export function injectAsyncReducers(store, asyncReducers, initialState) {
         for (let [n, m] of Object.entries(asyncReducers)) {
             if (Object.prototype.hasOwnProperty.call(asyncReducers, n)) {
                 if (store && !(store.asyncReducers || {})[n]) {
-                    store.asyncReducers[n] = createReducer(
-                        initialState[n] || {},
-                        m
-                    );
+                    store.asyncReducers[n] = createReducer(initialState[n] || {}, m);
                     flag = true;
                 }
             }
@@ -50,18 +44,27 @@ export function injectAsyncSagas(store, sagas, sagaMiddleware) {
     }
 }
 
-export default function registerModel(store, sagaMiddleware, models) {
+export default function registerModel(RE, store, sagaMiddleware, models) {
     const deal = (Array.isArray(models) ? models : [models])
-        // .filter(({ namespace, effects, reducer }) => {
-        //     if (typeof namespace === 'undefined')
-        //         return [namespace, effects, reducer].every(
-        //             v => !lo.isUndefined(v)
-        //         );
-        // })
-        .reduce((r, { namespace, effects = {}, reducers = {}, state = {} }) => {
-            if (typeof namespace === 'undefined') {
-                return r;
+        .filter(({ namespace, effects, reducer }) => {
+            if (isUndefined(namespace)) return false;
+
+            if (RE._models.includes(namespace)) {
+                console.warn(`namespace 必须唯一， ${namespace} 已经被使用，该model未载入，请检查！`);
+                return false;
             }
+
+            RE._models.push(namespace);
+            return true;
+        })
+        .reduce((r, { namespace, effects = {}, reducers = {}, state = {} }) => {
+            const dealSagas = addNameSpace(effects, namespace);
+            const dealReducers = addNameSpace(reducers, namespace);
+
+            RE._effects = {
+                ...RE._effects,
+                ...dealSagas
+            };
             return {
                 state: {
                     ...(r.state || {}),
@@ -69,11 +72,11 @@ export default function registerModel(store, sagaMiddleware, models) {
                 },
                 sagas: {
                     ...(r.sagas || {}),
-                    [namespace]: addNameSpace(effects, namespace)
+                    [namespace]: dealSagas
                 },
                 reducers: {
                     ...(r.reducers || {}),
-                    [namespace]: addNameSpace(reducers, namespace)
+                    [namespace]: dealReducers
                 }
             };
         }, {});
@@ -84,22 +87,34 @@ export default function registerModel(store, sagaMiddleware, models) {
         Object.entries(deal.sagas).reduce((r, [name, fns]) => {
             return {
                 ...r,
+
+                // [name]: function*() {
+                //     yield all([
+                //         fork(function*() {
+                //             yield Object.entries(fns).map(([n, m]) => {
+                //                 return takeLatest(n, m);
+                //             });
+                //         })
+                //     ]);
+                // }
                 [name]: function*() {
                     yield all([
                         fork(function*() {
-                            yield Object.entries(fns).map(([n, m]) => {
-                                return takeLatest(n, function*(action) {
-                                    yield all([
-                                        fork(
-                                            m.bind(null, action, {
-                                                put,
-                                                select,
-                                                call
-                                            })
-                                        )
-                                    ]);
-                                });
-                            });
+                            yield all([
+                                ...Object.entries(fns).map(([n, m]) => {
+                                    return takeLatest(n, function*(action) {
+                                        yield all([
+                                            fork(
+                                                m.bind(null, action, {
+                                                    put,
+                                                    select,
+                                                    call
+                                                })
+                                            )
+                                        ]);
+                                    });
+                                })
+                            ]);
                         })
                     ]);
                 }

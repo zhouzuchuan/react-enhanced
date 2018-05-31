@@ -3494,16 +3494,17 @@ var toConsumableArray = function (arr) {
   }
 };
 
-var take$1 = function take(obj, path) {
+var take$1 = function take$$1(obj, path) {
     return lodash_get(obj, path);
 };
 
-var requestMiddleware = (function (_ref, store) {
+var requestMiddleware = (function (RE, _ref, store) {
     var requestCallback = _ref.requestCallback,
         requestError = _ref.requestError,
         resultLimit = _ref.resultLimit;
     return function (next) {
         return function (action) {
+            // return setTimeout(() => {
             var dispatch = store.dispatch,
                 getState = store.getState;
 
@@ -3518,15 +3519,24 @@ var requestMiddleware = (function (_ref, store) {
                 error = action.error,
                 callback = action.callback,
                 did = action.did,
-                rest = objectWithoutProperties(action, ['request', 'will', 'error', 'callback', 'did']);
+                RE_PROMISE = action.RE_PROMISE,
+                __RE_PROMISE_RESOLVE__ = action.__RE_PROMISE_RESOLVE__,
+                __RE_PROMISE_REJECT__ = action.__RE_PROMISE_REJECT__,
+                rest = objectWithoutProperties(action, ['request', 'will', 'error', 'callback', 'did', 'RE_PROMISE', '__RE_PROMISE_RESOLVE__', '__RE_PROMISE_REJECT__']);
 
 
             if (!request) {
-                return next(action);
+                return isEffect(rest.type, RE) ? new Promise(function (resolve, reject) {
+                    return next(_extends$3({
+                        __RE_PROMISE_RESOLVE__: resolve,
+                        __RE_PROMISE_REJECT__: reject
+                    }, rest));
+                }) : next(action);
             }
 
             if (!isFunction$1(request)) {
                 console.error('request must be a function!');
+                return next(action);
             }
 
             if (isObject$1(will) && isString(will.type)) {
@@ -3597,6 +3607,99 @@ var requestMiddleware = (function (_ref, store) {
                     }, rest));
                 }
             });
+            // }, 0);
+        };
+    };
+});
+
+// import { NAMESPACE_SEP } from './constants';
+
+// export default function createPromiseMiddleware(app) {
+//   return () => next => action => {
+//     const { type } = action;
+//     if (isEffect(type)) {
+//       return new Promise((resolve, reject) => {
+//         next({
+//           __dva_resolve: resolve,
+//           __dva_reject: reject,
+//           ...action,
+//         });
+//       });
+//     } else {
+//       return next(action);
+//     }
+//   };
+
+function isEffect(type, RE) {
+    if (!type || typeof type !== 'string') return false;
+
+    if (RE._effects[type]) {
+        return true;
+    }
+    return false;
+}
+
+var promiseMiddleware = (function (RE, store) {
+    return function (next) {
+        return function (action) {
+            var _marked = /*#__PURE__*/regeneratorRuntime.mark(actionG);
+
+            var dispatch = store.dispatch,
+                getState = store.getState;
+
+
+            if (isFunction$1(action)) {
+                action(dispatch, getState);
+                return;
+            }
+
+            var __RE_PROMISE_RESOLVE__ = action.__RE_PROMISE_RESOLVE__,
+                __RE_PROMISE_REJECT__ = action.__RE_PROMISE_REJECT__,
+                rest = objectWithoutProperties(action, ['__RE_PROMISE_RESOLVE__', '__RE_PROMISE_REJECT__']);
+
+
+            function actionG() {
+                var ret;
+                return regeneratorRuntime.wrap(function actionG$(_context) {
+                    while (1) {
+                        switch (_context.prev = _context.next) {
+                            case 0:
+                                _context.prev = 0;
+                                return _context.delegateYield(RE._effects[rest.type](rest, { put: put, call: call, select: select }), 't0', 2);
+
+                            case 2:
+                                ret = _context.t0;
+
+                                __RE_PROMISE_RESOLVE__(ret);
+                                _context.next = 9;
+                                break;
+
+                            case 6:
+                                _context.prev = 6;
+                                _context.t1 = _context['catch'](0);
+
+                                __RE_PROMISE_REJECT__(_context.t1);
+
+                            case 9:
+                            case 'end':
+                                return _context.stop();
+                        }
+                    }
+                }, _marked, this, [[0, 6]]);
+            }
+
+            if (isFunction$1(__RE_PROMISE_REJECT__) && isFunction$1(__RE_PROMISE_RESOLVE__)) {
+                var _next = function _next() {
+                    var ret = gen.next();
+                    if (!ret.done) _next();
+                };
+
+                var gen = actionG();
+
+                _next();
+            } else {
+                next(rest);
+            }
         };
     };
 });
@@ -3708,38 +3811,46 @@ function injectAsyncSagas(store, sagas, sagaMiddleware) {
     }
 }
 
-function registerModel(store, sagaMiddleware, models) {
-    var deal = (Array.isArray(models) ? models : [models]).
-    // .filter(({ namespace, effects, reducer }) => {
-    //     if (typeof namespace === 'undefined')
-    //         return [namespace, effects, reducer].every(
-    //             v => !lo.isUndefined(v)
-    //         );
-    // })
-    reduce(function (r, _ref7) {
+function registerModel(RE, store, sagaMiddleware, models) {
+    var deal = (Array.isArray(models) ? models : [models]).filter(function (_ref7) {
         var namespace = _ref7.namespace,
-            _ref7$effects = _ref7.effects,
-            effects = _ref7$effects === undefined ? {} : _ref7$effects,
-            _ref7$reducers = _ref7.reducers,
-            reducers = _ref7$reducers === undefined ? {} : _ref7$reducers,
-            _ref7$state = _ref7.state,
-            state = _ref7$state === undefined ? {} : _ref7$state;
+            effects = _ref7.effects,
+            reducer = _ref7.reducer;
 
-        if (typeof namespace === 'undefined') {
-            return r;
+        if (isUndefined(namespace)) return false;
+
+        if (RE._models.includes(namespace)) {
+            console.warn('namespace \u5FC5\u987B\u552F\u4E00\uFF0C ' + namespace + ' \u5DF2\u7ECF\u88AB\u4F7F\u7528\uFF0C\u8BE5model\u672A\u8F7D\u5165\uFF0C\u8BF7\u68C0\u67E5\uFF01');
+            return false;
         }
+
+        RE._models.push(namespace);
+        return true;
+    }).reduce(function (r, _ref8) {
+        var namespace = _ref8.namespace,
+            _ref8$effects = _ref8.effects,
+            effects = _ref8$effects === undefined ? {} : _ref8$effects,
+            _ref8$reducers = _ref8.reducers,
+            reducers = _ref8$reducers === undefined ? {} : _ref8$reducers,
+            _ref8$state = _ref8.state,
+            state = _ref8$state === undefined ? {} : _ref8$state;
+
+        var dealSagas = addNameSpace(effects, namespace);
+        var dealReducers = addNameSpace(reducers, namespace);
+
+        RE._effects = _extends$3({}, RE._effects, dealSagas);
         return {
             state: _extends$3({}, r.state || {}, defineProperty({}, namespace, state)),
-            sagas: _extends$3({}, r.sagas || {}, defineProperty({}, namespace, addNameSpace(effects, namespace))),
-            reducers: _extends$3({}, r.reducers || {}, defineProperty({}, namespace, addNameSpace(reducers, namespace)))
+            sagas: _extends$3({}, r.sagas || {}, defineProperty({}, namespace, dealSagas)),
+            reducers: _extends$3({}, r.reducers || {}, defineProperty({}, namespace, dealReducers))
         };
     }, {});
 
     injectAsyncReducers(store, deal.reducers, deal.state);
-    injectAsyncSagas(store, Object.entries(deal.sagas).reduce(function (r, _ref8) {
-        var _ref9 = slicedToArray(_ref8, 2),
-            name = _ref9[0],
-            fns = _ref9[1];
+    injectAsyncSagas(store, Object.entries(deal.sagas).reduce(function (r, _ref9) {
+        var _ref10 = slicedToArray(_ref9, 2),
+            name = _ref10[0],
+            fns = _ref10[1];
 
         return _extends$3({}, r, defineProperty({}, name, /*#__PURE__*/regeneratorRuntime.mark(function _callee3() {
             return regeneratorRuntime.wrap(function _callee3$(_context3) {
@@ -3753,10 +3864,10 @@ function registerModel(store, sagaMiddleware, models) {
                                         switch (_context2.prev = _context2.next) {
                                             case 0:
                                                 _context2.next = 2;
-                                                return Object.entries(fns).map(function (_ref10) {
-                                                    var _ref11 = slicedToArray(_ref10, 2),
-                                                        n = _ref11[0],
-                                                        m = _ref11[1];
+                                                return all([].concat(toConsumableArray(Object.entries(fns).map(function (_ref11) {
+                                                    var _ref12 = slicedToArray(_ref11, 2),
+                                                        n = _ref12[0],
+                                                        m = _ref12[1];
 
                                                     return takeLatest$2(n, /*#__PURE__*/regeneratorRuntime.mark(function _callee(action) {
                                                         return regeneratorRuntime.wrap(function _callee$(_context) {
@@ -3777,7 +3888,7 @@ function registerModel(store, sagaMiddleware, models) {
                                                             }
                                                         }, _callee, this);
                                                     }));
-                                                });
+                                                }))));
 
                                             case 2:
                                             case 'end':
@@ -5139,18 +5250,28 @@ function configureStore() {
         requestError = _ref.requestError,
         resultLimit = _ref.resultLimit;
 
+    var RE = {
+        _effects: {},
+        _reducers: {},
+        asyncReducers: {
+            route: lib_9
+        },
+        asyncSagas: {},
+        _models: []
+    };
+
     // 中间件列表
-    var middleware = [historyMiddleware, sagaMiddleware, requestMiddleware.bind(null, {
+    var middleware = [historyMiddleware, requestMiddleware.bind(null, RE, {
         requestCallback: requestCallback,
         requestError: requestError,
         resultLimit: resultLimit
-    })].concat(toConsumableArray(middlewares || []));
+    }), promiseMiddleware.bind(null, RE), sagaMiddleware].concat(toConsumableArray(middlewares || []));
 
     var operApplyMiddleware = applyMiddleware.apply(undefined, toConsumableArray(middleware));
 
-    var store = createStore(combineReducers(_extends$3({}, reducers, {
-        route: lib_9
-    })), state, process.env.NODE_ENV === 'development' ? reduxDevtoolsExtension_1(operApplyMiddleware) : operApplyMiddleware);
+    var store = createStore(combineReducers(_extends$3({}, reducers, RE.asyncReducers)
+    // route: routerReducer
+    ), state, process.env.NODE_ENV === 'development' ? reduxDevtoolsExtension_1(operApplyMiddleware) : operApplyMiddleware);
 
     // 处理saga
     sagaMiddleware.run( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
@@ -5178,10 +5299,10 @@ function configureStore() {
     //     )
     // }
 
-    store.asyncReducers = {};
-    store.asyncSagas = {};
+    store.asyncReducers = RE.asyncReducers;
+    store.asyncSagas = RE.asyncSagas;
 
-    var newR = registerModel.bind(null, store, sagaMiddleware);
+    var newR = registerModel.bind(null, RE, store, sagaMiddleware);
 
     return {
         store: store,

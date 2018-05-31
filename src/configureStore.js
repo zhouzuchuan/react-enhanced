@@ -12,6 +12,7 @@ import { all } from 'redux-saga/effects';
 import { composeWithDevTools } from 'redux-devtools-extension';
 
 import requestMiddleware from './middleware/requestMiddleware';
+import promiseMiddleware from './middleware/promiseMiddleware';
 import registerModel from './registerModel';
 import AsyncComponent from './AsyncComponent';
 
@@ -45,15 +46,26 @@ export function configureStore({
     requestError,
     resultLimit
 } = {}) {
+    const RE = {
+        _effects: {},
+        _reducers: {},
+        asyncReducers: {
+            route: routerReducer
+        },
+        asyncSagas: {},
+        _models: []
+    };
+
     // 中间件列表
     const middleware = [
         historyMiddleware,
-        sagaMiddleware,
-        requestMiddleware.bind(null, {
+        requestMiddleware.bind(null, RE, {
             requestCallback,
             requestError,
             resultLimit
         }),
+        promiseMiddleware.bind(null, RE),
+        sagaMiddleware,
         ...(middlewares || [])
     ];
 
@@ -62,12 +74,11 @@ export function configureStore({
     const store = createStore(
         combineReducers({
             ...reducers,
-            route: routerReducer
+            ...RE.asyncReducers
+            // route: routerReducer
         }),
         state,
-        process.env.NODE_ENV === 'development'
-            ? composeWithDevTools(operApplyMiddleware)
-            : operApplyMiddleware
+        process.env.NODE_ENV === 'development' ? composeWithDevTools(operApplyMiddleware) : operApplyMiddleware
     );
 
     // 处理saga
@@ -84,10 +95,10 @@ export function configureStore({
     //     )
     // }
 
-    store.asyncReducers = {};
-    store.asyncSagas = {};
+    store.asyncReducers = RE.asyncReducers;
+    store.asyncSagas = RE.asyncSagas;
 
-    const newR = registerModel.bind(null, store, sagaMiddleware);
+    const newR = registerModel.bind(null, RE, store, sagaMiddleware);
 
     return {
         store,

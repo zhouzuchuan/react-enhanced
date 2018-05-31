@@ -18,9 +18,8 @@ export default class App extends Component {
                                 <Route
                                     component={AsyncComponent(
                                         {
-                                            // component: () =>
-                                            //     import('@containers/Home' /* webpackChunkName : 'home'*/),
-                                            // model: () => import('@models/home')
+                                            component: () => import('@containers/Home' /* webpackChunkName : 'home'*/),
+                                            model: () => import('@models/home')
                                         },
                                         {}
                                     )}

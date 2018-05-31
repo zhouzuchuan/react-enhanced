@@ -1,12 +1,11 @@
 import get from 'lodash.get';
 import { isFunction, isArray, isObject, isString, isUndefined } from '../utils';
+import { put } from 'redux-saga/effects';
 
 const take = (obj, path) => get(obj, path);
 
-export default (
-    { requestCallback, requestError, resultLimit },
-    store
-) => next => action => {
+export default (RE, { requestCallback, requestError, resultLimit }, store) => next => action => {
+    // return setTimeout(() => {
     const { dispatch, getState } = store;
 
     if (isFunction(action)) {
@@ -14,14 +13,33 @@ export default (
         return;
     }
 
-    const { request, will, error, callback, did, ...rest } = action;
+    const {
+        request,
+        will,
+        error,
+        callback,
+        did,
+        RE_PROMISE,
+        __RE_PROMISE_RESOLVE__,
+        __RE_PROMISE_REJECT__,
+        ...rest
+    } = action;
 
     if (!request) {
-        return next(action);
+        return isEffect(rest.type, RE)
+            ? new Promise((resolve, reject) => {
+                  return next({
+                      __RE_PROMISE_RESOLVE__: resolve,
+                      __RE_PROMISE_REJECT__: reject,
+                      ...rest
+                  });
+              })
+            : next(action);
     }
 
     if (!isFunction(request)) {
         console.error('request must be a function!');
+        return next(action);
     }
 
     if (isObject(will) && isString(will.type)) {
@@ -43,11 +61,7 @@ export default (
                 : isArray(resultLimit)
                     ? resultLimit.reduce((r, v) => {
                           if (!isString(v)) {
-                              console.warn(
-                                  `${JSON.stringify(
-                                      v
-                                  )} 不符合字段截取规则；请使用"result.data"这种规则！`
-                              );
+                              console.warn(`${JSON.stringify(v)} 不符合字段截取规则；请使用"result.data"这种规则！`);
                               return r;
                           }
                           return [...r, take(transferData, v) || []];
@@ -72,11 +86,7 @@ export default (
                 const { type, payload, ...rest2 } = did;
                 next({
                     type: did.type,
-                    payload: isUndefined(payload)
-                        ? limitData
-                        : isFunction(payload)
-                            ? payload(limitData)
-                            : payload,
+                    payload: isUndefined(payload) ? limitData : isFunction(payload) ? payload(limitData) : payload,
                     ...rest2
                 });
             } else if (isString(did)) {
@@ -106,4 +116,33 @@ export default (
                 });
             }
         });
+    // }, 0);
 };
+
+// import { NAMESPACE_SEP } from './constants';
+
+// export default function createPromiseMiddleware(app) {
+//   return () => next => action => {
+//     const { type } = action;
+//     if (isEffect(type)) {
+//       return new Promise((resolve, reject) => {
+//         next({
+//           __dva_resolve: resolve,
+//           __dva_reject: reject,
+//           ...action,
+//         });
+//       });
+//     } else {
+//       return next(action);
+//     }
+//   };
+
+function isEffect(type, RE) {
+    if (!type || typeof type !== 'string') return false;
+
+    if (RE._effects[type]) {
+        return true;
+    }
+    return false;
+}
+// }
