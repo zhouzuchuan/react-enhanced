@@ -1,5 +1,12 @@
 import { fromJS } from 'immutable'
-import { put, call, select } from 'redux-saga/effects'
+import axios from 'axios'
+
+const serve = function() {
+    return axios.get('http://10.5.141.45:8081/datatable/dapDataTb/getTbInfo').then(v => {
+        console.log(v)
+        return v.data
+    })
+}
 
 export default {
     namespace: 'home',
@@ -10,13 +17,33 @@ export default {
     }),
 
     effects: {
-        *GET_TBINFO({ payload }) {},
-        *test({ payload }, a) {
-            console.log(payload, a)
-            return '22222222'
+        *GET_TBINFO({ payload }, { call }) {
+            const cc = yield call(serve)
+            console.log(cc)
+        },
+        *test({ payload }, { put, call, select }) {
+            console.log('ddddd')
+            yield put({
+                request: () => {
+                    return axios.get('http://10.5.141.45:8081/datatable/dapDataTb/getTbInfo')
+                },
+                did: {
+                    type: 'home/aa'
+                    // payload: v => {
+                    //     console.log(v)
+                    //     return v
+                    // }
+                }
+            })
+            // console.log(call)
+            // return 'data'
         }
     },
     reducers: {
+        aa: (state, { payload }) => {
+            console.log('dddssss', payload)
+            return state
+        },
         GET_SUCCESS: (state, { payload }) => {
             return Object.entries({
                 ...payload,

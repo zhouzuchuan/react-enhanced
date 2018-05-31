@@ -11,8 +11,9 @@ import { bindActionCreators } from 'redux'
         ...bindActionCreators(
             {
                 getTbInfo: payload => ({
-                    did: 'home/GET_TBINFO',
-                    request: f => Promise.resolve()
+                    // did: 'home/GET_TBINFO',
+                    // request: f => Promise.resolve(),
+                    type: 'home/GET_TBINFO'
                 }),
 
                 test: payload => ({
@@ -36,8 +37,8 @@ export default class Home extends React.Component {
     }
     componentDidMount() {
         this.props.getTbInfo()
-        this.props.test().then(d => {
-            console.log('ddddd', d)
+        this.props.test().then(() => {
+            console.log('promise then')
         })
     }
     _oper = () => {

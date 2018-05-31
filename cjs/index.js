@@ -3670,27 +3670,29 @@ var promiseMiddleware = (function (RE, store) {
                         switch (_context.prev = _context.next) {
                             case 0:
                                 _context.prev = 0;
-                                return _context.delegateYield(RE._effects[rest.type](rest, { put: put, call: call, select: select }), 't0', 2);
+                                _context.next = 3;
+                                return RE._effects[rest.type](rest, { put: put, call: call, select: select });
 
-                            case 2:
-                                ret = _context.t0;
+                            case 3:
+                                ret = _context.sent;
 
+                                // next(rest);
                                 __RE_PROMISE_RESOLVE__(ret);
-                                _context.next = 9;
+                                _context.next = 10;
                                 break;
 
-                            case 6:
-                                _context.prev = 6;
-                                _context.t1 = _context['catch'](0);
+                            case 7:
+                                _context.prev = 7;
+                                _context.t0 = _context['catch'](0);
 
-                                __RE_PROMISE_REJECT__(_context.t1);
+                                __RE_PROMISE_REJECT__(_context.t0);
 
-                            case 9:
+                            case 10:
                             case 'end':
                                 return _context.stop();
                         }
                     }
-                }, _marked, this, [[0, 6]]);
+                }, _marked, this, [[0, 7]]);
             }
 
             if (isFunction$1(__RE_PROMISE_REJECT__) && isFunction$1(__RE_PROMISE_RESOLVE__)) {
@@ -5266,11 +5268,11 @@ function configureStore() {
     };
 
     // 中间件列表
-    var middleware = [historyMiddleware, requestMiddleware.bind(null, RE, {
+    var middleware = [historyMiddleware, sagaMiddleware, requestMiddleware.bind(null, RE, {
         requestCallback: requestCallback,
         requestError: requestError,
         resultLimit: resultLimit
-    }), promiseMiddleware.bind(null, RE), sagaMiddleware].concat(toConsumableArray(middlewares || []));
+    }), promiseMiddleware.bind(null, RE)].concat(toConsumableArray(middlewares || []));
 
     var operApplyMiddleware = applyMiddleware.apply(undefined, toConsumableArray(middleware));
 

@@ -1,5 +1,5 @@
 import get from 'lodash.get';
-import { isFunction, isArray, isObject, isString, isUndefined } from '../utils';
+import { isFunction, isArray, isObject, isString, isUndefined, isNull } from '../utils';
 import { put, call, select } from 'redux-saga/effects';
 
 const take = (obj, path) => get(obj, path);
@@ -16,7 +16,8 @@ export default (RE, store) => next => action => {
 
     function* actionG() {
         try {
-            const ret = yield* RE._effects[rest.type](rest, { put, call, select });
+            const ret = yield RE._effects[rest.type](rest, { put, call, select });
+            // next(rest);
             __RE_PROMISE_RESOLVE__(ret);
         } catch (e) {
             __RE_PROMISE_REJECT__(e);

@@ -18,7 +18,7 @@ yarn add react-enhanced
 
 ## 设计思想
 
-*   降低 react 开发门槛，以及提高开发效率
+*   降低 react + redux 开发门槛，以及提高开发效率
 *   无侵入使用，对已使用的框架友好，并且维护增加一些辅助开发的功能
 *   实现 model 层，方便管理异步操作以及复用
 
@@ -81,8 +81,7 @@ export default class App extends Component {
                         <Switch>
                             <Route
                                 component={AsyncComponent({
-                                    component: () =>
-                                        import('../containers/list'),
+                                    component: () => import('../containers/list'),
                                     model: () => import('../models/list')
                                 })}
                                 exact

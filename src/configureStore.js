@@ -59,13 +59,14 @@ export function configureStore({
     // 中间件列表
     const middleware = [
         historyMiddleware,
+        sagaMiddleware,
         requestMiddleware.bind(null, RE, {
             requestCallback,
             requestError,
             resultLimit
         }),
         promiseMiddleware.bind(null, RE),
-        sagaMiddleware,
+        // sagaMiddleware,
         ...(middlewares || [])
     ];
 

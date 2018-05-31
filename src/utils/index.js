@@ -8,3 +8,4 @@ export const isObject = o => getType(o) === 'object';
 export const isString = o => getType(o) === 'string';
 export const isUndefined = o => getType(o) === 'undefined';
 export const isArray = o => getType(o) === 'array';
+export const isNull = o => getType(o) === 'null';
