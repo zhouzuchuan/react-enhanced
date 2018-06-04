@@ -2411,6 +2411,25 @@ unwrapExports(reduxDevtoolsExtension);
 var reduxDevtoolsExtension_1 = reduxDevtoolsExtension.composeWithDevTools;
 var reduxDevtoolsExtension_2 = reduxDevtoolsExtension.devToolsEnhancer;
 
+var getType = function getType(obj) {
+    return Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
+};
+var isFunction = function isFunction(o) {
+    return getType(o) === 'function';
+};
+var isObject = function isObject(o) {
+    return getType(o) === 'object';
+};
+var isString = function isString(o) {
+    return getType(o) === 'string';
+};
+var isUndefined = function isUndefined(o) {
+    return getType(o) === 'undefined';
+};
+var isArray = function isArray(o) {
+    return getType(o) === 'array';
+};
+
 /**
  * lodash (Custom Build) <https://lodash.com/>
  * Build: `lodash modularize exports="npm" -o ./`
@@ -2888,10 +2907,10 @@ function baseGet(object, path) {
  *  else `false`.
  */
 function baseIsNative(value) {
-  if (!isObject(value) || isMasked(value)) {
+  if (!isObject$1(value) || isMasked(value)) {
     return false;
   }
-  var pattern = (isFunction(value) || isHostObject(value)) ? reIsNative : reIsHostCtor;
+  var pattern = (isFunction$1(value) || isHostObject(value)) ? reIsNative : reIsHostCtor;
   return pattern.test(toSource(value));
 }
 
@@ -2923,7 +2942,7 @@ function baseToString(value) {
  * @returns {Array} Returns the cast property path array.
  */
 function castPath(value) {
-  return isArray(value) ? value : stringToPath(value);
+  return isArray$1(value) ? value : stringToPath(value);
 }
 
 /**
@@ -2963,7 +2982,7 @@ function getNative(object, key) {
  * @returns {boolean} Returns `true` if `value` is a property name, else `false`.
  */
 function isKey(value, object) {
-  if (isArray(value)) {
+  if (isArray$1(value)) {
     return false;
   }
   var type = typeof value;
@@ -3180,7 +3199,7 @@ function eq(value, other) {
  * _.isArray(_.noop);
  * // => false
  */
-var isArray = Array.isArray;
+var isArray$1 = Array.isArray;
 
 /**
  * Checks if `value` is classified as a `Function` object.
@@ -3199,10 +3218,10 @@ var isArray = Array.isArray;
  * _.isFunction(/abc/);
  * // => false
  */
-function isFunction(value) {
+function isFunction$1(value) {
   // The use of `Object#toString` avoids issues with the `typeof` operator
   // in Safari 8-9 which returns 'object' for typed array and other constructors.
-  var tag = isObject(value) ? objectToString$1.call(value) : '';
+  var tag = isObject$1(value) ? objectToString$1.call(value) : '';
   return tag == funcTag || tag == genTag;
 }
 
@@ -3231,7 +3250,7 @@ function isFunction(value) {
  * _.isObject(null);
  * // => false
  */
-function isObject(value) {
+function isObject$1(value) {
   var type = typeof value;
   return !!value && (type == 'object' || type == 'function');
 }
@@ -3342,25 +3361,6 @@ function get(object, path, defaultValue) {
 }
 
 var lodash_get = get;
-
-var getType = function getType(obj) {
-    return Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
-};
-var isFunction$1 = function isFunction(o) {
-    return getType(o) === 'function';
-};
-var isObject$1 = function isObject(o) {
-    return getType(o) === 'object';
-};
-var isString = function isString(o) {
-    return getType(o) === 'string';
-};
-var isUndefined = function isUndefined(o) {
-    return getType(o) === 'undefined';
-};
-var isArray$1 = function isArray(o) {
-    return getType(o) === 'array';
-};
 
 var classCallCheck = function (instance, Constructor) {
   if (!(instance instanceof Constructor)) {
@@ -3506,7 +3506,8 @@ var take$1 = function take$$1(obj, path) {
 var requestMiddleware = (function (RE, _ref, store) {
     var requestCallback = _ref.requestCallback,
         requestError = _ref.requestError,
-        resultLimit = _ref.resultLimit;
+        resultLimit = _ref.resultLimit,
+        requestLoading = _ref.requestLoading;
     return function (next) {
         return function (action) {
             // return setTimeout(() => {
@@ -3514,7 +3515,7 @@ var requestMiddleware = (function (RE, _ref, store) {
                 getState = store.getState;
 
 
-            if (isFunction$1(action)) {
+            if (isFunction(action)) {
                 action(dispatch, getState);
                 return;
             }
@@ -3539,12 +3540,12 @@ var requestMiddleware = (function (RE, _ref, store) {
                 }) : next(action);
             }
 
-            if (!isFunction$1(request)) {
+            if (!isFunction(request)) {
                 console.error('request must be a function!');
                 return next(action);
             }
 
-            if (isObject$1(will) && isString(will.type)) {
+            if (isObject(will) && isString(will.type)) {
                 next(will);
             } else if (isString(will)) {
                 next({
@@ -3554,11 +3555,22 @@ var requestMiddleware = (function (RE, _ref, store) {
 
             var mergeError = error || requestError;
 
+            var isRequestLoading = isFunction(requestLoading);
+
+            if (isRequestLoading) requestLoading(false, action);
+
+            next({
+                type: '@@LOADING/__SET_LOADING__',
+                payload: {
+                    loading: true
+                }
+            });
+
             return request().then(function (result) {
                 var data = result.data;
 
                 var transferData = data || result;
-                var limitData = isString(resultLimit) ? take$1(transferData, resultLimit) : isArray$1(resultLimit) ? resultLimit.reduce(function (r, v) {
+                var limitData = isString(resultLimit) ? take$1(transferData, resultLimit) : isArray(resultLimit) ? resultLimit.reduce(function (r, v) {
                     if (!isString(v)) {
                         console.warn(JSON.stringify(v) + ' \u4E0D\u7B26\u5408\u5B57\u6BB5\u622A\u53D6\u89C4\u5219\uFF1B\u8BF7\u4F7F\u7528"result.data"\u8FD9\u79CD\u89C4\u5219\uFF01');
                         return r;
@@ -3570,7 +3582,16 @@ var requestMiddleware = (function (RE, _ref, store) {
                     console.warn('设置的 resultLimit 获取不到有效的数据');
                 }
 
-                if (isFunction$1(requestCallback)) {
+                if (isRequestLoading) requestLoading(true, action);
+
+                next({
+                    type: '@@LOADING/__SET_LOADING__',
+                    payload: {
+                        loading: false
+                    }
+                });
+
+                if (isFunction(requestCallback)) {
                     requestCallback(transferData, rest, dispatch, getState);
                 } else if (isString(requestCallback)) {
                     next(_extends$3({
@@ -3579,14 +3600,14 @@ var requestMiddleware = (function (RE, _ref, store) {
                     }, rest));
                 }
 
-                if (isObject$1(did) && isString(did.type)) {
+                if (isObject(did) && isString(did.type)) {
                     var type = did.type,
                         payload = did.payload,
                         rest2 = objectWithoutProperties(did, ['type', 'payload']);
 
                     next(_extends$3({
                         type: did.type,
-                        payload: isUndefined(payload) ? limitData : isFunction$1(payload) ? payload(limitData) : payload
+                        payload: isUndefined(payload) ? limitData : isFunction(payload) ? payload(limitData) : payload
                     }, rest2));
                 } else if (isString(did)) {
                     next({
@@ -3595,7 +3616,7 @@ var requestMiddleware = (function (RE, _ref, store) {
                     });
                 }
 
-                if (isFunction$1(callback)) {
+                if (isFunction(callback)) {
                     callback(limitData);
                 } else if (isString(requecallbacktCallback)) {
                     next(_extends$3({
@@ -3604,7 +3625,7 @@ var requestMiddleware = (function (RE, _ref, store) {
                     }, rest));
                 }
             }).catch(function (err) {
-                if (isFunction$1(mergeError)) {
+                if (isFunction(mergeError)) {
                     mergeError(err);
                 } else if (isString(mergeError)) {
                     next(_extends$3({
@@ -3616,24 +3637,6 @@ var requestMiddleware = (function (RE, _ref, store) {
         };
     };
 });
-
-// import { NAMESPACE_SEP } from './constants';
-
-// export default function createPromiseMiddleware(app) {
-//   return () => next => action => {
-//     const { type } = action;
-//     if (isEffect(type)) {
-//       return new Promise((resolve, reject) => {
-//         next({
-//           __dva_resolve: resolve,
-//           __dva_reject: reject,
-//           ...action,
-//         });
-//       });
-//     } else {
-//       return next(action);
-//     }
-//   };
 
 function isEffect(type, RE) {
     if (!type || typeof type !== 'string') return false;
@@ -3653,7 +3656,7 @@ var promiseMiddleware = (function (RE, store) {
                 getState = store.getState;
 
 
-            if (isFunction$1(action)) {
+            if (isFunction(action)) {
                 action(dispatch, getState);
                 return;
             }
@@ -3695,7 +3698,7 @@ var promiseMiddleware = (function (RE, store) {
                 }, _marked, this, [[0, 7]]);
             }
 
-            if (isFunction$1(__RE_PROMISE_REJECT__) && isFunction$1(__RE_PROMISE_RESOLVE__)) {
+            if (isFunction(__RE_PROMISE_REJECT__) && isFunction(__RE_PROMISE_RESOLVE__)) {
                 var _next = function _next() {
                     var ret = gen.next();
                     if (!ret.done) _next();
@@ -3824,12 +3827,15 @@ function registerModel(RE, store, sagaMiddleware, models) {
             effects = _ref7.effects,
             reducer = _ref7.reducer;
 
-        if (isUndefined(namespace)) return false;
-
-        if (RE._models.includes(namespace)) {
-            console.warn('namespace \u5FC5\u987B\u552F\u4E00\uFF0C ' + namespace + ' \u5DF2\u7ECF\u88AB\u4F7F\u7528\uFF0C\u8BE5model\u672A\u8F7D\u5165\uFF0C\u8BF7\u68C0\u67E5\uFF01');
+        if (isUndefined(namespace)) {
+            console.warn('namespace \u5FC5\u586B\u5E76\u4E14\u552F\u4E00\uFF0C \u8BE5model\u672A\u8F7D\u5165\uFF0C\u8BF7\u68C0\u67E5\uFF01');
             return false;
         }
+
+        // if (RE._models.includes(namespace)) {
+        //     console.warn(`namespace 必须唯一， ${namespace} 已经被使用，该model未载入，请检查！`);
+        //     return false;
+        // }
 
         RE._models.push(namespace);
         return true;
@@ -3852,6 +3858,8 @@ function registerModel(RE, store, sagaMiddleware, models) {
             reducers: _extends$3({}, r.reducers || {}, defineProperty({}, namespace, dealReducers))
         };
     }, {});
+
+    if (!deal.sagas) return;
 
     injectAsyncReducers(store, deal.reducers, deal.state);
     injectAsyncSagas(store, Object.entries(deal.sagas).reduce(function (r, _ref9) {
@@ -5187,7 +5195,7 @@ var Loading = function Loading() {
 var AsyncComponent = (function (registerModel, componentLoading) {
     var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-    var isMore = isFunction$1(params);
+    var isMore = isFunction(params);
 
     var defaultParams = {
         loading: componentLoading ? componentLoading : Loading
@@ -5205,7 +5213,7 @@ var AsyncComponent = (function (registerModel, componentLoading) {
             rest = objectWithoutProperties(params, ['props', 'component', 'model']);
 
         return Loadable.Map(_extends$3({}, defaultParams, rest, {
-            loader: (isArray$1(model) ? model : [model]).reduce(function (r, v, i) {
+            loader: (isArray(model) ? model : [model]).reduce(function (r, v, i) {
                 return _extends$3({}, r, defineProperty({}, i, v));
             }, { component: component }),
             render: function render(_ref, props) {
@@ -5221,6 +5229,23 @@ var AsyncComponent = (function (registerModel, componentLoading) {
         }));
     }
 });
+
+var loadingModel = {
+    namespace: '@@LOADING',
+    state: {
+        loading: false
+    },
+    effects: {},
+    reducers: {
+        __SET_LOADING__: function __SET_LOADING__(state, _ref) {
+            var payload = _ref.payload;
+
+            return _extends$3({
+                state: state
+            }, payload);
+        }
+    }
+};
 
 // 创建 router histroy 中间件
 var historyMiddleware = lib_1(createHistory());
@@ -5255,7 +5280,8 @@ function configureStore() {
         middlewares = _ref$middlewares === undefined ? [] : _ref$middlewares,
         requestCallback = _ref.requestCallback,
         requestError = _ref.requestError,
-        resultLimit = _ref.resultLimit;
+        resultLimit = _ref.resultLimit,
+        requestLoading = _ref.requestLoading;
 
     var RE = {
         _effects: {},
@@ -5271,7 +5297,8 @@ function configureStore() {
     var middleware = [historyMiddleware, sagaMiddleware, requestMiddleware.bind(null, RE, {
         requestCallback: requestCallback,
         requestError: requestError,
-        resultLimit: resultLimit
+        resultLimit: resultLimit,
+        requestLoading: requestLoading
     }), promiseMiddleware.bind(null, RE)].concat(toConsumableArray(middlewares || []));
 
     var operApplyMiddleware = applyMiddleware.apply(undefined, toConsumableArray(middleware));
@@ -5311,6 +5338,8 @@ function configureStore() {
 
     var newR = registerModel.bind(null, RE, store, sagaMiddleware);
 
+    if (!isUndefined(requestLoading)) newR(loadingModel);
+
     return {
         store: store,
         registerModel: newR,
@@ -5349,7 +5378,39 @@ var CreateInstall = (function (value) {
     };
 });
 
-var CreateProvider = function CreateProvider(_ref, contextID, componentLoading) {
+var PlaceholderLoading = (function (Loading$$1) {
+    var PlaceholderLoading = function (_React$Component) {
+        inherits(PlaceholderLoading, _React$Component);
+
+        function PlaceholderLoading() {
+            var _ref;
+
+            classCallCheck(this, PlaceholderLoading);
+
+            for (var _len = arguments.length, arg = Array(_len), _key = 0; _key < _len; _key++) {
+                arg[_key] = arguments[_key];
+            }
+
+            return possibleConstructorReturn(this, (_ref = PlaceholderLoading.__proto__ || Object.getPrototypeOf(PlaceholderLoading)).call.apply(_ref, [this].concat(arg)));
+        }
+
+        createClass(PlaceholderLoading, [{
+            key: 'render',
+            value: function render() {
+                return this.props.loading && Loading$$1 ? Loading$$1 === true ? React.createElement(Loading, null) : React.createElement(Loading$$1, this.props) : null;
+            }
+        }]);
+        return PlaceholderLoading;
+    }(React.Component);
+
+    return reactRedux.connect(function (store) {
+        return {
+            loading: (store['@@LOADING'] || {}).loading
+        };
+    })(PlaceholderLoading);
+});
+
+var CreateProvider = function CreateProvider(_ref, contextID, componentLoading, requestLoading) {
     var store = _ref.store,
         registerModel = _ref.registerModel,
         AsyncComponent = _ref.AsyncComponent;
@@ -5376,6 +5437,7 @@ var CreateProvider = function CreateProvider(_ref, contextID, componentLoading) 
     return CreateInstall({
         __RE__: {
             registerModel: registerModel,
+            RequestLoading: PlaceholderLoading(requestLoading),
             AsyncComponent: AsyncComponent.bind(null, componentLoading)
         },
         __CONTEXT__: contextID.reduce(function (r, v) {
@@ -5921,7 +5983,7 @@ var Install = (function () {
                         ContextStore.Consumer,
                         null,
                         function (context) {
-                            var newProps = _extends$3({}, _this2.props, isString(inject) || isArray$1(inject) ? lodash_pick(context.__RE__, inject) : {}, {
+                            var newProps = _extends$3({}, _this2.props, isString(inject) || isArray(inject) ? lodash_pick(context.__RE__, inject) : {}, {
                                 __CONTEXT__: lodash_pick(context.__CONTEXT__, CONTEXT)
                             });
                             return React.createElement(WrappedComponent, newProps);
@@ -5970,7 +6032,7 @@ var Pull = (function (id) {
                         ContextStore.Consumer,
                         null,
                         function (context) {
-                            var newProps = _extends$3({}, props, isArray$1(limit) ? lodash_pick(context, limit) : {});
+                            var newProps = _extends$3({}, props, isArray(limit) ? lodash_pick(context, limit) : {});
                             return React.createElement(WrappedComponent, newProps);
                         }
                     );
@@ -6011,7 +6073,7 @@ var Push = (function (id) {
                         console.warn('组件${WrappedComponent.displayName} Push 的 仓库id 不存在，请在 init 初始化中注册 warehouse！');
                         return React.createElement(WrappedComponent, props);
                     }
-                    var dealValue = isFunction$1(fn) ? fn(props) : isArray$1(fn) || isString(fn) ? lodash_pick(props, fn) : {};
+                    var dealValue = isFunction(fn) ? fn(props) : isArray(fn) || isString(fn) ? lodash_pick(props, fn) : {};
                     return React.createElement(
                         ContextStore.Provider,
                         { value: dealValue },
@@ -6032,10 +6094,11 @@ var init = function init() {
     var _ref$warehouse = _ref.warehouse,
         warehouse = _ref$warehouse === undefined ? [] : _ref$warehouse,
         componentLoading = _ref.componentLoading,
-        params = objectWithoutProperties(_ref, ['warehouse', 'componentLoading']);
+        requestLoading = _ref.requestLoading,
+        params = objectWithoutProperties(_ref, ['warehouse', 'componentLoading', 'requestLoading']);
 
     return {
-        Provider: CreateProvider(configureStore(params), warehouse, componentLoading)
+        Provider: CreateProvider(configureStore(_extends$3({}, params, { requestLoading: requestLoading })), warehouse, componentLoading, requestLoading)
     };
 };
 

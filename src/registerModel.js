@@ -47,12 +47,15 @@ export function injectAsyncSagas(store, sagas, sagaMiddleware) {
 export default function registerModel(RE, store, sagaMiddleware, models) {
     const deal = (Array.isArray(models) ? models : [models])
         .filter(({ namespace, effects, reducer }) => {
-            if (isUndefined(namespace)) return false;
-
-            if (RE._models.includes(namespace)) {
-                console.warn(`namespace 必须唯一， ${namespace} 已经被使用，该model未载入，请检查！`);
+            if (isUndefined(namespace)) {
+                console.warn(`namespace 必填并且唯一， 该model未载入，请检查！`);
                 return false;
             }
+
+            // if (RE._models.includes(namespace)) {
+            //     console.warn(`namespace 必须唯一， ${namespace} 已经被使用，该model未载入，请检查！`);
+            //     return false;
+            // }
 
             RE._models.push(namespace);
             return true;
@@ -80,6 +83,8 @@ export default function registerModel(RE, store, sagaMiddleware, models) {
                 }
             };
         }, {});
+
+    if (!deal.sagas) return;
 
     injectAsyncReducers(store, deal.reducers, deal.state);
     injectAsyncSagas(

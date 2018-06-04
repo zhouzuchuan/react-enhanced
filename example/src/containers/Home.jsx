@@ -1,10 +1,10 @@
 import React from 'react'
 import { Modal, Button } from 'antd'
-import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
+import { bindActionCreators, connect, Install } from 'react-enhanced'
 
 @connect(
     store => {
+        console.log(store)
         return {}
     },
     dispatch => ({
@@ -28,6 +28,7 @@ import { bindActionCreators } from 'redux'
         )
     })
 )
+@Install(['RequestLoading'])
 export default class Home extends React.Component {
     constructor() {
         super()
@@ -47,9 +48,13 @@ export default class Home extends React.Component {
     render() {
         console.log(this.props)
 
+        const { RequestLoading } = this.props
+
         return (
             <div>
                 React-enhanced
+                <RequestLoading className="dddd" />
+                <RequestLoading>loadingw</RequestLoading>
                 <p>
                     <Button onClick={this._oper}>弹出</Button>
                 </p>

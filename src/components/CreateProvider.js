@@ -1,11 +1,13 @@
 import React from 'react';
 import { Provider } from 'react-redux';
 import CreateInstall from './CreateInstall';
+import PlaceholderLoading from './PlaceholderLoading';
 
 export const CreateProvider = (
     { store, registerModel, AsyncComponent },
     contextID,
-    componentLoading
+    componentLoading,
+    requestLoading
 ) => {
     class REProvider extends React.Component {
         render() {
@@ -23,6 +25,7 @@ export const CreateProvider = (
     return CreateInstall({
         __RE__: {
             registerModel,
+            RequestLoading: PlaceholderLoading(requestLoading),
             AsyncComponent: AsyncComponent.bind(null, componentLoading)
         },
         __CONTEXT__: contextID.reduce((r, v) => {

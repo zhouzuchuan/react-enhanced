@@ -11,10 +11,13 @@ import { all } from 'redux-saga/effects';
 
 import { composeWithDevTools } from 'redux-devtools-extension';
 
+import { isUndefined } from './utils';
+
 import requestMiddleware from './middleware/requestMiddleware';
 import promiseMiddleware from './middleware/promiseMiddleware';
 import registerModel from './registerModel';
 import AsyncComponent from './AsyncComponent';
+import loadingModel from './models/loading';
 
 // 创建 router histroy 中间件
 const historyMiddleware = routerMiddleware(createHistory());
@@ -44,7 +47,8 @@ export function configureStore({
     middlewares = [],
     requestCallback,
     requestError,
-    resultLimit
+    resultLimit,
+    requestLoading
 } = {}) {
     const RE = {
         _effects: {},
@@ -63,7 +67,8 @@ export function configureStore({
         requestMiddleware.bind(null, RE, {
             requestCallback,
             requestError,
-            resultLimit
+            resultLimit,
+            requestLoading
         }),
         promiseMiddleware.bind(null, RE),
         // sagaMiddleware,
@@ -100,6 +105,8 @@ export function configureStore({
     store.asyncSagas = RE.asyncSagas;
 
     const newR = registerModel.bind(null, RE, store, sagaMiddleware);
+
+    if (!isUndefined(requestLoading)) newR(loadingModel);
 
     return {
         store,

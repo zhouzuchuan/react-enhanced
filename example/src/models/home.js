@@ -25,7 +25,10 @@ export default {
             console.log('ddddd')
             yield put({
                 request: () => {
-                    return axios.get('http://10.5.141.45:8081/datatable/dapDataTb/getTbInfo')
+                    return axios.get('http://192.168.0.106:3000/api/datatable/dapDataTb/getTbInfo')
+                    // return axios.get('http://10.5.141.45:8081/datatable/dapDataTb/getTbInfo')
+
+                    //
                 },
                 did: {
                     type: 'home/aa'

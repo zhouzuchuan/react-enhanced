@@ -4,7 +4,7 @@ import { put } from 'redux-saga/effects';
 
 const take = (obj, path) => get(obj, path);
 
-export default (RE, { requestCallback, requestError, resultLimit }, store) => next => action => {
+export default (RE, { requestCallback, requestError, resultLimit, requestLoading }, store) => next => action => {
     // return setTimeout(() => {
     const { dispatch, getState } = store;
 
@@ -52,6 +52,17 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => ne
 
     const mergeError = error || requestError;
 
+    const isRequestLoading = isFunction(requestLoading);
+
+    if (isRequestLoading) requestLoading(false, action);
+
+    next({
+        type: '@@LOADING/__SET_LOADING__',
+        payload: {
+            loading: true
+        }
+    });
+
     return request()
         .then(result => {
             const { data } = result;
@@ -71,6 +82,15 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => ne
             if (isUndefined(limitData)) {
                 console.warn('设置的 resultLimit 获取不到有效的数据');
             }
+
+            if (isRequestLoading) requestLoading(true, action);
+
+            next({
+                type: '@@LOADING/__SET_LOADING__',
+                payload: {
+                    loading: false
+                }
+            });
 
             if (isFunction(requestCallback)) {
                 requestCallback(transferData, rest, dispatch, getState);
@@ -119,24 +139,6 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => ne
     // }, 0);
 };
 
-// import { NAMESPACE_SEP } from './constants';
-
-// export default function createPromiseMiddleware(app) {
-//   return () => next => action => {
-//     const { type } = action;
-//     if (isEffect(type)) {
-//       return new Promise((resolve, reject) => {
-//         next({
-//           __dva_resolve: resolve,
-//           __dva_reject: reject,
-//           ...action,
-//         });
-//       });
-//     } else {
-//       return next(action);
-//     }
-//   };
-
 function isEffect(type, RE) {
     if (!type || typeof type !== 'string') return false;
 
@@ -145,4 +147,3 @@ function isEffect(type, RE) {
     }
     return false;
 }
-// }

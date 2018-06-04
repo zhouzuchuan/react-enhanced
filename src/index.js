@@ -1,12 +1,13 @@
 import { configureStore } from './configureStore';
 import { CreateProvider } from './components/CreateProvider';
 
-export const init = ({ warehouse = [], componentLoading, ...params } = {}) => {
+export const init = ({ warehouse = [], componentLoading, requestLoading, ...params } = {}) => {
     return {
         Provider: CreateProvider(
-            configureStore(params),
+            configureStore({ ...params, requestLoading }),
             warehouse,
-            componentLoading
+            componentLoading,
+            requestLoading
         )
     };
 };
