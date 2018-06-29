@@ -2,12 +2,26 @@ import React from 'react';
 
 import './loading.css';
 
-const Loading = () => {
-    return (
-        <span className="RE-LOADING">
-            <span />
-        </span>
-    );
+const LOADING_TYPE = [
+    <span className={`RE-LOADING-BLOCK`}>
+        <span />
+    </span>,
+    <span className={`RE-LOADING-WAVE`}>
+        <span />
+        <span />
+        <span />
+        <span />
+        <span />
+    </span>,
+    <span className="RE-LOADING-CRICLE">
+        <span />
+        <span />
+    </span>
+];
+
+const Loading = ({ type }) => {
+    console.log(LOADING_TYPE[type]);
+    return LOADING_TYPE[type] || LOADING_TYPE[0];
 };
 
 export default Loading;

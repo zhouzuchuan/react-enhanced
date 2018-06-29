@@ -11,7 +11,7 @@ export default (registerModel, componentLoading, params = {}) => {
     const isMore = isFunction(params);
 
     const defaultParams = {
-        loading: componentLoading ? componentLoading : Loading
+        loading: isFunction(componentLoading) ? componentLoading : () => <Loading type={componentLoading} />
     };
 
     if (isMore) {
@@ -24,16 +24,10 @@ export default (registerModel, componentLoading, params = {}) => {
         return Loadable.Map({
             ...defaultParams,
             ...rest,
-            loader: (isArray(model) ? model : [model]).reduce(
-                (r, v, i) => ({ ...r, [i]: v }),
-                { component }
-            ),
+            loader: (isArray(model) ? model : [model]).reduce((r, v, i) => ({ ...r, [i]: v }), { component }),
             render({ component, ...models }, props) {
                 const ReturnCompoment = component.default;
-                models &&
-                    Object.values(models).forEach(v =>
-                        registerModel(v.default)
-                    );
+                models && Object.values(models).forEach(v => registerModel(v.default));
                 return <ReturnCompoment {...{ ...props2, ...props }} />;
             }
         });

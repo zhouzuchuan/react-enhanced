@@ -11,8 +11,8 @@ import registerServiceWorker from './registerServiceWorker'
 import Loading from './components/Loading.jsx'
 
 const { Provider } = init({
-    // componentLoading: Loading
-    requestLoading: true
+    componentLoading: 2,
+    requestLoading: 2
 })
 
 ReactDOM.render(

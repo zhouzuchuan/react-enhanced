@@ -5172,15 +5172,33 @@ function styleInject(css, ref) {
   }
 }
 
-var css = ".RE-LOADING {\n    display: block;\n    text-align: center;\n}\n.RE-LOADING > span {\n    display: inline-block;\n    width: 30px;\n    height: 30px;\n    background-color: #1890ff;\n    -webkit-animation: rotateplane 1.2s infinite ease-in-out;\n    animation: rotateplane 1.2s infinite ease-in-out;\n}\n\n@-webkit-keyframes rotateplane {\n    0% {\n        -webkit-transform: perspective(120px);\n    }\n    50% {\n        -webkit-transform: perspective(120px) rotateY(180deg);\n    }\n    100% {\n        -webkit-transform: perspective(120px) rotateY(180deg) rotateX(180deg);\n    }\n}\n\n@keyframes rotateplane {\n    0% {\n        transform: perspective(120px) rotateX(0deg) rotateY(0deg);\n        -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg);\n    }\n    50% {\n        transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);\n        -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);\n    }\n    100% {\n        transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);\n        -webkit-transform: perspective(120px) rotateX(-180deg)\n            rotateY(-179.9deg);\n    }\n}\n";
+var css = ".RE-LOADING-BLOCK {\n    display: block;\n    text-align: center\n}\n\n.RE-LOADING-BLOCK > :first-child {\n    display: inline-block;\n    width: 30px;\n    height: 30px;\n    background-color: #1890ff;\n    -webkit-animation: rotateplane 1.2s infinite ease-in-out;\n            animation: rotateplane 1.2s infinite ease-in-out;\n}\n\n@-webkit-keyframes rotateplane {\n    0% {\n        -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg);\n                transform: perspective(120px) rotateX(0deg) rotateY(0deg);\n    }\n    50% {\n        -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);\n                transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);\n    }\n    100% {\n        -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);\n                transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);\n    }\n}\n\n@keyframes rotateplane {\n    0% {\n        -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg);\n                transform: perspective(120px) rotateX(0deg) rotateY(0deg);\n    }\n    50% {\n        -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);\n                transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);\n    }\n    100% {\n        -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);\n                transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);\n    }\n}\n\n.RE-LOADING-WAVE {\n    display: block;\n    text-align: center\n}\n\n.RE-LOADING-WAVE > * {\n    background-color: #1890ff;\n    width: 4px;\n    height: 30px;\n    margin: 0 1px;\n    display: inline-block;\n    -webkit-animation: stretchdelay 1.2s infinite ease-in-out;\n            animation: stretchdelay 1.2s infinite ease-in-out;\n}\n\n.RE-LOADING-WAVE > :nth-child(2) {\n    -webkit-animation-delay: -1.1s;\n            animation-delay: -1.1s;\n}\n\n.RE-LOADING-WAVE > :nth-child(3) {\n    -webkit-animation-delay: -1s;\n            animation-delay: -1s;\n}\n\n.RE-LOADING-WAVE > :nth-child(4) {\n    -webkit-animation-delay: -0.9s;\n            animation-delay: -0.9s;\n}\n\n.RE-LOADING-WAVE > :nth-child(5) {\n    -webkit-animation-delay: -0.8s;\n            animation-delay: -0.8s;\n}\n\n@-webkit-keyframes stretchdelay {\n    0%,\n    40%,\n    100% {\n        -webkit-transform: scaleY(0.4);\n                transform: scaleY(0.4);\n    }\n    20% {\n        -webkit-transform: scaleY(1);\n                transform: scaleY(1);\n    }\n}\n\n@keyframes stretchdelay {\n    0%,\n    40%,\n    100% {\n        -webkit-transform: scaleY(0.4);\n                transform: scaleY(0.4);\n    }\n    20% {\n        -webkit-transform: scaleY(1);\n                transform: scaleY(1);\n    }\n}\n\n.RE-LOADING-CRICLE {\n    display: block;\n    text-align: center;\n    min-width: 30px;\n    height: 30px;\n    position: relative\n}\n\n.RE-LOADING-CRICLE > * {\n    width: 30px;\n    height: 100%;\n    border-radius: 50%;\n    background-color: #1890ff;\n    opacity: 0.6;\n    position: absolute;\n    top: 50%;\n    left: 50%;\n    -webkit-transform: translate(-50%, -50%);\n            transform: translate(-50%, -50%);\n    -webkit-animation: bounce 2s infinite ease-in-out;\n            animation: bounce 2s infinite ease-in-out;\n}\n\n.RE-LOADING-CRICLE > :last-child {\n    -webkit-animation-delay: -1s;\n            animation-delay: -1s;\n}\n\n@-webkit-keyframes bounce {\n    0%,\n    100% {\n        -webkit-transform: scale(0);\n                transform: scale(0);\n    }\n    50% {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n    }\n}\n\n@keyframes bounce {\n    0%,\n    100% {\n        -webkit-transform: scale(0);\n                transform: scale(0);\n    }\n    50% {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n    }\n}\n";
 styleInject(css);
 
-var Loading = function Loading() {
-    return React.createElement(
-        'span',
-        { className: 'RE-LOADING' },
-        React.createElement('span', null)
-    );
+var LOADING_TYPE = [React.createElement(
+    'span',
+    { className: 'RE-LOADING-BLOCK' },
+    React.createElement('span', null)
+), React.createElement(
+    'span',
+    { className: 'RE-LOADING-WAVE' },
+    React.createElement('span', null),
+    React.createElement('span', null),
+    React.createElement('span', null),
+    React.createElement('span', null),
+    React.createElement('span', null)
+), React.createElement(
+    'span',
+    { className: 'RE-LOADING-CRICLE' },
+    React.createElement('span', null),
+    React.createElement('span', null)
+)];
+
+var Loading = function Loading(_ref) {
+    var type = _ref.type;
+
+    console.log(LOADING_TYPE[type]);
+    return LOADING_TYPE[type] || LOADING_TYPE[0];
 };
 
 /**
@@ -5193,7 +5211,9 @@ var AsyncComponent = (function (registerModel, componentLoading) {
     var isMore = isFunction(params);
 
     var defaultParams = {
-        loading: componentLoading ? componentLoading : Loading
+        loading: isFunction(componentLoading) ? componentLoading : function () {
+            return React.createElement(Loading, { type: componentLoading });
+        }
     };
 
     if (isMore) {
@@ -5392,7 +5412,7 @@ var PlaceholderLoading = (function (Loading$$1) {
         createClass(PlaceholderLoading, [{
             key: 'render',
             value: function render() {
-                return this.props.loading && Loading$$1 ? Loading$$1 === true ? React.createElement(Loading, null) : React.createElement(Loading$$1, this.props) : null;
+                return this.props.loading && !isUndefined(Loading$$1) ? !isFunction(Loading$$1) ? React.createElement(Loading, { type: Loading$$1 }) : React.createElement(Loading$$1, this.props) : null;
             }
         }]);
         return PlaceholderLoading;

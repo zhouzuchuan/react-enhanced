@@ -1,4 +1,9 @@
-# react-enhanced &middot; [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/facebook/react/blob/master/LICENSE) [![download](https://img.shields.io/npm/dm/react-enhanced.svg)](https://www.npmjs.com/search?q=react-enhanced) [![npm](https://img.shields.io/npm/v/react-enhanced.svg)](https://www.npmjs.com/search?q=react-enhanced)
+# react-enhanced &middot;
+
+[![Build Status](https://travis-ci.org/zhouzuchuan/react-enhanced.svg?branch=master)](https://travis-ci.org/zhouzuchuan/react-enhanced)
+[![download](https://img.shields.io/npm/dm/react-enhanced.svg)](https://www.npmjs.com/search?q=react-enhanced)
+[![npm](https://img.shields.io/npm/v/react-enhanced.svg)](https://www.npmjs.com/search?q=react-enhanced)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/facebook/react/blob/master/LICENSE)
 
 基于 redux、redux-saga、react-redux 的无侵入 react 架构增强器。
 
@@ -18,9 +23,9 @@ yarn add react-enhanced
 
 ## 设计思想
 
-*   降低 react + redux 开发门槛，以及提高开发效率
-*   无侵入使用，对已使用的框架友好，并且维护增加一些辅助开发的功能
-*   实现 model 层，方便管理异步操作以及复用
+-   降低 react + redux 开发门槛，以及提高开发效率
+-   无侵入使用，对已使用的框架友好，并且维护增加一些辅助开发的功能
+-   实现 model 层，方便管理异步操作以及复用
 
 ## 使用
 
@@ -28,15 +33,15 @@ yarn add react-enhanced
 
     增强器的载入入口
 
-*   `warehouse`： <Array|none> 创建仓库，
-*   `state`： <Object|none> 默认 state
-*   `reducers`： <Object|none> 全局 reducers
-*   `effects`： <Array|none> 全局 effects
-*   `middlewares`： <Array|none> saga 中间件
-*   `requestCallback`：<Function|none> 请求统一回调（只能处理 request 中间层的请求）
-*   `requestError`：<Function|none> 请求统一错误处理（只能处理 request 中间层的请求）
-*   `resultLimit`：<String|Array|none> 根据返回的数据数据格式，统一自定义返回（只能处理 request 中间层的请求）
-*   `componentLoading`：<ReactElement|none> 统一处理组件异步加载的动画
+-   `warehouse`： <Array|none> 创建仓库，
+-   `state`： <Object|none> 默认 state
+-   `reducers`： <Object|none> 全局 reducers
+-   `effects`： <Array|none> 全局 effects
+-   `middlewares`： <Array|none> saga 中间件
+-   `requestCallback`：<Function|none> 请求统一回调（只能处理 request 中间层的请求）
+-   `requestError`：<Function|none> 请求统一错误处理（只能处理 request 中间层的请求）
+-   `resultLimit`：<String|Array|none> 根据返回的数据数据格式，统一自定义返回（只能处理 request 中间层的请求）
+-   `componentLoading`：<ReactElement|none> 统一处理组件异步加载的动画
 
 返回个一个 react-redux 封装的 Provider，但是在这之上我们已经许多工作，如 store 的绑定，以及基于 models 层的数据动态加载
 
@@ -61,9 +66,9 @@ ReactDOM.render(
 
 用来异步组件以及 model 注册
 
-*   `component`： <Promise|none> 加载组件，
-*   `model`： <Promise|Array[Promise]|none> 加载 model，（采用数组的方式可以注册多个 model）
-*   `loading`： <ReactElement|none> 组件加载动画
+-   `component`： <Promise|none> 加载组件，
+-   `model`： <Promise|Array[Promise]|none> 加载 model，（采用数组的方式可以注册多个 model）
+-   `loading`： <ReactElement|none> 组件加载动画
 
 ```js
 import React from 'react';
@@ -96,14 +101,18 @@ export default class App extends Component {
 }
 ```
 
+#### `PlaceholderLoading`
+
+占位请求加载组件 （目前支持 request 中间层请求的数据）
+
 #### models 层数据格式
 
  借鉴 elm 概念，通过 reducers, effects 组织 model
 
-*   namespace：models 标识
-*   state：models 数据状态
-*   effects：声明各种需要处理的 action
-*   reducers：声明更改 state 的 action（必须为纯函数）
+-   namespace：models 标识
+-   state：models 数据状态
+-   effects：声明各种需要处理的 action
+-   reducers：声明更改 state 的 action（必须为纯函数）
 
 ```js
 export default {
@@ -192,11 +201,11 @@ export default class Name extends Component {
 
 用来简化请求 action 的流程
 
-*   `request`： <Function> 请求函数
-*   `will`： <String|Object> 请求前执行
-*   `did`： <String|Object> 请求成功后执行
-*   `callback`： <Function> 请求成功后执行（在 `did` 后面）
-*   `error`： <Function> 请求失败调用（会覆盖 init 中`requestError`在该 action 上的执行）
+-   `request`： <Function> 请求函数
+-   `will`： <String|Object> 请求前执行
+-   `did`： <String|Object> 请求成功后执行
+-   `callback`： <Function> 请求成功后执行（在 `did` 后面）
+-   `error`： <Function> 请求失败调用（会覆盖 init 中`requestError`在该 action 上的执行）
 
 `did`以及`will`可以是字符串，`will` 不会传递 payload，而`did`则会将请求成功的 data（如果在 init 中设置了`requestLimit`， 会根据其取值）直接绑定到 payload .
 

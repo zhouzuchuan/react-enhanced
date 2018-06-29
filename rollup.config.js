@@ -3,6 +3,8 @@ import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import postcss from 'rollup-plugin-postcss';
 
+import cssnext from 'postcss-cssnext';
+
 export default {
     input: 'src/index.js',
     output: [
@@ -28,7 +30,8 @@ export default {
     ],
     plugins: [
         postcss({
-            extensions: ['.css']
+            extensions: ['.css', '.less'],
+            plugins: [cssnext()]
         }),
         resolve({
             jsnext: true
@@ -36,13 +39,7 @@ export default {
         commonjs({
             include: 'node_modules/**',
             namedExports: {
-                './node_modules/react/react.js': [
-                    'cloneElement',
-                    'createElement',
-                    'PropTypes',
-                    'Children',
-                    'Component'
-                ]
+                './node_modules/react/react.js': ['cloneElement', 'createElement', 'PropTypes', 'Children', 'Component']
             }
         }),
         babel({

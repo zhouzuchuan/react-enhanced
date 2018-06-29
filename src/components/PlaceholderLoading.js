@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import Loading2 from './Loading';
-import { isBoolean } from '../utils';
+import { isFunction, isUndefined } from '../utils';
 
 export default Loading => {
     class PlaceholderLoading extends React.Component {
@@ -9,7 +9,13 @@ export default Loading => {
             super(...arg);
         }
         render() {
-            return this.props.loading && Loading ? Loading === true ? <Loading2 /> : <Loading {...this.props} /> : null;
+            return this.props.loading && !isUndefined(Loading) ? (
+                !isFunction(Loading) ? (
+                    <Loading2 type={Loading} />
+                ) : (
+                    <Loading {...this.props} />
+                )
+            ) : null;
         }
     }
     return connect(store => {
