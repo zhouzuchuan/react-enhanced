@@ -1,5 +1,6 @@
 import { combineReducers } from 'redux';
 import { isUndefined } from './utils';
+import RE from './store';
 import { fork, takeLatest, all, put, select, call } from 'redux-saga/effects';
 
 export function createReducer(initialState, handlers) {
@@ -15,28 +16,28 @@ export function createReducer(initialState, handlers) {
 const addNameSpace = (obj = {}, namespace) =>
     Object.entries(obj).reduce((r, [n, m]) => ({ ...r, [`${namespace}/${n}`]: m }), {});
 
-export function injectAsyncReducers(store, asyncReducers, initialState) {
+export function injectAsyncReducers(asyncReducers, initialState) {
     let flag = false;
 
     if (asyncReducers) {
         for (let [n, m] of Object.entries(asyncReducers)) {
             if (Object.prototype.hasOwnProperty.call(asyncReducers, n)) {
-                if (store && !(store.asyncReducers || {})[n]) {
-                    store.asyncReducers[n] = createReducer(initialState[n] || {}, m);
+                if (RE && !(RE.asyncReducers || {})[n]) {
+                    RE.asyncReducers[n] = createReducer(initialState[n] || {}, m);
                     flag = true;
                 }
             }
         }
-        flag && store.replaceReducer(combineReducers(store.asyncReducers));
+        flag && RE.__store__.replaceReducer(combineReducers(RE.asyncReducers));
     }
 }
 
-export function injectAsyncSagas(store, sagas, sagaMiddleware) {
+export function injectAsyncSagas(sagas, sagaMiddleware) {
     if (sagas) {
         for (let [n, m] of Object.entries(sagas)) {
             if (Object.prototype.hasOwnProperty.call(sagas, n)) {
-                if (store && !(store.asyncSagas || {})[n]) {
-                    store.asyncSagas[n] = m;
+                if (RE && !(RE.asyncSagas || {})[n]) {
+                    RE.asyncSagas[n] = m;
                     sagaMiddleware.run(m);
                 }
             }
@@ -44,7 +45,8 @@ export function injectAsyncSagas(store, sagas, sagaMiddleware) {
     }
 }
 
-export default function registerModel(RE, store, sagaMiddleware, models) {
+export default function registerModel(sagaMiddleware, models) {
+    console.log();
     const deal = (Array.isArray(models) ? models : [models])
         .filter(({ namespace, effects, reducer }) => {
             if (isUndefined(namespace)) {
@@ -86,9 +88,8 @@ export default function registerModel(RE, store, sagaMiddleware, models) {
 
     if (!deal.sagas) return;
 
-    injectAsyncReducers(store, deal.reducers, deal.state);
+    injectAsyncReducers(deal.reducers, deal.state);
     injectAsyncSagas(
-        store,
         Object.entries(deal.sagas).reduce((r, [name, fns]) => {
             return {
                 ...r,

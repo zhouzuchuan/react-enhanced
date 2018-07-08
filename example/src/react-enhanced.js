@@ -1,10 +1,39 @@
 import React from 'react';
-import createSagaMiddleware from 'redux-saga';
 import { connect, Provider } from 'react-redux';
 export { connect } from 'react-redux';
+import createSagaMiddleware from 'redux-saga';
+
+var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+function unwrapExports (x) {
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+}
+
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
+
+/**
+ * lodash (Custom Build) <https://lodash.com/>
+ * Build: `lodash modularize exports="npm" -o ./`
+ * Copyright jQuery Foundation and other contributors <https://jquery.org/>
+ * Released under MIT license <https://lodash.com/license>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ */
+
+/** Used as references for various `Number` constants. */
+var INFINITY = 1 / 0,
+    MAX_SAFE_INTEGER = 9007199254740991;
+
+/** `Object#toString` result references. */
+var argsTag = '[object Arguments]',
+    funcTag = '[object Function]',
+    genTag = '[object GeneratorFunction]',
+    symbolTag = '[object Symbol]';
 
 /** Detect free variable `global` from Node.js. */
-var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
+var freeGlobal = typeof commonjsGlobal == 'object' && commonjsGlobal && commonjsGlobal.Object === Object && commonjsGlobal;
 
 /** Detect free variable `self`. */
 var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
@@ -12,8 +41,64 @@ var freeSelf = typeof self == 'object' && self && self.Object === Object && self
 /** Used as a reference to the global object. */
 var root = freeGlobal || freeSelf || Function('return this')();
 
-/** Built-in value references. */
-var Symbol$1 = root.Symbol;
+/**
+ * A faster alternative to `Function#apply`, this function invokes `func`
+ * with the `this` binding of `thisArg` and the arguments of `args`.
+ *
+ * @private
+ * @param {Function} func The function to invoke.
+ * @param {*} thisArg The `this` binding of `func`.
+ * @param {Array} args The arguments to invoke `func` with.
+ * @returns {*} Returns the result of `func`.
+ */
+function apply(func, thisArg, args) {
+  switch (args.length) {
+    case 0: return func.call(thisArg);
+    case 1: return func.call(thisArg, args[0]);
+    case 2: return func.call(thisArg, args[0], args[1]);
+    case 3: return func.call(thisArg, args[0], args[1], args[2]);
+  }
+  return func.apply(thisArg, args);
+}
+
+/**
+ * A specialized version of `_.map` for arrays without support for iteratee
+ * shorthands.
+ *
+ * @private
+ * @param {Array} [array] The array to iterate over.
+ * @param {Function} iteratee The function invoked per iteration.
+ * @returns {Array} Returns the new mapped array.
+ */
+function arrayMap(array, iteratee) {
+  var index = -1,
+      length = array ? array.length : 0,
+      result = Array(length);
+
+  while (++index < length) {
+    result[index] = iteratee(array[index], index, array);
+  }
+  return result;
+}
+
+/**
+ * Appends the elements of `values` to `array`.
+ *
+ * @private
+ * @param {Array} array The array to modify.
+ * @param {Array} values The values to append.
+ * @returns {Array} Returns `array`.
+ */
+function arrayPush(array, values) {
+  var index = -1,
+      length = values.length,
+      offset = array.length;
+
+  while (++index < length) {
+    array[offset + index] = values[index];
+  }
+  return array;
+}
 
 /** Used for built-in method references. */
 var objectProto = Object.prototype;
@@ -26,10 +111,672 @@ var hasOwnProperty = objectProto.hasOwnProperty;
  * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
  * of values.
  */
-var nativeObjectToString = objectProto.toString;
+var objectToString = objectProto.toString;
 
 /** Built-in value references. */
-var symToStringTag = Symbol$1 ? Symbol$1.toStringTag : undefined;
+var Symbol$1 = root.Symbol,
+    propertyIsEnumerable = objectProto.propertyIsEnumerable,
+    spreadableSymbol = Symbol$1 ? Symbol$1.isConcatSpreadable : undefined;
+
+/* Built-in method references for those with the same name as other `lodash` methods. */
+var nativeMax = Math.max;
+
+/**
+ * The base implementation of `_.flatten` with support for restricting flattening.
+ *
+ * @private
+ * @param {Array} array The array to flatten.
+ * @param {number} depth The maximum recursion depth.
+ * @param {boolean} [predicate=isFlattenable] The function invoked per iteration.
+ * @param {boolean} [isStrict] Restrict to values that pass `predicate` checks.
+ * @param {Array} [result=[]] The initial result value.
+ * @returns {Array} Returns the new flattened array.
+ */
+function baseFlatten(array, depth, predicate, isStrict, result) {
+  var index = -1,
+      length = array.length;
+
+  predicate || (predicate = isFlattenable);
+  result || (result = []);
+
+  while (++index < length) {
+    var value = array[index];
+    if (depth > 0 && predicate(value)) {
+      if (depth > 1) {
+        // Recursively flatten arrays (susceptible to call stack limits).
+        baseFlatten(value, depth - 1, predicate, isStrict, result);
+      } else {
+        arrayPush(result, value);
+      }
+    } else if (!isStrict) {
+      result[result.length] = value;
+    }
+  }
+  return result;
+}
+
+/**
+ * The base implementation of `_.pick` without support for individual
+ * property identifiers.
+ *
+ * @private
+ * @param {Object} object The source object.
+ * @param {string[]} props The property identifiers to pick.
+ * @returns {Object} Returns the new object.
+ */
+function basePick(object, props) {
+  object = Object(object);
+  return basePickBy(object, props, function(value, key) {
+    return key in object;
+  });
+}
+
+/**
+ * The base implementation of  `_.pickBy` without support for iteratee shorthands.
+ *
+ * @private
+ * @param {Object} object The source object.
+ * @param {string[]} props The property identifiers to pick from.
+ * @param {Function} predicate The function invoked per property.
+ * @returns {Object} Returns the new object.
+ */
+function basePickBy(object, props, predicate) {
+  var index = -1,
+      length = props.length,
+      result = {};
+
+  while (++index < length) {
+    var key = props[index],
+        value = object[key];
+
+    if (predicate(value, key)) {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
+/**
+ * The base implementation of `_.rest` which doesn't validate or coerce arguments.
+ *
+ * @private
+ * @param {Function} func The function to apply a rest parameter to.
+ * @param {number} [start=func.length-1] The start position of the rest parameter.
+ * @returns {Function} Returns the new function.
+ */
+function baseRest(func, start) {
+  start = nativeMax(start === undefined ? (func.length - 1) : start, 0);
+  return function() {
+    var args = arguments,
+        index = -1,
+        length = nativeMax(args.length - start, 0),
+        array = Array(length);
+
+    while (++index < length) {
+      array[index] = args[start + index];
+    }
+    index = -1;
+    var otherArgs = Array(start + 1);
+    while (++index < start) {
+      otherArgs[index] = args[index];
+    }
+    otherArgs[start] = array;
+    return apply(func, this, otherArgs);
+  };
+}
+
+/**
+ * Checks if `value` is a flattenable `arguments` object or array.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is flattenable, else `false`.
+ */
+function isFlattenable(value) {
+  return isArray(value) || isArguments(value) ||
+    !!(spreadableSymbol && value && value[spreadableSymbol]);
+}
+
+/**
+ * Converts `value` to a string key if it's not a string or symbol.
+ *
+ * @private
+ * @param {*} value The value to inspect.
+ * @returns {string|symbol} Returns the key.
+ */
+function toKey(value) {
+  if (typeof value == 'string' || isSymbol(value)) {
+    return value;
+  }
+  var result = (value + '');
+  return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
+}
+
+/**
+ * Checks if `value` is likely an `arguments` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an `arguments` object,
+ *  else `false`.
+ * @example
+ *
+ * _.isArguments(function() { return arguments; }());
+ * // => true
+ *
+ * _.isArguments([1, 2, 3]);
+ * // => false
+ */
+function isArguments(value) {
+  // Safari 8.1 makes `arguments.callee` enumerable in strict mode.
+  return isArrayLikeObject(value) && hasOwnProperty.call(value, 'callee') &&
+    (!propertyIsEnumerable.call(value, 'callee') || objectToString.call(value) == argsTag);
+}
+
+/**
+ * Checks if `value` is classified as an `Array` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an array, else `false`.
+ * @example
+ *
+ * _.isArray([1, 2, 3]);
+ * // => true
+ *
+ * _.isArray(document.body.children);
+ * // => false
+ *
+ * _.isArray('abc');
+ * // => false
+ *
+ * _.isArray(_.noop);
+ * // => false
+ */
+var isArray = Array.isArray;
+
+/**
+ * Checks if `value` is array-like. A value is considered array-like if it's
+ * not a function and has a `value.length` that's an integer greater than or
+ * equal to `0` and less than or equal to `Number.MAX_SAFE_INTEGER`.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is array-like, else `false`.
+ * @example
+ *
+ * _.isArrayLike([1, 2, 3]);
+ * // => true
+ *
+ * _.isArrayLike(document.body.children);
+ * // => true
+ *
+ * _.isArrayLike('abc');
+ * // => true
+ *
+ * _.isArrayLike(_.noop);
+ * // => false
+ */
+function isArrayLike(value) {
+  return value != null && isLength(value.length) && !isFunction(value);
+}
+
+/**
+ * This method is like `_.isArrayLike` except that it also checks if `value`
+ * is an object.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an array-like object,
+ *  else `false`.
+ * @example
+ *
+ * _.isArrayLikeObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isArrayLikeObject(document.body.children);
+ * // => true
+ *
+ * _.isArrayLikeObject('abc');
+ * // => false
+ *
+ * _.isArrayLikeObject(_.noop);
+ * // => false
+ */
+function isArrayLikeObject(value) {
+  return isObjectLike(value) && isArrayLike(value);
+}
+
+/**
+ * Checks if `value` is classified as a `Function` object.
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a function, else `false`.
+ * @example
+ *
+ * _.isFunction(_);
+ * // => true
+ *
+ * _.isFunction(/abc/);
+ * // => false
+ */
+function isFunction(value) {
+  // The use of `Object#toString` avoids issues with the `typeof` operator
+  // in Safari 8-9 which returns 'object' for typed array and other constructors.
+  var tag = isObject(value) ? objectToString.call(value) : '';
+  return tag == funcTag || tag == genTag;
+}
+
+/**
+ * Checks if `value` is a valid array-like length.
+ *
+ * **Note:** This method is loosely based on
+ * [`ToLength`](http://ecma-international.org/ecma-262/7.0/#sec-tolength).
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
+ * @example
+ *
+ * _.isLength(3);
+ * // => true
+ *
+ * _.isLength(Number.MIN_VALUE);
+ * // => false
+ *
+ * _.isLength(Infinity);
+ * // => false
+ *
+ * _.isLength('3');
+ * // => false
+ */
+function isLength(value) {
+  return typeof value == 'number' &&
+    value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+}
+
+/**
+ * Checks if `value` is the
+ * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
+ * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @since 0.1.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(_.noop);
+ * // => true
+ *
+ * _.isObject(null);
+ * // => false
+ */
+function isObject(value) {
+  var type = typeof value;
+  return !!value && (type == 'object' || type == 'function');
+}
+
+/**
+ * Checks if `value` is object-like. A value is object-like if it's not `null`
+ * and has a `typeof` result of "object".
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
+ * @example
+ *
+ * _.isObjectLike({});
+ * // => true
+ *
+ * _.isObjectLike([1, 2, 3]);
+ * // => true
+ *
+ * _.isObjectLike(_.noop);
+ * // => false
+ *
+ * _.isObjectLike(null);
+ * // => false
+ */
+function isObjectLike(value) {
+  return !!value && typeof value == 'object';
+}
+
+/**
+ * Checks if `value` is classified as a `Symbol` primitive or object.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
+ * @example
+ *
+ * _.isSymbol(Symbol.iterator);
+ * // => true
+ *
+ * _.isSymbol('abc');
+ * // => false
+ */
+function isSymbol(value) {
+  return typeof value == 'symbol' ||
+    (isObjectLike(value) && objectToString.call(value) == symbolTag);
+}
+
+/**
+ * Creates an object composed of the picked `object` properties.
+ *
+ * @static
+ * @since 0.1.0
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The source object.
+ * @param {...(string|string[])} [props] The property identifiers to pick.
+ * @returns {Object} Returns the new object.
+ * @example
+ *
+ * var object = { 'a': 1, 'b': '2', 'c': 3 };
+ *
+ * _.pick(object, ['a', 'c']);
+ * // => { 'a': 1, 'c': 3 }
+ */
+var pick = baseRest(function(object, props) {
+  return object == null ? {} : basePick(object, arrayMap(baseFlatten(props, 1), toKey));
+});
+
+var lodash_pick = pick;
+
+var RE = {};
+
+var getType = function getType(obj) {
+    return Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
+};
+var isFunction$1 = function isFunction(o) {
+    return getType(o) === 'function';
+};
+var isObject$1 = function isObject(o) {
+    return getType(o) === 'object';
+};
+var isString = function isString(o) {
+    return getType(o) === 'string';
+};
+var isUndefined = function isUndefined(o) {
+    return getType(o) === 'undefined';
+};
+var isArray$1 = function isArray(o) {
+    return getType(o) === 'array';
+};
+
+var classCallCheck = function (instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+};
+
+var createClass = function () {
+  function defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  return function (Constructor, protoProps, staticProps) {
+    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) defineProperties(Constructor, staticProps);
+    return Constructor;
+  };
+}();
+
+var defineProperty = function (obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
+};
+
+var _extends = Object.assign || function (target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i];
+
+    for (var key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        target[key] = source[key];
+      }
+    }
+  }
+
+  return target;
+};
+
+var inherits = function (subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+  }
+
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
+    constructor: {
+      value: subClass,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
+  });
+  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+};
+
+var objectWithoutProperties = function (obj, keys) {
+  var target = {};
+
+  for (var i in obj) {
+    if (keys.indexOf(i) >= 0) continue;
+    if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
+    target[i] = obj[i];
+  }
+
+  return target;
+};
+
+var possibleConstructorReturn = function (self, call) {
+  if (!self) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return call && (typeof call === "object" || typeof call === "function") ? call : self;
+};
+
+var slicedToArray = function () {
+  function sliceIterator(arr, i) {
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"]) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  return function (arr, i) {
+    if (Array.isArray(arr)) {
+      return arr;
+    } else if (Symbol.iterator in Object(arr)) {
+      return sliceIterator(arr, i);
+    } else {
+      throw new TypeError("Invalid attempt to destructure non-iterable instance");
+    }
+  };
+}();
+
+var toConsumableArray = function (arr) {
+  if (Array.isArray(arr)) {
+    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+    return arr2;
+  } else {
+    return Array.from(arr);
+  }
+};
+
+/**
+ * 注入方法
+ * type: 当前类型，查看ContextStore
+ * limit：获取CONTEXT中指定的key
+ *
+ * */
+
+var Install = (function () {
+    var inject = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+    return function (WrappedComponent) {
+        return function (props) {
+            var newProps = _extends({}, props, isString(inject) || isArray$1(inject) ? lodash_pick(RE, inject) : {});
+            return React.createElement(WrappedComponent, newProps);
+        };
+    };
+});
+
+/**
+ * 传递context
+ * */
+
+var Push = (function (id) {
+    var fn = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+    return function (WrappedComponent) {
+        return function (props) {
+            var warehouse = RE.__warehouse__[id];
+
+            if (!warehouse) {
+                console.warn('组件${WrappedComponent.displayName} Push 的 仓库id 不存在，请在 init 初始化中注册 warehouse！');
+            } else {
+                if (isFunction$1(fn)) {
+                    var dealResult = fn(props);
+                    Object.entries(isObject$1(dealResult) ? dealResult : {}).forEach(function (_ref) {
+                        var _ref2 = slicedToArray(_ref, 2),
+                            n = _ref2[0],
+                            m = _ref2[1];
+
+                        warehouse[n] = m;
+                    });
+                } else {
+                    (isArray$1(fn) ? fn : [fn]).forEach(function (v) {
+                        warehouse[v] = props[v];
+                    });
+                }
+            }
+
+            return React.createElement(WrappedComponent, props);
+        };
+    };
+});
+
+/**
+ * 继承context
+ * id: 仓库名
+ * limit：获取CONTEXT中指定的key
+ *
+ * */
+
+var Pull = (function (id) {
+    var limit = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+    return function (WrappedComponent) {
+        return function (props) {
+            var warehouse = RE.__warehouse__[id];
+            var newProps = props;
+
+            if (!warehouse) {
+                console.warn('组件${WrappedComponent.displayName} Pull 的 仓库id 不存在，请在 init 初始化中注册 warehouse！');
+            } else {
+                newProps = _extends({}, newProps, isArray$1(limit) ? lodash_pick(warehouse, limit) : {});
+            }
+            return React.createElement(WrappedComponent, newProps);
+        };
+    };
+});
+
+/** Detect free variable `global` from Node.js. */
+var freeGlobal$1 = typeof global == 'object' && global && global.Object === Object && global;
+
+/** Detect free variable `self`. */
+var freeSelf$1 = typeof self == 'object' && self && self.Object === Object && self;
+
+/** Used as a reference to the global object. */
+var root$1 = freeGlobal$1 || freeSelf$1 || Function('return this')();
+
+/** Built-in value references. */
+var Symbol$2 = root$1.Symbol;
+
+/** Used for built-in method references. */
+var objectProto$1 = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty$1 = objectProto$1.hasOwnProperty;
+
+/**
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var nativeObjectToString = objectProto$1.toString;
+
+/** Built-in value references. */
+var symToStringTag = Symbol$2 ? Symbol$2.toStringTag : undefined;
 
 /**
  * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
@@ -39,7 +786,7 @@ var symToStringTag = Symbol$1 ? Symbol$1.toStringTag : undefined;
  * @returns {string} Returns the raw `toStringTag`.
  */
 function getRawTag(value) {
-  var isOwn = hasOwnProperty.call(value, symToStringTag),
+  var isOwn = hasOwnProperty$1.call(value, symToStringTag),
       tag = value[symToStringTag];
 
   try {
@@ -58,14 +805,14 @@ function getRawTag(value) {
 }
 
 /** Used for built-in method references. */
-var objectProto$1 = Object.prototype;
+var objectProto$2 = Object.prototype;
 
 /**
  * Used to resolve the
  * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
  * of values.
  */
-var nativeObjectToString$1 = objectProto$1.toString;
+var nativeObjectToString$1 = objectProto$2.toString;
 
 /**
  * Converts `value` to a string using `Object.prototype.toString`.
@@ -74,7 +821,7 @@ var nativeObjectToString$1 = objectProto$1.toString;
  * @param {*} value The value to convert.
  * @returns {string} Returns the converted string.
  */
-function objectToString(value) {
+function objectToString$1(value) {
   return nativeObjectToString$1.call(value);
 }
 
@@ -83,7 +830,7 @@ var nullTag = '[object Null]',
     undefinedTag = '[object Undefined]';
 
 /** Built-in value references. */
-var symToStringTag$1 = Symbol$1 ? Symbol$1.toStringTag : undefined;
+var symToStringTag$1 = Symbol$2 ? Symbol$2.toStringTag : undefined;
 
 /**
  * The base implementation of `getTag` without fallbacks for buggy environments.
@@ -98,7 +845,7 @@ function baseGetTag(value) {
   }
   return (symToStringTag$1 && symToStringTag$1 in Object(value))
     ? getRawTag(value)
-    : objectToString(value);
+    : objectToString$1(value);
 }
 
 /**
@@ -142,7 +889,7 @@ var getPrototype = overArg(Object.getPrototypeOf, Object);
  * _.isObjectLike(null);
  * // => false
  */
-function isObjectLike(value) {
+function isObjectLike$1(value) {
   return value != null && typeof value == 'object';
 }
 
@@ -151,13 +898,13 @@ var objectTag = '[object Object]';
 
 /** Used for built-in method references. */
 var funcProto = Function.prototype,
-    objectProto$2 = Object.prototype;
+    objectProto$3 = Object.prototype;
 
 /** Used to resolve the decompiled source of functions. */
 var funcToString = funcProto.toString;
 
 /** Used to check objects for own properties. */
-var hasOwnProperty$1 = objectProto$2.hasOwnProperty;
+var hasOwnProperty$2 = objectProto$3.hasOwnProperty;
 
 /** Used to infer the `Object` constructor. */
 var objectCtorString = funcToString.call(Object);
@@ -191,14 +938,14 @@ var objectCtorString = funcToString.call(Object);
  * // => true
  */
 function isPlainObject(value) {
-  if (!isObjectLike(value) || baseGetTag(value) != objectTag) {
+  if (!isObjectLike$1(value) || baseGetTag(value) != objectTag) {
     return false;
   }
   var proto = getPrototype(value);
   if (proto === null) {
     return true;
   }
-  var Ctor = hasOwnProperty$1.call(proto, 'constructor') && proto.constructor;
+  var Ctor = hasOwnProperty$2.call(proto, 'constructor') && proto.constructor;
   return typeof Ctor == 'function' && Ctor instanceof Ctor &&
     funcToString.call(Ctor) == objectCtorString;
 }
@@ -223,21 +970,21 @@ function symbolObservablePonyfill(root) {
 
 /* global window */
 
-var root$1;
+var root$2;
 
 if (typeof self !== 'undefined') {
-  root$1 = self;
+  root$2 = self;
 } else if (typeof window !== 'undefined') {
-  root$1 = window;
+  root$2 = window;
 } else if (typeof global !== 'undefined') {
-  root$1 = global;
+  root$2 = global;
 } else if (typeof module !== 'undefined') {
-  root$1 = module;
+  root$2 = module;
 } else {
-  root$1 = Function('return this')();
+  root$2 = Function('return this')();
 }
 
-var result = symbolObservablePonyfill(root$1);
+var result = symbolObservablePonyfill(root$2);
 
 /**
  * These are private action types reserved by Redux.
@@ -715,7 +1462,7 @@ function compose() {
   });
 }
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+var _extends$1 = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 /**
  * Creates a store enhancer that applies middleware to the dispatch method
@@ -755,7 +1502,7 @@ function applyMiddleware() {
       });
       _dispatch = compose.apply(undefined, chain)(store.dispatch);
 
-      return _extends({}, store, {
+      return _extends$1({}, store, {
         dispatch: _dispatch
       });
     };
@@ -773,22 +1520,12 @@ if (process.env.NODE_ENV !== 'production' && typeof isCrushed.name === 'string' 
 }
 
 var es = /*#__PURE__*/Object.freeze({
-  createStore: createStore,
-  combineReducers: combineReducers,
-  bindActionCreators: bindActionCreators,
-  applyMiddleware: applyMiddleware,
-  compose: compose
+	createStore: createStore,
+	combineReducers: combineReducers,
+	bindActionCreators: bindActionCreators,
+	applyMiddleware: applyMiddleware,
+	compose: compose
 });
-
-var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
-
-function unwrapExports (x) {
-	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
-}
-
-function createCommonjsModule(fn, module) {
-	return module = { exports: {} }, fn(module, module.exports), module.exports;
-}
 
 var reducer = createCommonjsModule(function (module, exports) {
 
@@ -1353,10 +2090,10 @@ function resolvePathname(to) {
 }
 
 var resolvePathname$1 = /*#__PURE__*/Object.freeze({
-  default: resolvePathname
+	default: resolvePathname
 });
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 function valueEqual(a, b) {
   if (a === b) return true;
@@ -1369,8 +2106,8 @@ function valueEqual(a, b) {
     });
   }
 
-  var aType = typeof a === 'undefined' ? 'undefined' : _typeof(a);
-  var bType = typeof b === 'undefined' ? 'undefined' : _typeof(b);
+  var aType = typeof a === 'undefined' ? 'undefined' : _typeof$1(a);
+  var bType = typeof b === 'undefined' ? 'undefined' : _typeof$1(b);
 
   if (aType !== bType) return false;
 
@@ -1394,7 +2131,7 @@ function valueEqual(a, b) {
 }
 
 var valueEqual$1 = /*#__PURE__*/Object.freeze({
-  default: valueEqual
+	default: valueEqual
 });
 
 var PathUtils = createCommonjsModule(function (module, exports) {
@@ -2024,7 +2761,7 @@ exports.default = createBrowserHistory;
 
 var createHistory = unwrapExports(createBrowserHistory_1);
 
-var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var sym = function sym(id) {
   return '@@redux-saga/' + id;
@@ -2044,9 +2781,9 @@ function check(value, predicate, error) {
   }
 }
 
-var hasOwnProperty$2 = Object.prototype.hasOwnProperty;
+var hasOwnProperty$3 = Object.prototype.hasOwnProperty;
 function hasOwn(object, property) {
-  return is.notUndef(object) && hasOwnProperty$2.call(object, property);
+  return is.notUndef(object) && hasOwnProperty$3.call(object, property);
 }
 
 var is = {
@@ -2067,7 +2804,7 @@ var is = {
   },
   array: Array.isArray,
   object: function object(obj) {
-    return obj && !is.array(obj) && (typeof obj === 'undefined' ? 'undefined' : _typeof$1(obj)) === 'object';
+    return obj && !is.array(obj) && (typeof obj === 'undefined' ? 'undefined' : _typeof$2(obj)) === 'object';
   },
   promise: function promise(p) {
     return p && is.func(p.then);
@@ -2088,7 +2825,7 @@ var is = {
     return buf && is.func(buf.isEmpty) && is.func(buf.take) && is.func(buf.put);
   },
   pattern: function pattern(pat) {
-    return pat && (is.string(pat) || (typeof pat === 'undefined' ? 'undefined' : _typeof$1(pat)) === 'symbol' || is.func(pat) || is.array(pat));
+    return pat && (is.string(pat) || (typeof pat === 'undefined' ? 'undefined' : _typeof$2(pat)) === 'symbol' || is.func(pat) || is.array(pat));
   },
   channel: function channel(ch) {
     return ch && is.func(ch.take) && is.func(ch.close);
@@ -2406,24 +3143,92 @@ unwrapExports(reduxDevtoolsExtension);
 var reduxDevtoolsExtension_1 = reduxDevtoolsExtension.composeWithDevTools;
 var reduxDevtoolsExtension_2 = reduxDevtoolsExtension.devToolsEnhancer;
 
-var getType = function getType(obj) {
-    return Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
+function styleInject(css, ref) {
+  if ( ref === void 0 ) ref = {};
+  var insertAt = ref.insertAt;
+
+  if (!css || typeof document === 'undefined') { return; }
+
+  var head = document.head || document.getElementsByTagName('head')[0];
+  var style = document.createElement('style');
+  style.type = 'text/css';
+
+  if (insertAt === 'top') {
+    if (head.firstChild) {
+      head.insertBefore(style, head.firstChild);
+    } else {
+      head.appendChild(style);
+    }
+  } else {
+    head.appendChild(style);
+  }
+
+  if (style.styleSheet) {
+    style.styleSheet.cssText = css;
+  } else {
+    style.appendChild(document.createTextNode(css));
+  }
+}
+
+var css = ".RE-LOADING-BLOCK {\n    display: block;\n    text-align: center\n}\n\n.RE-LOADING-BLOCK > :first-child {\n    display: inline-block;\n    width: 30px;\n    height: 30px;\n    background-color: #1890ff;\n    -webkit-animation: rotateplane 1.2s infinite ease-in-out;\n            animation: rotateplane 1.2s infinite ease-in-out;\n}\n\n@-webkit-keyframes rotateplane {\n    0% {\n        -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg);\n                transform: perspective(120px) rotateX(0deg) rotateY(0deg);\n    }\n    50% {\n        -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);\n                transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);\n    }\n    100% {\n        -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);\n                transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);\n    }\n}\n\n@keyframes rotateplane {\n    0% {\n        -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg);\n                transform: perspective(120px) rotateX(0deg) rotateY(0deg);\n    }\n    50% {\n        -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);\n                transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);\n    }\n    100% {\n        -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);\n                transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);\n    }\n}\n\n.RE-LOADING-WAVE {\n    display: block;\n    text-align: center\n}\n\n.RE-LOADING-WAVE > * {\n    background-color: #1890ff;\n    width: 4px;\n    height: 30px;\n    margin: 0 1px;\n    display: inline-block;\n    -webkit-animation: stretchdelay 1.2s infinite ease-in-out;\n            animation: stretchdelay 1.2s infinite ease-in-out;\n}\n\n.RE-LOADING-WAVE > :nth-child(2) {\n    -webkit-animation-delay: -1.1s;\n            animation-delay: -1.1s;\n}\n\n.RE-LOADING-WAVE > :nth-child(3) {\n    -webkit-animation-delay: -1s;\n            animation-delay: -1s;\n}\n\n.RE-LOADING-WAVE > :nth-child(4) {\n    -webkit-animation-delay: -0.9s;\n            animation-delay: -0.9s;\n}\n\n.RE-LOADING-WAVE > :nth-child(5) {\n    -webkit-animation-delay: -0.8s;\n            animation-delay: -0.8s;\n}\n\n@-webkit-keyframes stretchdelay {\n    0%,\n    40%,\n    100% {\n        -webkit-transform: scaleY(0.4);\n                transform: scaleY(0.4);\n    }\n    20% {\n        -webkit-transform: scaleY(1);\n                transform: scaleY(1);\n    }\n}\n\n@keyframes stretchdelay {\n    0%,\n    40%,\n    100% {\n        -webkit-transform: scaleY(0.4);\n                transform: scaleY(0.4);\n    }\n    20% {\n        -webkit-transform: scaleY(1);\n                transform: scaleY(1);\n    }\n}\n\n.RE-LOADING-CRICLE {\n    display: block;\n    text-align: center;\n    min-width: 30px;\n    height: 30px;\n    position: relative\n}\n\n.RE-LOADING-CRICLE > * {\n    width: 30px;\n    height: 100%;\n    border-radius: 50%;\n    background-color: #1890ff;\n    opacity: 0.6;\n    position: absolute;\n    top: 50%;\n    left: 50%;\n    -webkit-transform: translate(-50%, -50%);\n            transform: translate(-50%, -50%);\n    -webkit-animation: bounce 2s infinite ease-in-out;\n            animation: bounce 2s infinite ease-in-out;\n}\n\n.RE-LOADING-CRICLE > :last-child {\n    -webkit-animation-delay: -1s;\n            animation-delay: -1s;\n}\n\n@-webkit-keyframes bounce {\n    0%,\n    100% {\n        -webkit-transform: scale(0);\n                transform: scale(0);\n    }\n    50% {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n    }\n}\n\n@keyframes bounce {\n    0%,\n    100% {\n        -webkit-transform: scale(0);\n                transform: scale(0);\n    }\n    50% {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n    }\n}\n";
+styleInject(css);
+
+var LOADING_TYPE = [React.createElement(
+    'span',
+    { className: 'RE-LOADING-BLOCK' },
+    React.createElement('span', null)
+), React.createElement(
+    'span',
+    { className: 'RE-LOADING-WAVE' },
+    React.createElement('span', null),
+    React.createElement('span', null),
+    React.createElement('span', null),
+    React.createElement('span', null),
+    React.createElement('span', null)
+), React.createElement(
+    'span',
+    { className: 'RE-LOADING-CRICLE' },
+    React.createElement('span', null),
+    React.createElement('span', null)
+)];
+
+var Loading = function Loading(_ref) {
+    var type = _ref.type;
+
+    return LOADING_TYPE[type] || LOADING_TYPE[0];
 };
-var isFunction = function isFunction(o) {
-    return getType(o) === 'function';
-};
-var isObject = function isObject(o) {
-    return getType(o) === 'object';
-};
-var isString = function isString(o) {
-    return getType(o) === 'string';
-};
-var isUndefined = function isUndefined(o) {
-    return getType(o) === 'undefined';
-};
-var isArray = function isArray(o) {
-    return getType(o) === 'array';
-};
+
+var PlaceholderLoading = (function (Loading$$1) {
+    var PlaceholderLoading = function (_React$Component) {
+        inherits(PlaceholderLoading, _React$Component);
+
+        function PlaceholderLoading() {
+            var _ref;
+
+            classCallCheck(this, PlaceholderLoading);
+
+            for (var _len = arguments.length, arg = Array(_len), _key = 0; _key < _len; _key++) {
+                arg[_key] = arguments[_key];
+            }
+
+            return possibleConstructorReturn(this, (_ref = PlaceholderLoading.__proto__ || Object.getPrototypeOf(PlaceholderLoading)).call.apply(_ref, [this].concat(arg)));
+        }
+
+        createClass(PlaceholderLoading, [{
+            key: 'render',
+            value: function render() {
+                return this.props.loading && !isUndefined(Loading$$1) ? !isFunction$1(Loading$$1) ? React.createElement(Loading, { type: Loading$$1 }) : React.createElement(Loading$$1, this.props) : null;
+            }
+        }]);
+        return PlaceholderLoading;
+    }(React.Component);
+
+    return connect(function (store) {
+        return {
+            loading: (store['@@LOADING'] || {}).loading
+        };
+    })(PlaceholderLoading);
+});
 
 /**
  * lodash (Custom Build) <https://lodash.com/>
@@ -2441,12 +3246,12 @@ var FUNC_ERROR_TEXT = 'Expected a function';
 var HASH_UNDEFINED = '__lodash_hash_undefined__';
 
 /** Used as references for various `Number` constants. */
-var INFINITY = 1 / 0;
+var INFINITY$1 = 1 / 0;
 
 /** `Object#toString` result references. */
-var funcTag = '[object Function]',
-    genTag = '[object GeneratorFunction]',
-    symbolTag = '[object Symbol]';
+var funcTag$1 = '[object Function]',
+    genTag$1 = '[object GeneratorFunction]',
+    symbolTag$1 = '[object Symbol]';
 
 /** Used to match property names within property paths. */
 var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
@@ -2467,13 +3272,13 @@ var reEscapeChar = /\\(\\)?/g;
 var reIsHostCtor = /^\[object .+?Constructor\]$/;
 
 /** Detect free variable `global` from Node.js. */
-var freeGlobal$1 = typeof commonjsGlobal == 'object' && commonjsGlobal && commonjsGlobal.Object === Object && commonjsGlobal;
+var freeGlobal$2 = typeof commonjsGlobal == 'object' && commonjsGlobal && commonjsGlobal.Object === Object && commonjsGlobal;
 
 /** Detect free variable `self`. */
-var freeSelf$1 = typeof self == 'object' && self && self.Object === Object && self;
+var freeSelf$2 = typeof self == 'object' && self && self.Object === Object && self;
 
 /** Used as a reference to the global object. */
-var root$2 = freeGlobal$1 || freeSelf$1 || Function('return this')();
+var root$3 = freeGlobal$2 || freeSelf$2 || Function('return this')();
 
 /**
  * Gets the value at `key` of `object`.
@@ -2509,10 +3314,10 @@ function isHostObject(value) {
 /** Used for built-in method references. */
 var arrayProto = Array.prototype,
     funcProto$1 = Function.prototype,
-    objectProto$3 = Object.prototype;
+    objectProto$4 = Object.prototype;
 
 /** Used to detect overreaching core-js shims. */
-var coreJsData = root$2['__core-js_shared__'];
+var coreJsData = root$3['__core-js_shared__'];
 
 /** Used to detect methods masquerading as native. */
 var maskSrcKey = (function() {
@@ -2524,31 +3329,31 @@ var maskSrcKey = (function() {
 var funcToString$1 = funcProto$1.toString;
 
 /** Used to check objects for own properties. */
-var hasOwnProperty$3 = objectProto$3.hasOwnProperty;
+var hasOwnProperty$4 = objectProto$4.hasOwnProperty;
 
 /**
  * Used to resolve the
  * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
  * of values.
  */
-var objectToString$1 = objectProto$3.toString;
+var objectToString$2 = objectProto$4.toString;
 
 /** Used to detect if a method is native. */
 var reIsNative = RegExp('^' +
-  funcToString$1.call(hasOwnProperty$3).replace(reRegExpChar, '\\$&')
+  funcToString$1.call(hasOwnProperty$4).replace(reRegExpChar, '\\$&')
   .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
 );
 
 /** Built-in value references. */
-var Symbol$2 = root$2.Symbol,
+var Symbol$3 = root$3.Symbol,
     splice = arrayProto.splice;
 
 /* Built-in method references that are verified to be native. */
-var Map = getNative(root$2, 'Map'),
+var Map = getNative(root$3, 'Map'),
     nativeCreate = getNative(Object, 'create');
 
 /** Used to convert symbols to primitives and strings. */
-var symbolProto = Symbol$2 ? Symbol$2.prototype : undefined,
+var symbolProto = Symbol$3 ? Symbol$3.prototype : undefined,
     symbolToString = symbolProto ? symbolProto.toString : undefined;
 
 /**
@@ -2609,7 +3414,7 @@ function hashGet(key) {
     var result = data[key];
     return result === HASH_UNDEFINED ? undefined : result;
   }
-  return hasOwnProperty$3.call(data, key) ? data[key] : undefined;
+  return hasOwnProperty$4.call(data, key) ? data[key] : undefined;
 }
 
 /**
@@ -2623,7 +3428,7 @@ function hashGet(key) {
  */
 function hashHas(key) {
   var data = this.__data__;
-  return nativeCreate ? data[key] !== undefined : hasOwnProperty$3.call(data, key);
+  return nativeCreate ? data[key] !== undefined : hasOwnProperty$4.call(data, key);
 }
 
 /**
@@ -2888,7 +3693,7 @@ function baseGet(object, path) {
       length = path.length;
 
   while (object != null && index < length) {
-    object = object[toKey(path[index++])];
+    object = object[toKey$1(path[index++])];
   }
   return (index && index == length) ? object : undefined;
 }
@@ -2902,10 +3707,10 @@ function baseGet(object, path) {
  *  else `false`.
  */
 function baseIsNative(value) {
-  if (!isObject$1(value) || isMasked(value)) {
+  if (!isObject$2(value) || isMasked(value)) {
     return false;
   }
-  var pattern = (isFunction$1(value) || isHostObject(value)) ? reIsNative : reIsHostCtor;
+  var pattern = (isFunction$2(value) || isHostObject(value)) ? reIsNative : reIsHostCtor;
   return pattern.test(toSource(value));
 }
 
@@ -2922,11 +3727,11 @@ function baseToString(value) {
   if (typeof value == 'string') {
     return value;
   }
-  if (isSymbol(value)) {
+  if (isSymbol$1(value)) {
     return symbolToString ? symbolToString.call(value) : '';
   }
   var result = (value + '');
-  return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
+  return (result == '0' && (1 / value) == -INFINITY$1) ? '-0' : result;
 }
 
 /**
@@ -2937,7 +3742,7 @@ function baseToString(value) {
  * @returns {Array} Returns the cast property path array.
  */
 function castPath(value) {
-  return isArray$1(value) ? value : stringToPath(value);
+  return isArray$2(value) ? value : stringToPath(value);
 }
 
 /**
@@ -2977,12 +3782,12 @@ function getNative(object, key) {
  * @returns {boolean} Returns `true` if `value` is a property name, else `false`.
  */
 function isKey(value, object) {
-  if (isArray$1(value)) {
+  if (isArray$2(value)) {
     return false;
   }
   var type = typeof value;
   if (type == 'number' || type == 'symbol' || type == 'boolean' ||
-      value == null || isSymbol(value)) {
+      value == null || isSymbol$1(value)) {
     return true;
   }
   return reIsPlainProp.test(value) || !reIsDeepProp.test(value) ||
@@ -3041,12 +3846,12 @@ var stringToPath = memoize(function(string) {
  * @param {*} value The value to inspect.
  * @returns {string|symbol} Returns the key.
  */
-function toKey(value) {
-  if (typeof value == 'string' || isSymbol(value)) {
+function toKey$1(value) {
+  if (typeof value == 'string' || isSymbol$1(value)) {
     return value;
   }
   var result = (value + '');
-  return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
+  return (result == '0' && (1 / value) == -INFINITY$1) ? '-0' : result;
 }
 
 /**
@@ -3194,7 +3999,7 @@ function eq(value, other) {
  * _.isArray(_.noop);
  * // => false
  */
-var isArray$1 = Array.isArray;
+var isArray$2 = Array.isArray;
 
 /**
  * Checks if `value` is classified as a `Function` object.
@@ -3213,11 +4018,11 @@ var isArray$1 = Array.isArray;
  * _.isFunction(/abc/);
  * // => false
  */
-function isFunction$1(value) {
+function isFunction$2(value) {
   // The use of `Object#toString` avoids issues with the `typeof` operator
   // in Safari 8-9 which returns 'object' for typed array and other constructors.
-  var tag = isObject$1(value) ? objectToString$1.call(value) : '';
-  return tag == funcTag || tag == genTag;
+  var tag = isObject$2(value) ? objectToString$2.call(value) : '';
+  return tag == funcTag$1 || tag == genTag$1;
 }
 
 /**
@@ -3245,7 +4050,7 @@ function isFunction$1(value) {
  * _.isObject(null);
  * // => false
  */
-function isObject$1(value) {
+function isObject$2(value) {
   var type = typeof value;
   return !!value && (type == 'object' || type == 'function');
 }
@@ -3274,7 +4079,7 @@ function isObject$1(value) {
  * _.isObjectLike(null);
  * // => false
  */
-function isObjectLike$1(value) {
+function isObjectLike$2(value) {
   return !!value && typeof value == 'object';
 }
 
@@ -3295,9 +4100,9 @@ function isObjectLike$1(value) {
  * _.isSymbol('abc');
  * // => false
  */
-function isSymbol(value) {
+function isSymbol$1(value) {
   return typeof value == 'symbol' ||
-    (isObjectLike$1(value) && objectToString$1.call(value) == symbolTag);
+    (isObjectLike$2(value) && objectToString$2.call(value) == symbolTag$1);
 }
 
 /**
@@ -3350,149 +4155,12 @@ function toString(value) {
  * _.get(object, 'a.b.c', 'default');
  * // => 'default'
  */
-function get(object, path, defaultValue) {
+function get$1(object, path, defaultValue) {
   var result = object == null ? undefined : baseGet(object, path);
   return result === undefined ? defaultValue : result;
 }
 
-var lodash_get = get;
-
-var classCallCheck = function (instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-};
-
-var createClass = function () {
-  function defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  return function (Constructor, protoProps, staticProps) {
-    if (protoProps) defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) defineProperties(Constructor, staticProps);
-    return Constructor;
-  };
-}();
-
-var defineProperty = function (obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
-};
-
-var _extends$3 = Object.assign || function (target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i];
-
-    for (var key in source) {
-      if (Object.prototype.hasOwnProperty.call(source, key)) {
-        target[key] = source[key];
-      }
-    }
-  }
-
-  return target;
-};
-
-var inherits = function (subClass, superClass) {
-  if (typeof superClass !== "function" && superClass !== null) {
-    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-  }
-
-  subClass.prototype = Object.create(superClass && superClass.prototype, {
-    constructor: {
-      value: subClass,
-      enumerable: false,
-      writable: true,
-      configurable: true
-    }
-  });
-  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-};
-
-var objectWithoutProperties = function (obj, keys) {
-  var target = {};
-
-  for (var i in obj) {
-    if (keys.indexOf(i) >= 0) continue;
-    if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
-    target[i] = obj[i];
-  }
-
-  return target;
-};
-
-var possibleConstructorReturn = function (self, call) {
-  if (!self) {
-    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-  }
-
-  return call && (typeof call === "object" || typeof call === "function") ? call : self;
-};
-
-var slicedToArray = function () {
-  function sliceIterator(arr, i) {
-    var _arr = [];
-    var _n = true;
-    var _d = false;
-    var _e = undefined;
-
-    try {
-      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-        _arr.push(_s.value);
-
-        if (i && _arr.length === i) break;
-      }
-    } catch (err) {
-      _d = true;
-      _e = err;
-    } finally {
-      try {
-        if (!_n && _i["return"]) _i["return"]();
-      } finally {
-        if (_d) throw _e;
-      }
-    }
-
-    return _arr;
-  }
-
-  return function (arr, i) {
-    if (Array.isArray(arr)) {
-      return arr;
-    } else if (Symbol.iterator in Object(arr)) {
-      return sliceIterator(arr, i);
-    } else {
-      throw new TypeError("Invalid attempt to destructure non-iterable instance");
-    }
-  };
-}();
-
-var toConsumableArray = function (arr) {
-  if (Array.isArray(arr)) {
-    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-    return arr2;
-  } else {
-    return Array.from(arr);
-  }
-};
+var lodash_get = get$1;
 
 var take$1 = function take$$1(obj, path) {
     return lodash_get(obj, path);
@@ -3510,7 +4178,7 @@ var requestMiddleware = (function (RE, _ref, store) {
                 getState = store.getState;
 
 
-            if (isFunction(action)) {
+            if (isFunction$1(action)) {
                 action(dispatch, getState);
                 return;
             }
@@ -3528,19 +4196,19 @@ var requestMiddleware = (function (RE, _ref, store) {
 
             if (!request) {
                 return isEffect(rest.type, RE) ? new Promise(function (resolve, reject) {
-                    return next(_extends$3({
+                    return next(_extends({
                         __RE_PROMISE_RESOLVE__: resolve,
                         __RE_PROMISE_REJECT__: reject
                     }, rest));
                 }) : next(action);
             }
 
-            if (!isFunction(request)) {
+            if (!isFunction$1(request)) {
                 console.error('request must be a function!');
                 return next(action);
             }
 
-            if (isObject(will) && isString(will.type)) {
+            if (isObject$1(will) && isString(will.type)) {
                 next(will);
             } else if (isString(will)) {
                 next({
@@ -3550,7 +4218,7 @@ var requestMiddleware = (function (RE, _ref, store) {
 
             var mergeError = error || requestError;
 
-            var isRequestLoading = isFunction(requestLoading);
+            var isRequestLoading = isFunction$1(requestLoading);
 
             if (isRequestLoading) requestLoading(false, action);
 
@@ -3565,7 +4233,7 @@ var requestMiddleware = (function (RE, _ref, store) {
                 var data = result.data;
 
                 var transferData = data || result;
-                var limitData = isString(resultLimit) ? take$1(transferData, resultLimit) : isArray(resultLimit) ? resultLimit.reduce(function (r, v) {
+                var limitData = isString(resultLimit) ? take$1(transferData, resultLimit) : isArray$1(resultLimit) ? resultLimit.reduce(function (r, v) {
                     if (!isString(v)) {
                         console.warn(JSON.stringify(v) + ' \u4E0D\u7B26\u5408\u5B57\u6BB5\u622A\u53D6\u89C4\u5219\uFF1B\u8BF7\u4F7F\u7528"result.data"\u8FD9\u79CD\u89C4\u5219\uFF01');
                         return r;
@@ -3586,23 +4254,23 @@ var requestMiddleware = (function (RE, _ref, store) {
                     }
                 });
 
-                if (isFunction(requestCallback)) {
+                if (isFunction$1(requestCallback)) {
                     requestCallback(transferData, rest, dispatch, getState);
                 } else if (isString(requestCallback)) {
-                    next(_extends$3({
+                    next(_extends({
                         type: requestCallback,
                         payload: transferData
                     }, rest));
                 }
 
-                if (isObject(did) && isString(did.type)) {
+                if (isObject$1(did) && isString(did.type)) {
                     var type = did.type,
                         payload = did.payload,
                         rest2 = objectWithoutProperties(did, ['type', 'payload']);
 
-                    next(_extends$3({
+                    next(_extends({
                         type: did.type,
-                        payload: isUndefined(payload) ? limitData : isFunction(payload) ? payload(limitData) : payload
+                        payload: isUndefined(payload) ? limitData : isFunction$1(payload) ? payload(limitData) : payload
                     }, rest2));
                 } else if (isString(did)) {
                     next({
@@ -3611,19 +4279,19 @@ var requestMiddleware = (function (RE, _ref, store) {
                     });
                 }
 
-                if (isFunction(callback)) {
+                if (isFunction$1(callback)) {
                     callback(limitData);
                 } else if (isString(requecallbacktCallback)) {
-                    next(_extends$3({
+                    next(_extends({
                         type: callback,
                         payload: limitData
                     }, rest));
                 }
             }).catch(function (err) {
-                if (isFunction(mergeError)) {
+                if (isFunction$1(mergeError)) {
                     mergeError(err);
                 } else if (isString(mergeError)) {
-                    next(_extends$3({
+                    next(_extends({
                         type: mergeError
                     }, rest));
                 }
@@ -3651,7 +4319,7 @@ var promiseMiddleware = (function (RE, store) {
                 getState = store.getState;
 
 
-            if (isFunction(action)) {
+            if (isFunction$1(action)) {
                 action(dispatch, getState);
                 return;
             }
@@ -3693,7 +4361,7 @@ var promiseMiddleware = (function (RE, store) {
                 }, _marked, this, [[0, 7]]);
             }
 
-            if (isFunction(__RE_PROMISE_REJECT__) && isFunction(__RE_PROMISE_RESOLVE__)) {
+            if (isFunction$1(__RE_PROMISE_REJECT__) && isFunction$1(__RE_PROMISE_RESOLVE__)) {
                 var _next = function _next() {
                     var ret = gen.next();
                     if (!ret.done) _next();
@@ -3730,11 +4398,11 @@ var addNameSpace = function addNameSpace() {
             n = _ref2[0],
             m = _ref2[1];
 
-        return _extends$3({}, r, defineProperty({}, namespace + '/' + n, m));
+        return _extends({}, r, defineProperty({}, namespace + '/' + n, m));
     }, {});
 };
 
-function injectAsyncReducers(store, asyncReducers, initialState) {
+function injectAsyncReducers(asyncReducers, initialState) {
     var flag = false;
 
     if (asyncReducers) {
@@ -3752,8 +4420,8 @@ function injectAsyncReducers(store, asyncReducers, initialState) {
                 var m = _ref4[1];
 
                 if (Object.prototype.hasOwnProperty.call(asyncReducers, n)) {
-                    if (store && !(store.asyncReducers || {})[n]) {
-                        store.asyncReducers[n] = createReducer(initialState[n] || {}, m);
+                    if (RE && !(RE.asyncReducers || {})[n]) {
+                        RE.asyncReducers[n] = createReducer(initialState[n] || {}, m);
                         flag = true;
                     }
                 }
@@ -3773,11 +4441,11 @@ function injectAsyncReducers(store, asyncReducers, initialState) {
             }
         }
 
-        flag && store.replaceReducer(combineReducers(store.asyncReducers));
+        flag && RE.__store__.replaceReducer(combineReducers(RE.asyncReducers));
     }
 }
 
-function injectAsyncSagas(store, sagas, sagaMiddleware) {
+function injectAsyncSagas(sagas, sagaMiddleware) {
     if (sagas) {
         var _iteratorNormalCompletion2 = true;
         var _didIteratorError2 = false;
@@ -3793,8 +4461,8 @@ function injectAsyncSagas(store, sagas, sagaMiddleware) {
                 var m = _ref6[1];
 
                 if (Object.prototype.hasOwnProperty.call(sagas, n)) {
-                    if (store && !(store.asyncSagas || {})[n]) {
-                        store.asyncSagas[n] = m;
+                    if (RE && !(RE.asyncSagas || {})[n]) {
+                        RE.asyncSagas[n] = m;
                         sagaMiddleware.run(m);
                     }
                 }
@@ -3816,7 +4484,8 @@ function injectAsyncSagas(store, sagas, sagaMiddleware) {
     }
 }
 
-function registerModel(RE, store, sagaMiddleware, models) {
+function registerModel(sagaMiddleware, models) {
+    console.log();
     var deal = (Array.isArray(models) ? models : [models]).filter(function (_ref7) {
         var namespace = _ref7.namespace,
             effects = _ref7.effects,
@@ -3846,23 +4515,23 @@ function registerModel(RE, store, sagaMiddleware, models) {
         var dealSagas = addNameSpace(effects, namespace);
         var dealReducers = addNameSpace(reducers, namespace);
 
-        RE._effects = _extends$3({}, RE._effects, dealSagas);
+        RE._effects = _extends({}, RE._effects, dealSagas);
         return {
-            state: _extends$3({}, r.state || {}, defineProperty({}, namespace, state)),
-            sagas: _extends$3({}, r.sagas || {}, defineProperty({}, namespace, dealSagas)),
-            reducers: _extends$3({}, r.reducers || {}, defineProperty({}, namespace, dealReducers))
+            state: _extends({}, r.state || {}, defineProperty({}, namespace, state)),
+            sagas: _extends({}, r.sagas || {}, defineProperty({}, namespace, dealSagas)),
+            reducers: _extends({}, r.reducers || {}, defineProperty({}, namespace, dealReducers))
         };
     }, {});
 
     if (!deal.sagas) return;
 
-    injectAsyncReducers(store, deal.reducers, deal.state);
-    injectAsyncSagas(store, Object.entries(deal.sagas).reduce(function (r, _ref9) {
+    injectAsyncReducers(deal.reducers, deal.state);
+    injectAsyncSagas(Object.entries(deal.sagas).reduce(function (r, _ref9) {
         var _ref10 = slicedToArray(_ref9, 2),
             name = _ref10[0],
             fns = _ref10[1];
 
-        return _extends$3({}, r, defineProperty({}, name, /*#__PURE__*/regeneratorRuntime.mark(function _callee3() {
+        return _extends({}, r, defineProperty({}, name, /*#__PURE__*/regeneratorRuntime.mark(function _callee3() {
             return regeneratorRuntime.wrap(function _callee3$(_context3) {
                 while (1) {
                     switch (_context3.prev = _context3.next) {
@@ -4063,7 +4732,7 @@ object-assign
 */
 /* eslint-disable no-unused-vars */
 var getOwnPropertySymbols = Object.getOwnPropertySymbols;
-var hasOwnProperty$4 = Object.prototype.hasOwnProperty;
+var hasOwnProperty$5 = Object.prototype.hasOwnProperty;
 var propIsEnumerable = Object.prototype.propertyIsEnumerable;
 
 function toObject(val) {
@@ -4127,7 +4796,7 @@ var objectAssign = shouldUseNative() ? Object.assign : function (target, source)
 		from = Object(arguments[s]);
 
 		for (var key in from) {
-			if (hasOwnProperty$4.call(from, key)) {
+			if (hasOwnProperty$5.call(from, key)) {
 				to[key] = from[key];
 			}
 		}
@@ -5145,79 +5814,23 @@ module.exports = Loadable;
 
 var Loadable = unwrapExports(lib$1);
 
-function styleInject(css, ref) {
-  if ( ref === void 0 ) ref = {};
-  var insertAt = ref.insertAt;
-
-  if (!css || typeof document === 'undefined') { return; }
-
-  var head = document.head || document.getElementsByTagName('head')[0];
-  var style = document.createElement('style');
-  style.type = 'text/css';
-
-  if (insertAt === 'top') {
-    if (head.firstChild) {
-      head.insertBefore(style, head.firstChild);
-    } else {
-      head.appendChild(style);
-    }
-  } else {
-    head.appendChild(style);
-  }
-
-  if (style.styleSheet) {
-    style.styleSheet.cssText = css;
-  } else {
-    style.appendChild(document.createTextNode(css));
-  }
-}
-
-var css = ".RE-LOADING-BLOCK {\n    display: block;\n    text-align: center\n}\n\n.RE-LOADING-BLOCK > :first-child {\n    display: inline-block;\n    width: 30px;\n    height: 30px;\n    background-color: #1890ff;\n    -webkit-animation: rotateplane 1.2s infinite ease-in-out;\n            animation: rotateplane 1.2s infinite ease-in-out;\n}\n\n@-webkit-keyframes rotateplane {\n    0% {\n        -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg);\n                transform: perspective(120px) rotateX(0deg) rotateY(0deg);\n    }\n    50% {\n        -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);\n                transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);\n    }\n    100% {\n        -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);\n                transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);\n    }\n}\n\n@keyframes rotateplane {\n    0% {\n        -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg);\n                transform: perspective(120px) rotateX(0deg) rotateY(0deg);\n    }\n    50% {\n        -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);\n                transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);\n    }\n    100% {\n        -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);\n                transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);\n    }\n}\n\n.RE-LOADING-WAVE {\n    display: block;\n    text-align: center\n}\n\n.RE-LOADING-WAVE > * {\n    background-color: #1890ff;\n    width: 4px;\n    height: 30px;\n    margin: 0 1px;\n    display: inline-block;\n    -webkit-animation: stretchdelay 1.2s infinite ease-in-out;\n            animation: stretchdelay 1.2s infinite ease-in-out;\n}\n\n.RE-LOADING-WAVE > :nth-child(2) {\n    -webkit-animation-delay: -1.1s;\n            animation-delay: -1.1s;\n}\n\n.RE-LOADING-WAVE > :nth-child(3) {\n    -webkit-animation-delay: -1s;\n            animation-delay: -1s;\n}\n\n.RE-LOADING-WAVE > :nth-child(4) {\n    -webkit-animation-delay: -0.9s;\n            animation-delay: -0.9s;\n}\n\n.RE-LOADING-WAVE > :nth-child(5) {\n    -webkit-animation-delay: -0.8s;\n            animation-delay: -0.8s;\n}\n\n@-webkit-keyframes stretchdelay {\n    0%,\n    40%,\n    100% {\n        -webkit-transform: scaleY(0.4);\n                transform: scaleY(0.4);\n    }\n    20% {\n        -webkit-transform: scaleY(1);\n                transform: scaleY(1);\n    }\n}\n\n@keyframes stretchdelay {\n    0%,\n    40%,\n    100% {\n        -webkit-transform: scaleY(0.4);\n                transform: scaleY(0.4);\n    }\n    20% {\n        -webkit-transform: scaleY(1);\n                transform: scaleY(1);\n    }\n}\n\n.RE-LOADING-CRICLE {\n    display: block;\n    text-align: center;\n    min-width: 30px;\n    height: 30px;\n    position: relative\n}\n\n.RE-LOADING-CRICLE > * {\n    width: 30px;\n    height: 100%;\n    border-radius: 50%;\n    background-color: #1890ff;\n    opacity: 0.6;\n    position: absolute;\n    top: 50%;\n    left: 50%;\n    -webkit-transform: translate(-50%, -50%);\n            transform: translate(-50%, -50%);\n    -webkit-animation: bounce 2s infinite ease-in-out;\n            animation: bounce 2s infinite ease-in-out;\n}\n\n.RE-LOADING-CRICLE > :last-child {\n    -webkit-animation-delay: -1s;\n            animation-delay: -1s;\n}\n\n@-webkit-keyframes bounce {\n    0%,\n    100% {\n        -webkit-transform: scale(0);\n                transform: scale(0);\n    }\n    50% {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n    }\n}\n\n@keyframes bounce {\n    0%,\n    100% {\n        -webkit-transform: scale(0);\n                transform: scale(0);\n    }\n    50% {\n        -webkit-transform: scale(1);\n                transform: scale(1);\n    }\n}\n";
-styleInject(css);
-
-var LOADING_TYPE = [React.createElement(
-    'span',
-    { className: 'RE-LOADING-BLOCK' },
-    React.createElement('span', null)
-), React.createElement(
-    'span',
-    { className: 'RE-LOADING-WAVE' },
-    React.createElement('span', null),
-    React.createElement('span', null),
-    React.createElement('span', null),
-    React.createElement('span', null),
-    React.createElement('span', null)
-), React.createElement(
-    'span',
-    { className: 'RE-LOADING-CRICLE' },
-    React.createElement('span', null),
-    React.createElement('span', null)
-)];
-
-var Loading = function Loading(_ref) {
-    var type = _ref.type;
-
-    console.log(LOADING_TYPE[type]);
-    return LOADING_TYPE[type] || LOADING_TYPE[0];
-};
-
 /**
  * 异步加载组件以及model
  * */
 
-var AsyncComponent = (function (registerModel, componentLoading) {
-    var params = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+var AsyncComponent = (function (componentLoading) {
+    var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-    var isMore = isFunction(params);
+    var isMore = isFunction$1(params);
 
     var defaultParams = {
-        loading: isFunction(componentLoading) ? componentLoading : function () {
+        loading: isFunction$1(componentLoading) ? componentLoading : function () {
             return React.createElement(Loading, { type: componentLoading });
         }
     };
 
     if (isMore) {
-        return Loadable(_extends$3({}, defaultParams, {
+        return Loadable(_extends({}, defaultParams, {
             loader: params
         }));
     } else {
@@ -5227,9 +5840,9 @@ var AsyncComponent = (function (registerModel, componentLoading) {
             model = params.model,
             rest = objectWithoutProperties(params, ['props', 'component', 'model']);
 
-        return Loadable.Map(_extends$3({}, defaultParams, rest, {
-            loader: (isArray(model) ? model : [model]).reduce(function (r, v, i) {
-                return _extends$3({}, r, defineProperty({}, i, v));
+        return Loadable.Map(_extends({}, defaultParams, rest, {
+            loader: (isArray$1(model) ? model : [model]).reduce(function (r, v, i) {
+                return _extends({}, r, defineProperty({}, i, v));
             }, { component: component }),
             render: function render(_ref, props) {
                 var component = _ref.component,
@@ -5237,9 +5850,9 @@ var AsyncComponent = (function (registerModel, componentLoading) {
 
                 var ReturnCompoment = component.default;
                 models && Object.values(models).forEach(function (v) {
-                    return registerModel(v.default);
+                    return RE.registerModel(v.default);
                 });
-                return React.createElement(ReturnCompoment, _extends$3({}, props2, props));
+                return React.createElement(ReturnCompoment, _extends({}, props2, props));
             }
         }));
     }
@@ -5255,7 +5868,7 @@ var loadingModel = {
         __SET_LOADING__: function __SET_LOADING__(state, _ref) {
             var payload = _ref.payload;
 
-            return _extends$3({
+            return _extends({
                 state: state
             }, payload);
         }
@@ -5296,17 +5909,19 @@ function configureStore() {
         requestCallback = _ref.requestCallback,
         requestError = _ref.requestError,
         resultLimit = _ref.resultLimit,
-        requestLoading = _ref.requestLoading;
+        requestLoading = _ref.requestLoading,
+        componentLoading = _ref.componentLoading,
+        warehouse = _ref.warehouse;
 
-    var RE = {
-        _effects: {},
-        _reducers: {},
-        asyncReducers: {
-            route: lib_9
-        },
-        asyncSagas: {},
-        _models: []
-    };
+    RE.__warehouse__ = warehouse.reduce(function (r, v, i) {
+        return _extends({}, r, defineProperty({}, v, {}));
+    }, {});
+    RE.__store__ = {};
+    RE._effects = {};
+    RE._reducers = {};
+    RE._models = [];
+    RE.asyncReducers = { route: lib_9 };
+    RE.asyncSagas = {};
 
     // 中间件列表
     var middleware = [historyMiddleware, sagaMiddleware, requestMiddleware.bind(null, RE, {
@@ -5318,7 +5933,7 @@ function configureStore() {
 
     var operApplyMiddleware = applyMiddleware.apply(undefined, toConsumableArray(middleware));
 
-    var store = createStore(combineReducers(_extends$3({}, reducers, RE.asyncReducers)
+    var store = createStore(combineReducers(_extends({}, reducers, RE.asyncReducers)
     // route: routerReducer
     ), state, process.env.NODE_ENV === 'development' ? reduxDevtoolsExtension_1(operApplyMiddleware) : operApplyMiddleware);
 
@@ -5348,773 +5963,18 @@ function configureStore() {
     //     )
     // }
 
-    store.asyncReducers = RE.asyncReducers;
-    store.asyncSagas = RE.asyncSagas;
+    RE.__store__ = store;
+    RE.registerModel = registerModel.bind(null, sagaMiddleware);
+    RE.AsyncComponent = AsyncComponent.bind(null, componentLoading);
 
-    var newR = registerModel.bind(null, RE, store, sagaMiddleware);
-
-    if (!isUndefined(requestLoading)) newR(loadingModel);
-
-    return {
-        store: store,
-        registerModel: newR,
-        AsyncComponent: AsyncComponent.bind(null, newR)
+    RE.RequestLoading = PlaceholderLoading(requestLoading);
+    RE.Provider = function (props) {
+        return React.createElement(Provider, _extends({}, props, { store: RE.__store__ }));
     };
+
+    if (!isUndefined(requestLoading)) RE.registerModel(loadingModel);
+
+    return RE;
 }
 
-var ContextStore = React.createContext();
-
-/**
- * 传递context
- * */
-
-var CreateInstall = (function (value) {
-    return function (WrappedComponent) {
-        return function (_React$Component) {
-            inherits(HOCComponent2, _React$Component);
-
-            function HOCComponent2() {
-                classCallCheck(this, HOCComponent2);
-                return possibleConstructorReturn(this, (HOCComponent2.__proto__ || Object.getPrototypeOf(HOCComponent2)).apply(this, arguments));
-            }
-
-            createClass(HOCComponent2, [{
-                key: 'render',
-                value: function render() {
-                    return React.createElement(
-                        ContextStore.Provider,
-                        { value: value },
-                        React.createElement(WrappedComponent, this.props)
-                    );
-                }
-            }]);
-            return HOCComponent2;
-        }(React.Component);
-    };
-});
-
-var PlaceholderLoading = (function (Loading$$1) {
-    var PlaceholderLoading = function (_React$Component) {
-        inherits(PlaceholderLoading, _React$Component);
-
-        function PlaceholderLoading() {
-            var _ref;
-
-            classCallCheck(this, PlaceholderLoading);
-
-            for (var _len = arguments.length, arg = Array(_len), _key = 0; _key < _len; _key++) {
-                arg[_key] = arguments[_key];
-            }
-
-            return possibleConstructorReturn(this, (_ref = PlaceholderLoading.__proto__ || Object.getPrototypeOf(PlaceholderLoading)).call.apply(_ref, [this].concat(arg)));
-        }
-
-        createClass(PlaceholderLoading, [{
-            key: 'render',
-            value: function render() {
-                return this.props.loading && !isUndefined(Loading$$1) ? !isFunction(Loading$$1) ? React.createElement(Loading, { type: Loading$$1 }) : React.createElement(Loading$$1, this.props) : null;
-            }
-        }]);
-        return PlaceholderLoading;
-    }(React.Component);
-
-    return connect(function (store) {
-        return {
-            loading: (store['@@LOADING'] || {}).loading
-        };
-    })(PlaceholderLoading);
-});
-
-var CreateProvider = function CreateProvider(_ref, contextID, componentLoading, requestLoading) {
-    var store = _ref.store,
-        registerModel = _ref.registerModel,
-        AsyncComponent = _ref.AsyncComponent;
-
-    var REProvider = function (_React$Component) {
-        inherits(REProvider, _React$Component);
-
-        function REProvider() {
-            classCallCheck(this, REProvider);
-            return possibleConstructorReturn(this, (REProvider.__proto__ || Object.getPrototypeOf(REProvider)).apply(this, arguments));
-        }
-
-        createClass(REProvider, [{
-            key: 'render',
-            value: function render() {
-                return React.createElement(Provider, _extends$3({
-                    store: store
-                }, this.props));
-            }
-        }]);
-        return REProvider;
-    }(React.Component);
-
-    return CreateInstall({
-        __RE__: {
-            registerModel: registerModel,
-            RequestLoading: PlaceholderLoading(requestLoading),
-            AsyncComponent: AsyncComponent.bind(null, componentLoading)
-        },
-        __CONTEXT__: contextID.reduce(function (r, v) {
-            return _extends$3({}, r, defineProperty({}, v, React.createContext()));
-        }, {})
-    })(REProvider);
-};
-
-/**
- * lodash (Custom Build) <https://lodash.com/>
- * Build: `lodash modularize exports="npm" -o ./`
- * Copyright jQuery Foundation and other contributors <https://jquery.org/>
- * Released under MIT license <https://lodash.com/license>
- * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
- * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
- */
-
-/** Used as references for various `Number` constants. */
-var INFINITY$1 = 1 / 0,
-    MAX_SAFE_INTEGER = 9007199254740991;
-
-/** `Object#toString` result references. */
-var argsTag = '[object Arguments]',
-    funcTag$1 = '[object Function]',
-    genTag$1 = '[object GeneratorFunction]',
-    symbolTag$1 = '[object Symbol]';
-
-/** Detect free variable `global` from Node.js. */
-var freeGlobal$2 = typeof commonjsGlobal == 'object' && commonjsGlobal && commonjsGlobal.Object === Object && commonjsGlobal;
-
-/** Detect free variable `self`. */
-var freeSelf$2 = typeof self == 'object' && self && self.Object === Object && self;
-
-/** Used as a reference to the global object. */
-var root$3 = freeGlobal$2 || freeSelf$2 || Function('return this')();
-
-/**
- * A faster alternative to `Function#apply`, this function invokes `func`
- * with the `this` binding of `thisArg` and the arguments of `args`.
- *
- * @private
- * @param {Function} func The function to invoke.
- * @param {*} thisArg The `this` binding of `func`.
- * @param {Array} args The arguments to invoke `func` with.
- * @returns {*} Returns the result of `func`.
- */
-function apply$1(func, thisArg, args) {
-  switch (args.length) {
-    case 0: return func.call(thisArg);
-    case 1: return func.call(thisArg, args[0]);
-    case 2: return func.call(thisArg, args[0], args[1]);
-    case 3: return func.call(thisArg, args[0], args[1], args[2]);
-  }
-  return func.apply(thisArg, args);
-}
-
-/**
- * A specialized version of `_.map` for arrays without support for iteratee
- * shorthands.
- *
- * @private
- * @param {Array} [array] The array to iterate over.
- * @param {Function} iteratee The function invoked per iteration.
- * @returns {Array} Returns the new mapped array.
- */
-function arrayMap(array, iteratee) {
-  var index = -1,
-      length = array ? array.length : 0,
-      result = Array(length);
-
-  while (++index < length) {
-    result[index] = iteratee(array[index], index, array);
-  }
-  return result;
-}
-
-/**
- * Appends the elements of `values` to `array`.
- *
- * @private
- * @param {Array} array The array to modify.
- * @param {Array} values The values to append.
- * @returns {Array} Returns `array`.
- */
-function arrayPush(array, values) {
-  var index = -1,
-      length = values.length,
-      offset = array.length;
-
-  while (++index < length) {
-    array[offset + index] = values[index];
-  }
-  return array;
-}
-
-/** Used for built-in method references. */
-var objectProto$4 = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty$5 = objectProto$4.hasOwnProperty;
-
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */
-var objectToString$2 = objectProto$4.toString;
-
-/** Built-in value references. */
-var Symbol$3 = root$3.Symbol,
-    propertyIsEnumerable = objectProto$4.propertyIsEnumerable,
-    spreadableSymbol = Symbol$3 ? Symbol$3.isConcatSpreadable : undefined;
-
-/* Built-in method references for those with the same name as other `lodash` methods. */
-var nativeMax = Math.max;
-
-/**
- * The base implementation of `_.flatten` with support for restricting flattening.
- *
- * @private
- * @param {Array} array The array to flatten.
- * @param {number} depth The maximum recursion depth.
- * @param {boolean} [predicate=isFlattenable] The function invoked per iteration.
- * @param {boolean} [isStrict] Restrict to values that pass `predicate` checks.
- * @param {Array} [result=[]] The initial result value.
- * @returns {Array} Returns the new flattened array.
- */
-function baseFlatten(array, depth, predicate, isStrict, result) {
-  var index = -1,
-      length = array.length;
-
-  predicate || (predicate = isFlattenable);
-  result || (result = []);
-
-  while (++index < length) {
-    var value = array[index];
-    if (depth > 0 && predicate(value)) {
-      if (depth > 1) {
-        // Recursively flatten arrays (susceptible to call stack limits).
-        baseFlatten(value, depth - 1, predicate, isStrict, result);
-      } else {
-        arrayPush(result, value);
-      }
-    } else if (!isStrict) {
-      result[result.length] = value;
-    }
-  }
-  return result;
-}
-
-/**
- * The base implementation of `_.pick` without support for individual
- * property identifiers.
- *
- * @private
- * @param {Object} object The source object.
- * @param {string[]} props The property identifiers to pick.
- * @returns {Object} Returns the new object.
- */
-function basePick(object, props) {
-  object = Object(object);
-  return basePickBy(object, props, function(value, key) {
-    return key in object;
-  });
-}
-
-/**
- * The base implementation of  `_.pickBy` without support for iteratee shorthands.
- *
- * @private
- * @param {Object} object The source object.
- * @param {string[]} props The property identifiers to pick from.
- * @param {Function} predicate The function invoked per property.
- * @returns {Object} Returns the new object.
- */
-function basePickBy(object, props, predicate) {
-  var index = -1,
-      length = props.length,
-      result = {};
-
-  while (++index < length) {
-    var key = props[index],
-        value = object[key];
-
-    if (predicate(value, key)) {
-      result[key] = value;
-    }
-  }
-  return result;
-}
-
-/**
- * The base implementation of `_.rest` which doesn't validate or coerce arguments.
- *
- * @private
- * @param {Function} func The function to apply a rest parameter to.
- * @param {number} [start=func.length-1] The start position of the rest parameter.
- * @returns {Function} Returns the new function.
- */
-function baseRest(func, start) {
-  start = nativeMax(start === undefined ? (func.length - 1) : start, 0);
-  return function() {
-    var args = arguments,
-        index = -1,
-        length = nativeMax(args.length - start, 0),
-        array = Array(length);
-
-    while (++index < length) {
-      array[index] = args[start + index];
-    }
-    index = -1;
-    var otherArgs = Array(start + 1);
-    while (++index < start) {
-      otherArgs[index] = args[index];
-    }
-    otherArgs[start] = array;
-    return apply$1(func, this, otherArgs);
-  };
-}
-
-/**
- * Checks if `value` is a flattenable `arguments` object or array.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is flattenable, else `false`.
- */
-function isFlattenable(value) {
-  return isArray$2(value) || isArguments(value) ||
-    !!(spreadableSymbol && value && value[spreadableSymbol]);
-}
-
-/**
- * Converts `value` to a string key if it's not a string or symbol.
- *
- * @private
- * @param {*} value The value to inspect.
- * @returns {string|symbol} Returns the key.
- */
-function toKey$1(value) {
-  if (typeof value == 'string' || isSymbol$1(value)) {
-    return value;
-  }
-  var result = (value + '');
-  return (result == '0' && (1 / value) == -INFINITY$1) ? '-0' : result;
-}
-
-/**
- * Checks if `value` is likely an `arguments` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an `arguments` object,
- *  else `false`.
- * @example
- *
- * _.isArguments(function() { return arguments; }());
- * // => true
- *
- * _.isArguments([1, 2, 3]);
- * // => false
- */
-function isArguments(value) {
-  // Safari 8.1 makes `arguments.callee` enumerable in strict mode.
-  return isArrayLikeObject(value) && hasOwnProperty$5.call(value, 'callee') &&
-    (!propertyIsEnumerable.call(value, 'callee') || objectToString$2.call(value) == argsTag);
-}
-
-/**
- * Checks if `value` is classified as an `Array` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an array, else `false`.
- * @example
- *
- * _.isArray([1, 2, 3]);
- * // => true
- *
- * _.isArray(document.body.children);
- * // => false
- *
- * _.isArray('abc');
- * // => false
- *
- * _.isArray(_.noop);
- * // => false
- */
-var isArray$2 = Array.isArray;
-
-/**
- * Checks if `value` is array-like. A value is considered array-like if it's
- * not a function and has a `value.length` that's an integer greater than or
- * equal to `0` and less than or equal to `Number.MAX_SAFE_INTEGER`.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is array-like, else `false`.
- * @example
- *
- * _.isArrayLike([1, 2, 3]);
- * // => true
- *
- * _.isArrayLike(document.body.children);
- * // => true
- *
- * _.isArrayLike('abc');
- * // => true
- *
- * _.isArrayLike(_.noop);
- * // => false
- */
-function isArrayLike(value) {
-  return value != null && isLength(value.length) && !isFunction$2(value);
-}
-
-/**
- * This method is like `_.isArrayLike` except that it also checks if `value`
- * is an object.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an array-like object,
- *  else `false`.
- * @example
- *
- * _.isArrayLikeObject([1, 2, 3]);
- * // => true
- *
- * _.isArrayLikeObject(document.body.children);
- * // => true
- *
- * _.isArrayLikeObject('abc');
- * // => false
- *
- * _.isArrayLikeObject(_.noop);
- * // => false
- */
-function isArrayLikeObject(value) {
-  return isObjectLike$2(value) && isArrayLike(value);
-}
-
-/**
- * Checks if `value` is classified as a `Function` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a function, else `false`.
- * @example
- *
- * _.isFunction(_);
- * // => true
- *
- * _.isFunction(/abc/);
- * // => false
- */
-function isFunction$2(value) {
-  // The use of `Object#toString` avoids issues with the `typeof` operator
-  // in Safari 8-9 which returns 'object' for typed array and other constructors.
-  var tag = isObject$2(value) ? objectToString$2.call(value) : '';
-  return tag == funcTag$1 || tag == genTag$1;
-}
-
-/**
- * Checks if `value` is a valid array-like length.
- *
- * **Note:** This method is loosely based on
- * [`ToLength`](http://ecma-international.org/ecma-262/7.0/#sec-tolength).
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
- * @example
- *
- * _.isLength(3);
- * // => true
- *
- * _.isLength(Number.MIN_VALUE);
- * // => false
- *
- * _.isLength(Infinity);
- * // => false
- *
- * _.isLength('3');
- * // => false
- */
-function isLength(value) {
-  return typeof value == 'number' &&
-    value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
-}
-
-/**
- * Checks if `value` is the
- * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
- * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an object, else `false`.
- * @example
- *
- * _.isObject({});
- * // => true
- *
- * _.isObject([1, 2, 3]);
- * // => true
- *
- * _.isObject(_.noop);
- * // => true
- *
- * _.isObject(null);
- * // => false
- */
-function isObject$2(value) {
-  var type = typeof value;
-  return !!value && (type == 'object' || type == 'function');
-}
-
-/**
- * Checks if `value` is object-like. A value is object-like if it's not `null`
- * and has a `typeof` result of "object".
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
- * @example
- *
- * _.isObjectLike({});
- * // => true
- *
- * _.isObjectLike([1, 2, 3]);
- * // => true
- *
- * _.isObjectLike(_.noop);
- * // => false
- *
- * _.isObjectLike(null);
- * // => false
- */
-function isObjectLike$2(value) {
-  return !!value && typeof value == 'object';
-}
-
-/**
- * Checks if `value` is classified as a `Symbol` primitive or object.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
- * @example
- *
- * _.isSymbol(Symbol.iterator);
- * // => true
- *
- * _.isSymbol('abc');
- * // => false
- */
-function isSymbol$1(value) {
-  return typeof value == 'symbol' ||
-    (isObjectLike$2(value) && objectToString$2.call(value) == symbolTag$1);
-}
-
-/**
- * Creates an object composed of the picked `object` properties.
- *
- * @static
- * @since 0.1.0
- * @memberOf _
- * @category Object
- * @param {Object} object The source object.
- * @param {...(string|string[])} [props] The property identifiers to pick.
- * @returns {Object} Returns the new object.
- * @example
- *
- * var object = { 'a': 1, 'b': '2', 'c': 3 };
- *
- * _.pick(object, ['a', 'c']);
- * // => { 'a': 1, 'c': 3 }
- */
-var pick = baseRest(function(object, props) {
-  return object == null ? {} : basePick(object, arrayMap(baseFlatten(props, 1), toKey$1));
-});
-
-var lodash_pick = pick;
-
-/**
- * 注入方法
- * type: 当前类型，查看ContextStore
- * limit：获取CONTEXT中指定的key
- *
- * */
-
-var Install = (function () {
-    var inject = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-    var CONTEXT = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
-    return function (WrappedComponent) {
-        return function (_React$Component) {
-            inherits(InstallHOC, _React$Component);
-
-            function InstallHOC() {
-                classCallCheck(this, InstallHOC);
-                return possibleConstructorReturn(this, (InstallHOC.__proto__ || Object.getPrototypeOf(InstallHOC)).apply(this, arguments));
-            }
-
-            createClass(InstallHOC, [{
-                key: 'render',
-                value: function render() {
-                    var _this2 = this;
-
-                    if (!ContextStore) {
-                        console.warn('HOC传值有误！');
-                        return React.createElement(WrappedComponent, this.props);
-                    }
-
-                    return React.createElement(
-                        ContextStore.Consumer,
-                        null,
-                        function (context) {
-                            var newProps = _extends$3({}, _this2.props, isString(inject) || isArray(inject) ? lodash_pick(context.__RE__, inject) : {}, {
-                                __CONTEXT__: lodash_pick(context.__CONTEXT__, CONTEXT)
-                            });
-                            return React.createElement(WrappedComponent, newProps);
-                        }
-                    );
-                }
-            }]);
-            return InstallHOC;
-        }(React.Component);
-    };
-});
-
-/**
- * 继承context
- * id: 仓库名
- * limit：获取CONTEXT中指定的key
- *
- * */
-
-var Pull = (function (id) {
-    var limit = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
-    return function (WrappedComponent) {
-        var Pull = function (_React$Component) {
-            inherits(Pull, _React$Component);
-
-            function Pull() {
-                classCallCheck(this, Pull);
-                return possibleConstructorReturn(this, (Pull.__proto__ || Object.getPrototypeOf(Pull)).apply(this, arguments));
-            }
-
-            createClass(Pull, [{
-                key: 'render',
-                value: function render() {
-                    var _props = this.props,
-                        __CONTEXT__ = _props.__CONTEXT__,
-                        props = objectWithoutProperties(_props, ['__CONTEXT__']);
-
-                    var ContextStore = __CONTEXT__[id];
-
-                    if (!ContextStore) {
-                        console.warn('组件${WrappedComponent.displayName} Pull 的 仓库id 不存在，请在 init 初始化中注册 warehouse！');
-                        return React.createElement(WrappedComponent, props);
-                    }
-
-                    return React.createElement(
-                        ContextStore.Consumer,
-                        null,
-                        function (context) {
-                            var newProps = _extends$3({}, props, isArray(limit) ? lodash_pick(context, limit) : {});
-                            return React.createElement(WrappedComponent, newProps);
-                        }
-                    );
-                }
-            }]);
-            return Pull;
-        }(React.Component);
-
-        return Install([], [id])(Pull);
-    };
-});
-
-/**
- * 传递context
- * */
-
-var Push = (function (id) {
-    var fn = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
-    return function (WrappedComponent) {
-        var Push = function (_React$Component) {
-            inherits(Push, _React$Component);
-
-            function Push() {
-                classCallCheck(this, Push);
-                return possibleConstructorReturn(this, (Push.__proto__ || Object.getPrototypeOf(Push)).apply(this, arguments));
-            }
-
-            createClass(Push, [{
-                key: 'render',
-                value: function render() {
-                    var _props = this.props,
-                        __CONTEXT__ = _props.__CONTEXT__,
-                        props = objectWithoutProperties(_props, ['__CONTEXT__']);
-
-                    var ContextStore = __CONTEXT__[id];
-
-                    if (!ContextStore) {
-                        console.warn('组件${WrappedComponent.displayName} Push 的 仓库id 不存在，请在 init 初始化中注册 warehouse！');
-                        return React.createElement(WrappedComponent, props);
-                    }
-                    var dealValue = isFunction(fn) ? fn(props) : isArray(fn) || isString(fn) ? lodash_pick(props, fn) : {};
-                    return React.createElement(
-                        ContextStore.Provider,
-                        { value: dealValue },
-                        React.createElement(WrappedComponent, props)
-                    );
-                }
-            }]);
-            return Push;
-        }(React.Component);
-
-        return Install([], [id])(Push);
-    };
-});
-
-var init = function init() {
-    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-    var _ref$warehouse = _ref.warehouse,
-        warehouse = _ref$warehouse === undefined ? [] : _ref$warehouse,
-        componentLoading = _ref.componentLoading,
-        requestLoading = _ref.requestLoading,
-        params = objectWithoutProperties(_ref, ['warehouse', 'componentLoading', 'requestLoading']);
-
-    return {
-        Provider: CreateProvider(configureStore(_extends$3({}, params, { requestLoading: requestLoading })), warehouse, componentLoading, requestLoading)
-    };
-};
-
-export { init, Install, Pull, Push, bindActionCreators };
+export { Install, Push, Pull, configureStore as init, bindActionCreators };

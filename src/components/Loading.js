@@ -20,7 +20,6 @@ const LOADING_TYPE = [
 ];
 
 const Loading = ({ type }) => {
-    console.log(LOADING_TYPE[type]);
     return LOADING_TYPE[type] || LOADING_TYPE[0];
 };
 

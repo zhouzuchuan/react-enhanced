@@ -11,6 +11,7 @@ import registerServiceWorker from './registerServiceWorker'
 import Loading from './components/Loading.jsx'
 
 const { Provider } = init({
+    warehouse: ['home', 'list'],
     componentLoading: 2,
     requestLoading: 2
 })

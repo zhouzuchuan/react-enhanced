@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Route, Switch } from 'react-router-dom'
+import { Route, Switch, Link } from 'react-router-dom'
 
 import { Install } from 'react-enhanced'
 
@@ -11,6 +11,13 @@ export default class App extends Component {
         const { AsyncComponent } = this.props
         return (
             <div>
+                <p>
+                    <Link to="/">home</Link>
+                </p>
+                <p>
+                    <Link to="/list">list</Link>
+                </p>
+
                 <Route
                     render={({ location }) => {
                         return (
@@ -25,6 +32,17 @@ export default class App extends Component {
                                     )}
                                     exact
                                     path="/"
+                                />
+                                <Route
+                                    component={AsyncComponent(
+                                        {
+                                            component: () => import('@containers/List' /* webpackChunkName : 'list'*/),
+                                            model: () => import('@models/list')
+                                        },
+                                        {}
+                                    )}
+                                    exact
+                                    path="/list"
                                 />
                             </Switch>
                         )

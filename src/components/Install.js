@@ -6,31 +6,13 @@
  * */
 import React from 'react';
 import pick from 'lodash.pick';
-import ContextStore from './ContextStore';
+import RE from '../store';
 import { isString, isArray } from '../utils';
 
-export default (inject = [], CONTEXT = []) => WrappedComponent => {
-    return class InstallHOC extends React.Component {
-        render() {
-            if (!ContextStore) {
-                console.warn('HOC传值有误！');
-                return <WrappedComponent {...this.props} />;
-            }
-
-            return (
-                <ContextStore.Consumer>
-                    {context => {
-                        const newProps = {
-                            ...this.props,
-                            ...(isString(inject) || isArray(inject)
-                                ? pick(context.__RE__, inject)
-                                : {}),
-                            __CONTEXT__: pick(context.__CONTEXT__, CONTEXT)
-                        };
-                        return <WrappedComponent {...newProps} />;
-                    }}
-                </ContextStore.Consumer>
-            );
-        }
+export default (inject = [], CONTEXT = []) => WrappedComponent => props => {
+    const newProps = {
+        ...props,
+        ...(isString(inject) || isArray(inject) ? pick(RE, inject) : {})
     };
+    return <WrappedComponent {...newProps} />;
 };

@@ -5,7 +5,6 @@ import Table from '../components/Table'
 
 @connect(
     store => {
-        console.log(store)
         return {}
     },
     dispatch => ({
@@ -29,44 +28,19 @@ import Table from '../components/Table'
         )
     })
 )
-@Install(['RequestLoading'])
-@Push('home', ['test'])
-@Push('home', ['getTbInfo'])
+@Push('list', props => {
+    console.log(props, '=====================')
+    return { ccc: 10 }
+})
 export default class Home extends React.Component {
-    constructor() {
-        super()
-        this.state = {
-            visible: false
-        }
-    }
-    componentDidMount() {
-        // this.props.getTbInfo()
-        // this.props.test().then(() => {
-        //     console.log('promise then')
-        // })
-    }
-    _oper = () => {
-        this.setState(({ visible }) => ({ visible: !visible }))
-    }
     render() {
         // console.log(this.props)
 
-        const { RequestLoading } = this.props
+        // const { RequestLoading } = this.props
 
         return (
             <div>
-                <Table />
-                React-enhanced
-                <RequestLoading className="dddd" />
-                <RequestLoading>loadingw</RequestLoading>
-                <p>
-                    <Button onClick={this._oper}>弹出</Button>
-                </p>
-                <Modal onOk={this._oper}
-                    visible={this.state.visible}
-                >
-                    dddd
-                </Modal>
+                list<Table />
             </div>
         )
     }

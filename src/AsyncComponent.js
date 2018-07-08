@@ -4,10 +4,11 @@
 
 import Loadable from 'react-loadable';
 import React from 'react';
+import RE from './store';
 import Loading from './components/Loading.js';
 import { isFunction, isArray } from './utils';
 
-export default (registerModel, componentLoading, params = {}) => {
+export default (componentLoading, params = {}) => {
     const isMore = isFunction(params);
 
     const defaultParams = {
@@ -27,7 +28,7 @@ export default (registerModel, componentLoading, params = {}) => {
             loader: (isArray(model) ? model : [model]).reduce((r, v, i) => ({ ...r, [i]: v }), { component }),
             render({ component, ...models }, props) {
                 const ReturnCompoment = component.default;
-                models && Object.values(models).forEach(v => registerModel(v.default));
+                models && Object.values(models).forEach(v => RE.registerModel(v.default));
                 return <ReturnCompoment {...{ ...props2, ...props }} />;
             }
         });

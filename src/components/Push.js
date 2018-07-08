@@ -3,33 +3,27 @@
  * */
 
 import React from 'react';
-import Install from './Install';
-import { isArray, isFunction, isString } from '../utils';
+import RE from '../store';
+import { isArray, isFunction, isString, isObject } from '../utils';
 import pick from 'lodash.pick';
 
-export default (id, fn = []) => WrappedComponent => {
-    class Push extends React.Component {
-        render() {
-            const { __CONTEXT__, ...props } = this.props;
-            const ContextStore = __CONTEXT__[id];
+export default (id, fn = []) => WrappedComponent => props => {
+    let warehouse = RE.__warehouse__[id];
 
-            if (!ContextStore) {
-                console.warn(
-                    '组件${WrappedComponent.displayName} Push 的 仓库id 不存在，请在 init 初始化中注册 warehouse！'
-                );
-                return <WrappedComponent {...props} />;
-            }
-            const dealValue = isFunction(fn)
-                ? fn(props)
-                : isArray(fn) || isString(fn)
-                    ? pick(props, fn)
-                    : {};
-            return (
-                <ContextStore.Provider value={dealValue}>
-                    <WrappedComponent {...props} />
-                </ContextStore.Provider>
-            );
+    if (!warehouse) {
+        console.warn('组件${WrappedComponent.displayName} Push 的 仓库id 不存在，请在 init 初始化中注册 warehouse！');
+    } else {
+        if (isFunction(fn)) {
+            const dealResult = fn(props);
+            Object.entries(isObject(dealResult) ? dealResult : {}).forEach(([n, m]) => {
+                warehouse[n] = m;
+            });
+        } else {
+            (isArray(fn) ? fn : [fn]).forEach(v => {
+                warehouse[v] = props[v];
+            });
         }
     }
-    return Install([], [id])(Push);
+
+    return <WrappedComponent {...props} />;
 };

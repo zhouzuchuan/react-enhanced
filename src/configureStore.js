@@ -1,4 +1,5 @@
 import { createStore, applyMiddleware, combineReducers } from 'redux';
+import React from 'react';
 import createSagaMiddleware from 'redux-saga';
 import {
     // ConnectedRouter,
@@ -7,11 +8,16 @@ import {
 } from 'react-router-redux';
 import createHistory from 'history/createBrowserHistory';
 
+import { Provider } from 'react-redux';
+
 import { all } from 'redux-saga/effects';
 
 import { composeWithDevTools } from 'redux-devtools-extension';
 
-import { isUndefined } from './utils';
+import { isUndefined, isAarray, isString } from './utils';
+import RE from './store';
+
+import PlaceholderLoading from './components/PlaceholderLoading';
 
 import requestMiddleware from './middleware/requestMiddleware';
 import promiseMiddleware from './middleware/promiseMiddleware';
@@ -48,17 +54,29 @@ export function configureStore({
     requestCallback,
     requestError,
     resultLimit,
-    requestLoading
+    requestLoading,
+    componentLoading,
+    warehouse
 } = {}) {
-    const RE = {
+    Object.entries({
+        __warehouse__: warehouse.reduce(
+            (r, v, i) => ({
+                ...r,
+                [v]: {}
+            }),
+            {}
+        ),
         _effects: {},
         _reducers: {},
-        asyncReducers: {
-            route: routerReducer
-        },
+        _models: [],
+        asyncReducers: { route: routerReducer },
         asyncSagas: {},
-        _models: []
-    };
+        registerModel: registerModel.bind(null, sagaMiddleware),
+        AsyncComponent: AsyncComponent.bind(null, componentLoading),
+        RequestLoading: PlaceholderLoading(requestLoading)
+    }).forEach(([n, m]) => {
+        RE[n] = m;
+    });
 
     // 中间件列表
     const middleware = [
@@ -77,7 +95,7 @@ export function configureStore({
 
     const operApplyMiddleware = applyMiddleware(...middleware);
 
-    const store = createStore(
+    RE.__store__ = createStore(
         combineReducers({
             ...reducers,
             ...RE.asyncReducers
@@ -101,16 +119,9 @@ export function configureStore({
     //     )
     // }
 
-    store.asyncReducers = RE.asyncReducers;
-    store.asyncSagas = RE.asyncSagas;
+    RE.Provider = props => <Provider {...{ ...props, store: RE.__store__ }} />;
 
-    const newR = registerModel.bind(null, RE, store, sagaMiddleware);
+    if (!isUndefined(requestLoading)) RE.registerModel(loadingModel);
 
-    if (!isUndefined(requestLoading)) newR(loadingModel);
-
-    return {
-        store,
-        registerModel: newR,
-        AsyncComponent: AsyncComponent.bind(null, newR)
-    };
+    return RE;
 }

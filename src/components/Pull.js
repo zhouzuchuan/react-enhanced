@@ -6,34 +6,20 @@
  * */
 import React from 'react';
 import pick from 'lodash.pick';
-import Install from './Install';
+import RE from '../store';
 import { isArray } from '../utils';
 
-export default (id, limit = []) => WrappedComponent => {
-    class Pull extends React.Component {
-        render() {
-            const { __CONTEXT__, ...props } = this.props;
-            const ContextStore = __CONTEXT__[id];
+export default (id, limit = []) => WrappedComponent => props => {
+    const warehouse = RE.__warehouse__[id];
+    let newProps = props;
 
-            if (!ContextStore) {
-                console.warn(
-                    '组件${WrappedComponent.displayName} Pull 的 仓库id 不存在，请在 init 初始化中注册 warehouse！'
-                );
-                return <WrappedComponent {...props} />;
-            }
-
-            return (
-                <ContextStore.Consumer>
-                    {context => {
-                        const newProps = {
-                            ...props,
-                            ...(isArray(limit) ? pick(context, limit) : {})
-                        };
-                        return <WrappedComponent {...newProps} />;
-                    }}
-                </ContextStore.Consumer>
-            );
-        }
+    if (!warehouse) {
+        console.warn('组件${WrappedComponent.displayName} Pull 的 仓库id 不存在，请在 init 初始化中注册 warehouse！');
+    } else {
+        newProps = {
+            ...newProps,
+            ...(isArray(limit) ? pick(warehouse, limit) : {})
+        };
     }
-    return Install([], [id])(Pull);
+    return <WrappedComponent {...newProps} />;
 };
