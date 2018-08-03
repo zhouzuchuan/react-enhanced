@@ -26,7 +26,8 @@ export default {
         'react-dom',
         // 'redux',
         'react-redux',
-        'redux-saga'
+        'redux-saga',
+        'axios'
     ],
     plugins: [
         postcss({

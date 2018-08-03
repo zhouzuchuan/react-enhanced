@@ -1,6 +1,6 @@
 {
     "name": "react-enhanced",
-    "version": "0.0.14",
+    "version": "0.0.15",
     "description": "react 无侵入架构增强器",
     "main": "es",
     "scripts": {
@@ -20,7 +20,9 @@
     },
     "homepage": "https://github.com/zhouzuchuan/react-enhanced#readme",
     "dependencies": {
+        "api-manage": "^0.0.2",
         "lodash.get": "^4.4.2",
+        "lodash.isempty": "^4.4.0",
         "lodash.pick": "^4.4.0",
         "react": "^16.4.1",
         "react-dom": "^16.4.1",

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Modal, Button } from 'antd'
-import { bindActionCreators, connect, Install, Push } from 'react-enhanced'
+import { bindActionCreators, connect, Install, Push, Pull } from 'react-enhanced'
 import Table from '../components/Table'
 
 @connect(
@@ -29,14 +29,12 @@ import Table from '../components/Table'
     })
 )
 @Push('list', props => {
-    console.log(props, '=====================')
     return { ccc: 10 }
 })
+@Pull('$service', ['serveGetUserInfo'])
 export default class Home extends React.Component {
     render() {
-        // console.log(this.props)
-
-        // const { RequestLoading } = this.props
+        console.log(this.props)
 
         return (
             <div>

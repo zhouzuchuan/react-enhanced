@@ -5,6 +5,8 @@ import { Install } from 'react-enhanced'
 
 import Loading from './components/Loading.jsx'
 
+import apiManage from 'api-manage'
+
 @Install(['AsyncComponent'])
 export default class App extends Component {
     render() {

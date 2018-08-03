@@ -8,6 +8,10 @@ import {
 } from 'react-router-redux';
 import createHistory from 'history/createBrowserHistory';
 
+import apiManage from 'api-manage';
+
+import isEmpty from 'lodash.isempty';
+
 import { Provider } from 'react-redux';
 
 import { all } from 'redux-saga/effects';
@@ -56,15 +60,18 @@ export function configureStore({
     resultLimit,
     requestLoading,
     componentLoading,
-    warehouse = []
+    warehouse = [],
+    apiList = {}
 } = {}) {
+    apiManage.init({ list: apiList });
+
     Object.entries({
         __warehouse__: warehouse.reduce(
             (r, v, i) => ({
                 ...r,
                 [v]: {}
             }),
-            {}
+            { ...(!isEmpty(apiList) && { $service: apiManage.getService() }) }
         ),
         _effects: {},
         _reducers: {},
