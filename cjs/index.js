@@ -5916,17 +5916,28 @@ function configureStore() {
         resultLimit = _ref.resultLimit,
         requestLoading = _ref.requestLoading,
         componentLoading = _ref.componentLoading,
-        warehouse = _ref.warehouse;
+        _ref$warehouse = _ref.warehouse,
+        warehouse = _ref$warehouse === undefined ? [] : _ref$warehouse;
 
-    RE.__warehouse__ = warehouse.reduce(function (r, v, i) {
-        return _extends({}, r, defineProperty({}, v, {}));
-    }, {});
-    RE.__store__ = {};
-    RE._effects = {};
-    RE._reducers = {};
-    RE._models = [];
-    RE.asyncReducers = { route: lib_9 };
-    RE.asyncSagas = {};
+    Object.entries({
+        __warehouse__: warehouse.reduce(function (r, v, i) {
+            return _extends({}, r, defineProperty({}, v, {}));
+        }, {}),
+        _effects: {},
+        _reducers: {},
+        _models: [],
+        asyncReducers: { route: lib_9 },
+        asyncSagas: {},
+        registerModel: registerModel.bind(null, sagaMiddleware),
+        AsyncComponent: AsyncComponent.bind(null, componentLoading),
+        RequestLoading: PlaceholderLoading(requestLoading)
+    }).forEach(function (_ref2) {
+        var _ref3 = slicedToArray(_ref2, 2),
+            n = _ref3[0],
+            m = _ref3[1];
+
+        RE[n] = m;
+    });
 
     // 中间件列表
     var middleware = [historyMiddleware, sagaMiddleware, requestMiddleware.bind(null, RE, {
@@ -5938,7 +5949,7 @@ function configureStore() {
 
     var operApplyMiddleware = applyMiddleware.apply(undefined, toConsumableArray(middleware));
 
-    var store = createStore(combineReducers(_extends({}, reducers, RE.asyncReducers)
+    RE.__store__ = createStore(combineReducers(_extends({}, reducers, RE.asyncReducers)
     // route: routerReducer
     ), state, process.env.NODE_ENV === 'development' ? reduxDevtoolsExtension_1(operApplyMiddleware) : operApplyMiddleware);
 
@@ -5968,11 +5979,6 @@ function configureStore() {
     //     )
     // }
 
-    RE.__store__ = store;
-    RE.registerModel = registerModel.bind(null, sagaMiddleware);
-    RE.AsyncComponent = AsyncComponent.bind(null, componentLoading);
-
-    RE.RequestLoading = PlaceholderLoading(requestLoading);
     RE.Provider = function (props) {
         return React.createElement(reactRedux.Provider, _extends({}, props, { store: RE.__store__ }));
     };

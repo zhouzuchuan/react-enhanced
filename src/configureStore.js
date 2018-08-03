@@ -56,7 +56,7 @@ export function configureStore({
     resultLimit,
     requestLoading,
     componentLoading,
-    warehouse
+    warehouse = []
 } = {}) {
     Object.entries({
         __warehouse__: warehouse.reduce(

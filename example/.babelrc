@@ -5,6 +5,11 @@
         "transform-decorators-legacy",
         "transform-react-jsx",
         "transform-runtime",
+        ["transform-regenerator", {
+            "asyncGenerators": false,
+            "generators": false,
+            "async": false
+        }],
         [
             "import",
             { "libraryName": "antd", "libraryDirectory": "es", "style": "css" }
