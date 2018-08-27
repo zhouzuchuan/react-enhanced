@@ -59,6 +59,8 @@ typings/
 
 webpack.config.js
 rollup.config.js
+.prettierignore
+.editorconfig
 .gitignore
 *.lock
 src/*

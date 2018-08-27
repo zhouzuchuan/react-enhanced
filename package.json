@@ -25,7 +25,7 @@
     },
     "homepage": "https://github.com/zhouzuchuan/react-enhanced#readme",
     "dependencies": {
-        "api-manage": "^0.0.3",
+        "api-manage": "^0.0.4",
         "lodash.get": "^4.4.2",
         "lodash.isempty": "^4.4.0",
         "lodash.pick": "^4.4.0",
@@ -33,7 +33,9 @@
         "react-dom": "^16.4.1",
         "react-loadable": "^5.4.0",
         "react-redux": "^5.0.7",
+        "react-router-redux": "^4.0.8",
         "redux": "3.7.2",
+        "redux-devtools-extension": "^2.13.2",
         "redux-saga": "^0.16.0"
     },
     "devDependencies": {
@@ -60,8 +62,6 @@
         "postcss-cssnext": "^3.1.0",
         "postcss-import": "^11.1.0",
         "postcss-url": "^7.3.2",
-        "react-router-redux": "^4.0.8",
-        "redux-devtools-extension": "^2.13.2",
         "rollup": "^0.59.1",
         "rollup-plugin-babel": "^3.0.4",
         "rollup-plugin-commonjs": "^9.1.3",
