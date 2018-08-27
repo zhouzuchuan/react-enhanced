@@ -14,7 +14,7 @@ export default (id, limit = []) => WrappedComponent => props => {
     let newProps = props;
 
     if (!warehouse) {
-        console.warn('组件${WrappedComponent.displayName} Pull 的 仓库id 不存在，请在 init 初始化中注册 warehouse！');
+        console.warn(`组件${WrappedComponent.displayName} Pull 的 仓库id 不存在，请在 init 初始化中注册 warehouse！`);
     } else {
         newProps = {
             ...newProps,

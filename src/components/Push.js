@@ -11,7 +11,7 @@ export default (id, fn = []) => WrappedComponent => props => {
     let warehouse = RE.__warehouse__[id];
 
     if (!warehouse) {
-        console.warn('组件${WrappedComponent.displayName} Push 的 仓库id 不存在，请在 init 初始化中注册 warehouse！');
+        console.warn(`组件${WrappedComponent.displayName} Push 的 仓库id 不存在，请在 init 初始化中注册 warehouse！`);
     } else {
         if (isFunction(fn)) {
             const dealResult = fn(props);

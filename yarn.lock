@@ -59,9 +59,9 @@ ansi-styles@^3.2.1:
   dependencies:
     color-convert "^1.9.0"
 
-api-manage@^0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/api-manage/-/api-manage-0.0.2.tgz#9e922946be7b6771d275f25e214402e1f15942fb"
+api-manage@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/api-manage/-/api-manage-0.0.3.tgz#2b3f00b7923e310b51103f4b6a53e7b50fe01acf"
   dependencies:
     axios "^0.18.0"
 
@@ -883,6 +883,10 @@ babel-preset-stage-3@^6.24.1:
     babel-plugin-transform-async-to-generator "^6.24.1"
     babel-plugin-transform-exponentiation-operator "^6.24.1"
     babel-plugin-transform-object-rest-spread "^6.22.0"
+
+babel-regenerator-runtime@^6.5.0:
+  version "6.5.0"
+  resolved "https://registry.yarnpkg.com/babel-regenerator-runtime/-/babel-regenerator-runtime-6.5.0.tgz#0e41cd1c9f80442466f015c749fff8ba98f8e110"
 
 babel-register@^6.26.0:
   version "6.26.0"

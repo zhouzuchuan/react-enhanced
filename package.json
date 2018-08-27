@@ -1,8 +1,8 @@
 {
     "name": "react-enhanced",
-    "version": "0.0.15",
+    "version": "0.0.16",
     "description": "react 无侵入架构增强器",
-    "main": "es",
+    "main": "lib",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "build": "rollup -c",
@@ -12,7 +12,12 @@
         "type": "git",
         "url": "git+https://github.com/zhouzuchuan/react-enhanced.git"
     },
-    "keywords": ["react", "redux", "context", "react-enhanced"],
+    "keywords": [
+        "react",
+        "redux",
+        "context",
+        "react-enhanced"
+    ],
     "author": "fezzc",
     "license": "MIT",
     "bugs": {
@@ -20,7 +25,7 @@
     },
     "homepage": "https://github.com/zhouzuchuan/react-enhanced#readme",
     "dependencies": {
-        "api-manage": "^0.0.2",
+        "api-manage": "^0.0.3",
         "lodash.get": "^4.4.2",
         "lodash.isempty": "^4.4.0",
         "lodash.pick": "^4.4.0",
@@ -47,6 +52,7 @@
         "babel-preset-stage-1": "^6.24.1",
         "babel-preset-stage-2": "^6.24.1",
         "babel-preset-stage-3": "^6.24.1",
+        "babel-regenerator-runtime": "^6.5.0",
         "babel-runtime": "6.26.0",
         "coveralls": "^3.0.1",
         "history": "^4.7.2",

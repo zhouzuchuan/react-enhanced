@@ -28,7 +28,7 @@ import promiseMiddleware from './middleware/promiseMiddleware';
 import registerModel from './registerModel';
 import AsyncComponent from './AsyncComponent';
 import loadingModel from './models/loading';
-
+require('babel-regenerator-runtime');
 // 创建 router histroy 中间件
 const historyMiddleware = routerMiddleware(createHistory());
 

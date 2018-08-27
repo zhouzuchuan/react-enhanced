@@ -9,11 +9,7 @@ export default {
     input: 'src/index.js',
     output: [
         {
-            file: 'cjs/index.js',
-            format: 'cjs'
-        },
-        {
-            file: 'es/index.js',
+            file: 'lib/index.js',
             format: 'es'
         },
         {
@@ -24,10 +20,19 @@ export default {
     external: [
         'react',
         'react-dom',
-        // 'redux',
+        'redux',
+        'api-manage',
         'react-redux',
+        'react-router-redux',
+        'history/createBrowserHistory',
+        'redux-devtools-extension',
+        'react-loadable',
         'redux-saga',
-        'axios'
+        'redux-saga/effects',
+        'axios',
+        'lodash.get',
+        'lodash.isempty',
+        'lodash.pick'
     ],
     plugins: [
         postcss({
