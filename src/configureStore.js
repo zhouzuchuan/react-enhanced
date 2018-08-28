@@ -1,4 +1,4 @@
-import { createStore, applyMiddleware, combineReducers } from 'redux';
+import { createStore, applyMiddleware, combineReducers, compose } from 'redux';
 import React from 'react';
 import createSagaMiddleware from 'redux-saga';
 import {
@@ -16,7 +16,7 @@ import { Provider } from 'react-redux';
 
 import { all } from 'redux-saga/effects';
 
-import { composeWithDevTools } from 'redux-devtools-extension';
+// import { composeWithDevTools } from 'redux-devtools-extension';
 
 import { isUndefined, isAarray, isString } from './utils';
 import RE from './store';
@@ -86,7 +86,7 @@ export function configureStore({
     });
 
     // 中间件列表
-    const middleware = [
+    const middleware2 = [
         historyMiddleware,
         sagaMiddleware,
         requestMiddleware.bind(null, RE, {
@@ -100,7 +100,22 @@ export function configureStore({
         ...(middlewares || [])
     ];
 
-    const operApplyMiddleware = applyMiddleware(...middleware);
+    // const operApplyMiddleware = applyMiddleware(...middleware2);
+
+    // RE.__store__ = createStore(
+    //     combineReducers({
+    //         ...reducers,
+    //         ...RE.asyncReducers
+    //         // route: routerReducer
+    //     }),
+    //     state,
+    //     process.env.NODE_ENV === 'development' ? composeWithDevTools(operApplyMiddleware) : operApplyMiddleware
+    // );
+
+    const devtools =
+        process.env.NODE_ENV !== 'production' && window.__REDUX_DEVTOOLS_EXTENSION__
+            ? window.__REDUX_DEVTOOLS_EXTENSION__
+            : () => noop => noop;
 
     RE.__store__ = createStore(
         combineReducers({
@@ -109,7 +124,7 @@ export function configureStore({
             // route: routerReducer
         }),
         state,
-        process.env.NODE_ENV === 'development' ? composeWithDevTools(operApplyMiddleware) : operApplyMiddleware
+        compose(...[applyMiddleware(...middleware2), devtools()])
     );
 
     // 处理saga

@@ -2,6 +2,14 @@ import React from 'react'
 import { Modal, Button } from 'antd'
 import { bindActionCreators, connect, Install, Push } from 'react-enhanced'
 import Table from '../components/Table'
+import axios from 'axios'
+
+const serve = function() {
+    return axios.get('http://localhost:3000/packageList').then(v => {
+        console.log(v)
+        return v.data
+    })
+}
 
 @connect(
     store => {
@@ -13,8 +21,8 @@ import Table from '../components/Table'
             {
                 getTbInfo: payload => ({
                     // did: 'home/GET_TBINFO',
-                    // request: f => Promise.resolve(),
-                    type: 'home/GET_TBINFO'
+                    request: serve,
+                    will: 'home/GET_TBINFO'
                 }),
 
                 test: payload => ({
@@ -40,7 +48,7 @@ export default class Home extends React.Component {
         }
     }
     componentDidMount() {
-        // this.props.getTbInfo()
+        this.props.getTbInfo()
         // this.props.test().then(() => {
         //     console.log('promise then')
         // })

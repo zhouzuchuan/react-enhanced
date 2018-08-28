@@ -4,7 +4,7 @@ import { connect, Provider } from 'react-redux';
 export { connect } from 'react-redux';
 import get from 'lodash.get';
 import { put, call, select, fork, takeLatest, all } from 'redux-saga/effects';
-import { combineReducers, createStore, applyMiddleware } from 'redux';
+import { combineReducers, createStore, applyMiddleware, compose } from 'redux';
 export { bindActionCreators } from 'redux';
 import Loadable from 'react-loadable';
 import createSagaMiddleware from 'redux-saga';
@@ -12,7 +12,6 @@ import { routerReducer, routerMiddleware } from 'react-router-redux';
 import createHistory from 'history/createBrowserHistory';
 import apiManage from 'api-manage';
 import isEmpty from 'lodash.isempty';
-import { composeWithDevTools } from 'redux-devtools-extension';
 
 var RE = {};
 
@@ -381,9 +380,9 @@ var requestMiddleware = (function (RE, _ref, store) {
             }
 
             if (isObject(will) && isString(will.type)) {
-                next(will);
+                dispatch(will);
             } else if (isString(will)) {
-                next({
+                dispatch({
                     type: will
                 });
             }
@@ -394,7 +393,7 @@ var requestMiddleware = (function (RE, _ref, store) {
 
             if (isRequestLoading) requestLoading(false, action);
 
-            next({
+            dispatch({
                 type: '@@LOADING/__SET_LOADING__',
                 payload: {
                     loading: true
@@ -419,7 +418,7 @@ var requestMiddleware = (function (RE, _ref, store) {
 
                 if (isRequestLoading) requestLoading(true, action);
 
-                next({
+                dispatch({
                     type: '@@LOADING/__SET_LOADING__',
                     payload: {
                         loading: false
@@ -429,7 +428,7 @@ var requestMiddleware = (function (RE, _ref, store) {
                 if (isFunction(requestCallback)) {
                     requestCallback(transferData, rest, dispatch, getState);
                 } else if (isString(requestCallback)) {
-                    next(_extends({
+                    dispatch(_extends({
                         type: requestCallback,
                         payload: transferData
                     }, rest));
@@ -440,12 +439,12 @@ var requestMiddleware = (function (RE, _ref, store) {
                         payload = did.payload,
                         rest2 = objectWithoutProperties(did, ['type', 'payload']);
 
-                    next(_extends({
+                    dispatch(_extends({
                         type: did.type,
                         payload: isUndefined(payload) ? limitData : isFunction(payload) ? payload(limitData) : payload
                     }, rest2));
                 } else if (isString(did)) {
-                    next({
+                    dispatch({
                         type: did,
                         payload: limitData
                     });
@@ -454,7 +453,7 @@ var requestMiddleware = (function (RE, _ref, store) {
                 if (isFunction(callback)) {
                     callback(limitData);
                 } else if (isString(requecallbacktCallback)) {
-                    next(_extends({
+                    dispatch(_extends({
                         type: callback,
                         payload: limitData
                     }, rest));
@@ -463,7 +462,7 @@ var requestMiddleware = (function (RE, _ref, store) {
                 if (isFunction(mergeError)) {
                     mergeError(err);
                 } else if (isString(mergeError)) {
-                    next(_extends({
+                    dispatch(_extends({
                         type: mergeError
                     }, rest));
                 }
@@ -885,18 +884,34 @@ function configureStore() {
     });
 
     // 中间件列表
-    var middleware = [historyMiddleware, sagaMiddleware, requestMiddleware.bind(null, RE, {
+    var middleware2 = [historyMiddleware, sagaMiddleware, requestMiddleware.bind(null, RE, {
         requestCallback: requestCallback,
         requestError: requestError,
         resultLimit: resultLimit,
         requestLoading: requestLoading
     }), promiseMiddleware.bind(null, RE)].concat(toConsumableArray(middlewares || []));
 
-    var operApplyMiddleware = applyMiddleware.apply(undefined, toConsumableArray(middleware));
+    // const operApplyMiddleware = applyMiddleware(...middleware2);
+
+    // RE.__store__ = createStore(
+    //     combineReducers({
+    //         ...reducers,
+    //         ...RE.asyncReducers
+    //         // route: routerReducer
+    //     }),
+    //     state,
+    //     process.env.NODE_ENV === 'development' ? composeWithDevTools(operApplyMiddleware) : operApplyMiddleware
+    // );
+
+    var devtools = process.env.NODE_ENV !== 'production' && window.__REDUX_DEVTOOLS_EXTENSION__ ? window.__REDUX_DEVTOOLS_EXTENSION__ : function () {
+        return function (noop) {
+            return noop;
+        };
+    };
 
     RE.__store__ = createStore(combineReducers(_extends({}, reducers, RE.asyncReducers)
     // route: routerReducer
-    ), state, process.env.NODE_ENV === 'development' ? composeWithDevTools(operApplyMiddleware) : operApplyMiddleware);
+    ), state, compose.apply(undefined, [applyMiddleware.apply(undefined, toConsumableArray(middleware2)), devtools()]));
 
     // 处理saga
     sagaMiddleware.run( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {

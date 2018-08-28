@@ -43,9 +43,9 @@ export default (RE, { requestCallback, requestError, resultLimit, requestLoading
     }
 
     if (isObject(will) && isString(will.type)) {
-        next(will);
+        dispatch(will);
     } else if (isString(will)) {
-        next({
+        dispatch({
             type: will
         });
     }
@@ -56,7 +56,7 @@ export default (RE, { requestCallback, requestError, resultLimit, requestLoading
 
     if (isRequestLoading) requestLoading(false, action);
 
-    next({
+    dispatch({
         type: '@@LOADING/__SET_LOADING__',
         payload: {
             loading: true
@@ -85,7 +85,7 @@ export default (RE, { requestCallback, requestError, resultLimit, requestLoading
 
             if (isRequestLoading) requestLoading(true, action);
 
-            next({
+            dispatch({
                 type: '@@LOADING/__SET_LOADING__',
                 payload: {
                     loading: false
@@ -95,7 +95,7 @@ export default (RE, { requestCallback, requestError, resultLimit, requestLoading
             if (isFunction(requestCallback)) {
                 requestCallback(transferData, rest, dispatch, getState);
             } else if (isString(requestCallback)) {
-                next({
+                dispatch({
                     type: requestCallback,
                     payload: transferData,
                     ...rest
@@ -104,13 +104,13 @@ export default (RE, { requestCallback, requestError, resultLimit, requestLoading
 
             if (isObject(did) && isString(did.type)) {
                 const { type, payload, ...rest2 } = did;
-                next({
+                dispatch({
                     type: did.type,
                     payload: isUndefined(payload) ? limitData : isFunction(payload) ? payload(limitData) : payload,
                     ...rest2
                 });
             } else if (isString(did)) {
-                next({
+                dispatch({
                     type: did,
                     payload: limitData
                 });
@@ -119,7 +119,7 @@ export default (RE, { requestCallback, requestError, resultLimit, requestLoading
             if (isFunction(callback)) {
                 callback(limitData);
             } else if (isString(requecallbacktCallback)) {
-                next({
+                dispatch({
                     type: callback,
                     payload: limitData,
                     ...rest
@@ -130,7 +130,7 @@ export default (RE, { requestCallback, requestError, resultLimit, requestLoading
             if (isFunction(mergeError)) {
                 mergeError(err);
             } else if (isString(mergeError)) {
-                next({
+                dispatch({
                     type: mergeError,
                     ...rest
                 });

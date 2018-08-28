@@ -2,7 +2,7 @@ import { fromJS } from 'immutable'
 import axios from 'axios'
 
 const serve = function() {
-    return axios.get('http://10.5.141.45:8081/datatable/dapDataTb/getTbInfo').then(v => {
+    return axios.get('http://localhost:3000/packageList').then(v => {
         console.log(v)
         return v.data
     })
@@ -18,8 +18,7 @@ export default {
 
     effects: {
         *GET_TBINFO({ payload }, { call }) {
-            const cc = yield call(serve)
-            console.log(cc)
+            console.log('cc')
         },
         *test({ payload }, { put, call, select }) {
             console.log('ddddd')
@@ -53,6 +52,10 @@ export default {
                 loading: false
             }).reduce((r, [n, m]) => r.set(n, fromJS(m)), state)
         },
-        SELECT_MENU: (state, { payload }) => state.set('selectMenu', payload)
+        SELECT_MENU: (state, { payload }) => state.set('selectMenu', payload),
+        GET_TBINFO2(state, { payload }) {
+            console.log('=>')
+            return state
+        }
     }
 }
