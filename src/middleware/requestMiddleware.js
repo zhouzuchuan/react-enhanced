@@ -4,7 +4,7 @@ import { put } from 'redux-saga/effects';
 
 const take = (obj, path) => get(obj, path);
 
-export default (RE, { requestCallback, requestError, resultLimit, requestLoading }, store) => next => action => {
+export default (RE, { requestCallback, requestError, resultLimit }, store) => next => action => {
     // return setTimeout(() => {
     const { dispatch, getState } = store;
 
@@ -52,13 +52,12 @@ export default (RE, { requestCallback, requestError, resultLimit, requestLoading
 
     const mergeError = error || requestError;
 
-    const isRequestLoading = isFunction(requestLoading);
-
-    if (isRequestLoading) requestLoading(false, action);
+    const requestName = action.request.name;
 
     dispatch({
-        type: '@@LOADING/__SET_LOADING__',
+        type: '@@LOADING/__SET_LOADING_START__',
         payload: {
+            key: requestName,
             loading: true
         }
     });
@@ -83,11 +82,10 @@ export default (RE, { requestCallback, requestError, resultLimit, requestLoading
                 console.warn('设置的 resultLimit 获取不到有效的数据');
             }
 
-            if (isRequestLoading) requestLoading(true, action);
-
             dispatch({
-                type: '@@LOADING/__SET_LOADING__',
+                type: '@@LOADING/__SET_LOADING_END__',
                 payload: {
+                    key: requestName,
                     loading: false
                 }
             });

@@ -18,7 +18,7 @@ import { all } from 'redux-saga/effects';
 
 // import { composeWithDevTools } from 'redux-devtools-extension';
 
-import { isUndefined, isAarray, isString } from './utils';
+import { isUndefined, loadFormat } from './utils';
 import RE from './store';
 
 import PlaceholderLoading from './components/PlaceholderLoading';
@@ -58,12 +58,13 @@ export function configureStore({
     requestCallback,
     requestError,
     resultLimit,
-    requestLoading,
-    componentLoading,
     warehouse = [],
+    loading = 0,
     apiList = {}
 } = {}) {
     apiManage.init({ list: apiList });
+
+    const [rl, cl] = loadFormat(loading);
 
     Object.entries({
         __warehouse__: warehouse.reduce(
@@ -71,7 +72,7 @@ export function configureStore({
                 ...r,
                 [v]: {}
             }),
-            { ...(!isEmpty(apiList) && { $service: apiManage.getService() }) }
+            { ...(!isEmpty(apiList) ? { $service: apiManage.getService() } : {}) }
         ),
         _effects: {},
         _reducers: {},
@@ -79,8 +80,8 @@ export function configureStore({
         asyncReducers: { route: routerReducer },
         asyncSagas: {},
         registerModel: registerModel.bind(null, sagaMiddleware),
-        AsyncComponent: AsyncComponent.bind(null, componentLoading),
-        RequestLoading: PlaceholderLoading(requestLoading)
+        AsyncComponent: AsyncComponent.bind(null, cl),
+        Loading: PlaceholderLoading(rl)
     }).forEach(([n, m]) => {
         RE[n] = m;
     });
@@ -92,8 +93,7 @@ export function configureStore({
         requestMiddleware.bind(null, RE, {
             requestCallback,
             requestError,
-            resultLimit,
-            requestLoading
+            resultLimit
         }),
         promiseMiddleware.bind(null, RE),
         // sagaMiddleware,
@@ -143,7 +143,8 @@ export function configureStore({
 
     RE.Provider = props => <Provider {...{ ...props, store: RE.__store__ }} />;
 
-    if (!isUndefined(requestLoading)) RE.registerModel(loadingModel);
+    // if (!isUndefined(requestLoading)) RE.registerModel(loadingModel);
+    RE.registerModel(loadingModel);
 
     return RE;
 }

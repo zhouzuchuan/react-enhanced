@@ -1,16 +1,15 @@
 import React from 'react';
-
 import './loading.css';
 
 const LOADING_TYPE = [
-    <span className={`RE-LOADING-BLOCK`}>
-        <span />
-    </span>,
     <span className={`RE-LOADING-WAVE`}>
         <span />
         <span />
         <span />
         <span />
+        <span />
+    </span>,
+    <span className={`RE-LOADING-BLOCK`}>
         <span />
     </span>,
     <span className="RE-LOADING-CRICLE">
@@ -20,7 +19,7 @@ const LOADING_TYPE = [
 ];
 
 const Loading = ({ type }) => {
-    return LOADING_TYPE[type] || LOADING_TYPE[0];
+    return LOADING_TYPE[type] ? LOADING_TYPE[type] : null;
 };
 
 export default Loading;

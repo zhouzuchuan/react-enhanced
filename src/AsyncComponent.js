@@ -5,14 +5,14 @@
 import Loadable from 'react-loadable';
 import React from 'react';
 import RE from './store';
-import Loading from './components/Loading.js';
+// import Loading from './components/Loading.js';
 import { isFunction, isArray } from './utils';
 
-export default (componentLoading, params = {}) => {
+export default (cl, params = {}) => {
     const isMore = isFunction(params);
 
     const defaultParams = {
-        loading: isFunction(componentLoading) ? componentLoading : () => <Loading type={componentLoading} />
+        loading: () => cl
     };
 
     if (isMore) {
@@ -34,3 +34,4 @@ export default (componentLoading, params = {}) => {
         });
     }
 };
+a;

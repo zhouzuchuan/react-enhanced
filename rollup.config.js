@@ -1,3 +1,4 @@
+import path from 'path';
 import babel from 'rollup-plugin-babel';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
@@ -13,7 +14,7 @@ export default {
             format: 'es'
         },
         {
-            file: 'example/src/react-enhanced.js',
+            file: path.resolve(__dirname, '../react-enhanced-cli/boilerplates/app/src/react-enhanced.js'),
             format: 'es'
         }
     ],
@@ -23,6 +24,7 @@ export default {
         'redux',
         'api-manage',
         'react-redux',
+        'prop-types',
         'react-router-redux',
         'history/createBrowserHistory',
         'redux-devtools-extension',

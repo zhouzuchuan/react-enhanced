@@ -7,6 +7,10 @@
 
 基于 redux、redux-saga、react-redux、api-manage 的无侵入 react 架构增强器。
 
+## demo
+
+通过专属 CLI 工具生成默认功能目录，点击这里 [react-enhanced-cli](https://github.com/zhouzuchuan/react-enhanced-cli)
+
 ## 下载
 
 **npm**
@@ -41,7 +45,7 @@ yarn add react-enhanced
 -   `requestCallback`：<Function|none> 请求统一回调（只能处理 request 中间层的请求）
 -   `requestError`：<Function|none> 请求统一错误处理（只能处理 request 中间层的请求）
 -   `resultLimit`：<String|Array|none> 根据返回的数据数据格式，统一自定义返回（只能处理 request 中间层的请求）
--   `componentLoading`：<ReactElement|none> 统一处理组件异步加载的动画
+-   `loading`：<ReactElement|Array|function|none> 统一处理组件异步加载的动画
 -   `apiList`：<Object> 接口服务管理（格式参考[api-manage](https://github.com/zhouzuchuan/api-manage)）
 
 返回个一个 react-redux 封装的 Provider，但是在这之上我们已经许多工作，如 store 的绑定，以及基于 models 层的数据动态加载
@@ -102,9 +106,22 @@ export default class App extends Component {
 }
 ```
 
-#### `PlaceholderLoading`
+#### `Loading`
 
 占位请求加载组件 （目前支持 request 中间层请求的数据）
+
+    className: <string> 当前类名
+
+    include: <array|string> 指定当前那些请求控制期显示，默认为所有请求可控制（填写请求函数名称）
+
+    exclude: <array|string> 指定当前哪些请求不控制该组件显示与隐藏（填写请求函数名称）
+
+    cover: <boolean> 控制children是否覆盖默认图标 默认为false
+
+```js
+// 当前组件 只能是 serveGetPackageList 请求控制
+<Loading className={s['loading-mask']} include="serveGetPackageList" />
+```
 
 #### models 层数据格式
 
