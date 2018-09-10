@@ -25,7 +25,9 @@ export default (cl, params = {}) => {
         return Loadable.Map({
             ...defaultParams,
             ...rest,
-            loader: (isArray(model) ? model : [model]).reduce((r, v, i) => ({ ...r, [i]: v }), { component }),
+            loader: (model ? (isArray(model) ? model : [model]) : []).reduce((r, v, i) => ({ ...r, [i]: v }), {
+                component
+            }),
             render({ component, ...models }, props) {
                 const ReturnCompoment = component.default;
                 models && Object.values(models).forEach(v => RE.registerModel(v.default));
