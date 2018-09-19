@@ -110,24 +110,26 @@ export default class App extends Component {
 
 占位请求加载组件 （目前支持 request 中间层请求的数据）
 
-    className: <string> 当前类名
+    `className`: <string> 当前类名
 
-    include: <array|string> 指定当前那些请求控制期显示，默认为所有请求可控制（填写请求函数名称）
+    `include`: <array(string)|string> 指定当前那些请求控制期显示，默认为所有请求可控制（填写请求函数名称）
 
-    exclude: <array|string> 指定当前哪些请求不控制该组件显示与隐藏（填写请求函数名称）
+    `exclude`: <array(string)|string> 指定当前哪些请求不控制该组件显示与隐藏（填写请求函数名称）
 
-    cover: <boolean> 控制children是否覆盖默认图标 默认为false
+    `content`: <array(ReactElement)|string|ReactElement> 内容
+
+    `cover`: <boolean> 设置`content`是否覆盖默认图标 默认为false
 
 ```js
 // 当前组件 只能是 serveGetPackageList 请求控制
 <Loading className={s['loading-mask']} include="serveGetPackageList" />
 ```
 
-#### models 层数据格式
+#### models 层数据格式
 
- 借鉴 elm 概念，通过 reducers, effects 组织 model
+借鉴 elm 概念，通过 reducers, effects 组织 model
 
--   namespace：models 标识
+-   namespace：models 标识
 -   state：models 数据状态
 -   effects：声明各种需要处理的 action
 -   reducers：声明更改 state 的 action（必须为纯函数）
@@ -223,7 +225,7 @@ export default class Name extends Component {
 
 ### `request` 中间层
 
-用来简化请求 action 的流程
+    用来简化请求 action 的流程
 
 -   `request`： <Function> 请求函数
 -   `will`： <String|Object> 请求前执行
@@ -231,7 +233,7 @@ export default class Name extends Component {
 -   `callback`： <Function> 请求成功后执行（在 `did` 后面）
 -   `error`： <Function> 请求失败调用（会覆盖 init 中`requestError`在该 action 上的执行）
 
-`did`以及`will`可以是字符串，`will` 不会传递 payload，而`did`则会将请求成功的 data（如果在 init 中设置了`requestLimit`， 会根据其取值）直接绑定到 payload .
+`did`以及`will`可以是字符串，`will` 不会传递 payload，而`did`则会将请求成功的 data（如果在 init 中设置了`requestLimit`， 会根据其取值）直接绑定到 payload .
 
 ```js
 {
@@ -240,7 +242,7 @@ export default class Name extends Component {
 }
 ```
 
-`did`以及`will`是对象，`will`直接执行，而`did`中如果 payload 是函数则其参数是获取到的 data 值（init 中设置了`requestLimit`，会根据其取值）；如果不传 payload 则和`did`是字符串效果是一样的；如果是指定了值，则就是该值.
+`did`以及`will`是对象，`will`直接执行，而`did`中如果 payload 是函数则其参数是获取到的 data 值（init 中设置了`requestLimit`，会根据其取值）；如果不传 payload 则和`did`是字符串效果是一样的；如果是指定了值，则就是该值.
 
 ```js
 {

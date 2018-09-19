@@ -18,7 +18,7 @@ import { all } from 'redux-saga/effects';
 
 // import { composeWithDevTools } from 'redux-devtools-extension';
 
-import { isUndefined, loadFormat } from './utils';
+import { isArray, loadFormat } from './utils';
 import RE from './store';
 
 import PlaceholderLoading from './components/PlaceholderLoading';
@@ -54,15 +54,16 @@ export function configureStore({
     state = {},
     reducers = {},
     effects = [],
+    models = [],
     middlewares = [],
     requestCallback,
     requestError,
     resultLimit,
     warehouse = [],
     loading = 0,
-    apiList = {}
+    api = {}
 } = {}) {
-    apiManage.init({ list: apiList });
+    apiManage.init(api);
 
     const [rl, cl] = loadFormat(loading);
 
@@ -72,7 +73,7 @@ export function configureStore({
                 ...r,
                 [v]: {}
             }),
-            { ...(!isEmpty(apiList) ? { $service: apiManage.getService() } : {}) }
+            { ...(!isEmpty(api) ? { $service: apiManage.getService() } : {}) }
         ),
         _effects: {},
         _reducers: {},
@@ -144,7 +145,9 @@ export function configureStore({
     RE.Provider = props => <Provider {...{ ...props, store: RE.__store__ }} />;
 
     // if (!isUndefined(requestLoading)) RE.registerModel(loadingModel);
-    RE.registerModel(loadingModel);
+
+    // 注入默认model
+    [...(isArray(models) ? models : [models]), loadingModel].forEach(v => RE.registerModel(v));
 
     return RE;
 }

@@ -13,11 +13,11 @@ export default rl => {
     const Loading = ({
         loading,
         loadKey,
-        ukey,
         include = null,
         exclude = null,
         className,
         cover = false,
+        content,
         children
     }) => {
         const temp = [include, exclude]
@@ -28,18 +28,22 @@ export default rl => {
             })
             .every(v => v);
 
-        return !isNull(rl) && loading && temp ? (
-            <div className={className}>
-                {null}
-                {cover ? null : rl}
-                {children}
-            </div>
+        return loading && temp ? (
+            !isNull(rl) ? (
+                <div className={className}>
+                    {null}
+                    {cover ? null : rl}
+                    {content}
+                </div>
+            ) : null
+        ) : children ? (
+            children
         ) : null;
     };
 
     Loading.propTypes = ['include', 'exclude'].reduce(
         (r, v) => ({ ...r, [v]: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]) }),
-        {}
+        { content: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.element), PropTypes.element]) }
     );
 
     return connect(store => {

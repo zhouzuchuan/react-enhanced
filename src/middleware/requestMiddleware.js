@@ -82,14 +82,6 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => ne
                 console.warn('设置的 resultLimit 获取不到有效的数据');
             }
 
-            dispatch({
-                type: '@@LOADING/__SET_LOADING_END__',
-                payload: {
-                    key: requestName,
-                    loading: false
-                }
-            });
-
             if (isFunction(requestCallback)) {
                 requestCallback(transferData, rest, dispatch, getState);
             } else if (isString(requestCallback)) {
@@ -123,6 +115,13 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => ne
                     ...rest
                 });
             }
+            dispatch({
+                type: '@@LOADING/__SET_LOADING_END__',
+                payload: {
+                    key: requestName,
+                    loading: false
+                }
+            });
         })
         .catch(err => {
             if (isFunction(mergeError)) {
