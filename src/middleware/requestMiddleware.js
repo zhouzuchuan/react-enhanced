@@ -52,7 +52,7 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => ne
 
     const mergeError = error || requestError;
 
-    const requestName = action.request.name;
+    const requestName = action.request.name.split(' ').reverse()[0];
 
     dispatch({
         type: '@@LOADING/__SET_LOADING_START__',
@@ -108,7 +108,7 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => ne
 
             if (isFunction(callback)) {
                 callback(limitData);
-            } else if (isString(requecallbacktCallback)) {
+            } else if (isString(callback)) {
                 dispatch({
                     type: callback,
                     payload: limitData,
