@@ -115,6 +115,7 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => ne
                     ...rest
                 });
             }
+
             dispatch({
                 type: '@@LOADING/__SET_LOADING_END__',
                 payload: {

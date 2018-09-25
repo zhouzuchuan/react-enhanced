@@ -1,7 +1,7 @@
 import { combineReducers } from 'redux';
 import { isUndefined } from './utils';
 import RE from './store';
-import { fork, takeLatest, all, put, select, call } from 'redux-saga/effects';
+import { fork, takeLatest, all, put, select, call, spawn } from 'redux-saga/effects';
 
 export function createReducer(initialState, handlers) {
     return function reducer(state = initialState, action) {

@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import isEqual from 'lodash/isEqual';
 import { isNull, isArray } from '../utils';
 
 /**
@@ -9,48 +10,58 @@ import { isNull, isArray } from '../utils';
  *
  * */
 
-export default rl => {
-    const Loading = ({
-        loading,
-        loadKey,
-        include = null,
-        exclude = null,
-        className,
-        cover = false,
-        content,
-        children
-    }) => {
-        const temp = [include, exclude]
-            .map((v, i) => {
-                if (isNull(v)) return true;
-                const bool = (isArray(v) ? v : [v]).includes(loadKey);
-                return i ? !bool : bool;
-            })
-            .every(v => v);
+const returnUpdate = (include, exclude, key) => {
+    if (key === '') return false;
+    if (isNull(include)) {
+        return isNull(exclude) ? true : !(isArray(exclude) ? exclude : [exclude]).includes(key);
+    } else {
+        return (isArray(include) ? include : [include]).includes(key);
+    }
+};
 
-        return loading && temp ? (
-            !isNull(rl) ? (
-                <div className={className}>
-                    {null}
-                    {cover ? null : rl}
-                    {content}
-                </div>
-            ) : null
-        ) : children ? (
-            children
-        ) : null;
-    };
+export default rl => {
+    class Loading extends React.Component {
+        shouldComponentUpdate(np) {
+            return np.update || !isEqual(np.children, this.props.children);
+        }
+        render() {
+            const { loading, className, cover = false, content, children, update } = this.props;
+
+            return update && loading ? (
+                !isNull(rl) ? (
+                    <div className={className}>
+                        {null}
+                        {cover ? null : rl}
+                        {content}
+                    </div>
+                ) : null
+            ) : children ? (
+                children
+            ) : null;
+        }
+    }
 
     Loading.propTypes = ['include', 'exclude'].reduce(
         (r, v) => ({ ...r, [v]: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]) }),
         { content: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.element), PropTypes.element]) }
     );
 
-    return connect(store => {
-        const { key: loadKey = '', loading } = store['@@LOADING'] || {};
-        return {
-            loading,
-            loadKey
-        };
-    })(Loading);
+    return connect(
+        store => {
+            const { key: loadKey = '', loading } = store['@@LOADING'] || {};
+            return {
+                loading,
+                loadKey
+            };
+        },
+        null,
+        ({ loading, loadKey }, action, { include = null, exclude = null, ...rest }) => {
+            return {
+                update: returnUpdate(include, exclude, loadKey),
+                loading,
+                loadKey,
+                ...rest
+            };
+        }
+    )(Loading);
 };
