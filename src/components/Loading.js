@@ -2,17 +2,17 @@ import React from 'react';
 import './loading.css';
 
 const LOADING_TYPE = [
-    <span className={`RE-LOADING-WAVE`}>
+    <span className="RE-LOADING WAVE">
         <span />
         <span />
         <span />
         <span />
         <span />
     </span>,
-    <span className={`RE-LOADING-BLOCK`}>
+    <span className="RE-LOADING BLOCK">
         <span />
     </span>,
-    <span className="RE-LOADING-CRICLE">
+    <span className="RE-LOADING CRICLE">
         <span />
         <span />
     </span>

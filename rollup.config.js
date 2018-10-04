@@ -13,12 +13,8 @@ export default {
             file: 'lib/index.js',
             format: 'es'
         },
-        // {
-        //     file: path.resolve(__dirname, '../react-enhanced-cli/boilerplates/app/src/react-enhanced.js'),
-        //     format: 'es'
-        // },
         {
-            file: path.resolve(__dirname, '../../mes-admin/src/react-enhanced.js'),
+            file: path.resolve(__dirname, '../../dlp-mes（达力普）/src/react-enhanced.js'),
             format: 'es'
         }
     ],

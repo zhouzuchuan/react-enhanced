@@ -1,4 +1,17 @@
-.RE-LOADING-BLOCK {
+.RE-LOADING-WRAP {
+    position: relative;
+    & > .RE-LOADING {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.8);
+        z-index: 10;
+    }
+}
+
+.RE-LOADING.BLOCK {
     display: block;
     text-align: center;
 
@@ -23,7 +36,7 @@
     }
 }
 
-.RE-LOADING-WAVE {
+.RE-LOADING.WAVE {
     display: block;
     text-align: center;
 
@@ -65,7 +78,7 @@
     }
 }
 
-.RE-LOADING-CRICLE {
+.RE-LOADING.CRICLE {
     display: block;
     text-align: center;
     min-width: 30px;
