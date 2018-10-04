@@ -121,6 +121,8 @@ export default class App extends Component {
 
     `cover`: <boolean> 设置`content`是否覆盖默认图标 默认为false
 
+    `mask`: <boolean> 是否显示遮罩
+
 ```js
 // 当前组件 只能是 serveGetPackageList 请求控制
 <Loading className={s['loading-mask']} include="serveGetPackageList" />
