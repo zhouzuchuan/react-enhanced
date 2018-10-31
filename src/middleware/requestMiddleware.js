@@ -54,11 +54,14 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => ne
 
     const requestName = action.request.name.split(' ').reverse()[0];
 
+    // 生成时间戳
+    const timestamp = new Date().getTime();
+
     dispatch({
-        type: '@@LOADING/__SET_LOADING_START__',
+        type: '@@LOADING/__SET_LOADING_ACTION__',
         payload: {
-            key: requestName,
-            loading: true
+            timestamp,
+            data: { [requestName]: true }
         }
     });
 
@@ -92,6 +95,16 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => ne
                 });
             }
 
+            if (isFunction(callback)) {
+                callback(limitData, transferData);
+            } else if (isString(callback)) {
+                dispatch({
+                    type: callback,
+                    payload: limitData,
+                    ...rest
+                });
+            }
+
             if (isObject(did) && isString(did.type)) {
                 const { type, payload, ...rest2 } = did;
                 dispatch({
@@ -106,21 +119,11 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => ne
                 });
             }
 
-            if (isFunction(callback)) {
-                callback(limitData);
-            } else if (isString(callback)) {
-                dispatch({
-                    type: callback,
-                    payload: limitData,
-                    ...rest
-                });
-            }
-
             dispatch({
-                type: '@@LOADING/__SET_LOADING_END__',
+                type: '@@LOADING/__SET_LOADING_ACTION__',
                 payload: {
-                    key: requestName,
-                    loading: false
+                    timestamp,
+                    data: { [requestName]: false }
                 }
             });
         })

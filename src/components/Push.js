@@ -3,27 +3,21 @@
  * */
 
 import React from 'react';
-import RE from '../store';
+import { push } from '../store';
 import { isArray, isFunction, isString, isObject } from '../utils';
 import pick from 'lodash.pick';
 
-export default (id, fn = []) => WrappedComponent => props => {
-    let warehouse = RE.__warehouse__[id];
+const deal = (l, p) => {
+    return isFunction(l) ? fn(p) : pick(p, isArray(l) ? l : [l]);
+};
 
-    if (!warehouse) {
-        console.warn(`组件${WrappedComponent.displayName} Push 的 仓库id 不存在，请在 init 初始化中注册 warehouse！`);
+export default (...params) => WrappedComponent => props => {
+    const [id, fn = [], inline = true] = params;
+    if (params.length > 1) {
+        push(id, deal(fn, props));
     } else {
-        if (isFunction(fn)) {
-            const dealResult = fn(props);
-            Object.entries(isObject(dealResult) ? dealResult : {}).forEach(([n, m]) => {
-                warehouse[n] = m;
-            });
-        } else {
-            (isArray(fn) ? fn : [fn]).forEach(v => {
-                warehouse[v] = props[v];
-            });
-        }
+        push(deal(id, props));
     }
 
-    return <WrappedComponent {...props} />;
+    return <WrappedComponent {...{ ...props, ...(inline && { push }) }} />;
 };

@@ -1,25 +1,13 @@
 /**
  * 继承context
  * id: 仓库名
- * limit：获取CONTEXT中指定的key
+ * limit：获取仓库中指定的key
+ * inline：是否内联注入pull
  *
  * */
 import React from 'react';
-import pick from 'lodash.pick';
-import RE from '../store';
-import { isArray } from '../utils';
+import { pull } from '../store';
 
-export default (id, limit = []) => WrappedComponent => props => {
-    const warehouse = RE.__warehouse__[id];
-    let newProps = props;
-
-    if (!warehouse) {
-        console.warn(`组件${WrappedComponent.displayName} Pull 的 仓库id 不存在，请在 init 初始化中注册 warehouse！`);
-    } else {
-        newProps = {
-            ...newProps,
-            ...(isArray(limit) ? pick(warehouse, limit) : {})
-        };
-    }
-    return <WrappedComponent {...newProps} />;
+export default (id, limit = [], inline = true) => WrappedComponent => props => {
+    return <WrappedComponent {...{ ...props, ...pull(id, limit), ...(inline && { pull }) }} />;
 };

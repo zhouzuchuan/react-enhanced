@@ -14,21 +14,24 @@ import './loading.css';
  *
  * */
 
-const returnArray = (v, s = {}) => (isArray(v) ? v : [v]).some(o => s[o]);
-
-const returnUpdate = (include, exclude, store) => {
+const returnUpdate = (include, exclude, key) => {
+    if (key === '') return false;
     if (isNull(include)) {
-        return isNull(exclude) ? true : !returnArray(exclude, store);
+        return isNull(exclude) ? true : !(isArray(exclude) ? exclude : [exclude]).includes(key);
     } else {
-        return returnArray(include, store);
+        return (isArray(include) ? include : [include]).includes(key);
     }
 };
 
 export default rl => {
     class Loading extends React.Component {
         shouldComponentUpdate(np) {
-            return !isEqual(np, this.props);
+            return np.update || !isEqual(np.children, this.props.children);
         }
+        _returnComponent = component => {
+            const { mask = false } = this.props;
+            return mask ? <div className="RE-LOADING-WRAP">{component}</div> : component;
+        };
         render() {
             const {
                 loading,
@@ -43,7 +46,9 @@ export default rl => {
 
             const childrenComponent = children ? children : null;
 
-            if (update) {
+            console.log(RE.LOADING[loadKey], loadKey);
+
+            if (update && loading) {
                 const component = (
                     <div className="RE-LOADING-WRAP">
                         <div className={className}>
@@ -77,13 +82,27 @@ export default rl => {
 
     return connect(
         store => {
-            return store['@@LOADING'] || {};
+            const { key: loadKey = '', loading } = store['@@LOADING'] || {};
+            return {
+                loading,
+                loadKey
+            };
         },
         null,
-        (loadingStore, action, { include = null, exclude = null, ...rest }) => {
+        ({ loading, loadKey }, action, { include = null, exclude = null, ...rest }) => {
+            // console.log(
+            //     loadKey,
+            //     returnUpdate(include, exclude, loadKey),
+            //     loading,
+            //     include,
+            //     exclude,
+            //     JSON.stringify(RE.LOADING)
+            // );
             return {
                 ...rest,
-                update: returnUpdate(include, exclude, loadingStore)
+                update: returnUpdate(include, exclude, loadKey),
+                loading,
+                loadKey
             };
         }
     )(Loading);

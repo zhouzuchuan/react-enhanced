@@ -12,7 +12,7 @@ import apiManage from 'api-manage';
 
 import isEmpty from 'lodash.isempty';
 
-import { Provider } from 'react-redux';
+// import { Provider } from 'react-redux';
 
 import { all } from 'redux-saga/effects';
 
@@ -21,6 +21,8 @@ import { all } from 'redux-saga/effects';
 import { isArray, loadFormat } from './utils';
 import RE from './store';
 
+import Provider from './components/Provider';
+
 import PlaceholderLoading from './components/PlaceholderLoading';
 
 import requestMiddleware from './middleware/requestMiddleware';
@@ -28,6 +30,9 @@ import promiseMiddleware from './middleware/promiseMiddleware';
 import registerModel from './registerModel';
 import AsyncComponent from './AsyncComponent';
 import loadingModel from './models/loading';
+
+import { TOP_WAREHOUSE_NAME, SERVE_NAME } from './const';
+
 require('babel-regenerator-runtime');
 // 创建 router histroy 中间件
 const historyMiddleware = routerMiddleware(createHistory());
@@ -63,17 +68,20 @@ export function configureStore({
     loading = 0,
     api = {}
 } = {}) {
-    apiManage.init(api);
-
     const [rl, cl] = loadFormat(loading);
+
+    const { name = SERVE_NAME, ...apiParams } = api;
 
     Object.entries({
         __warehouse__: warehouse.reduce(
             (r, v, i) => ({
-                ...r,
-                [v]: {}
+                [v]: {},
+                ...r
             }),
-            { ...(!isEmpty(api) ? { $service: apiManage.getService() } : {}) }
+            {
+                ...(!isEmpty(apiParams) && { [name]: apiManage.init(apiParams) }),
+                [TOP_WAREHOUSE_NAME]: {}
+            }
         ),
         _effects: {},
         _reducers: {},
