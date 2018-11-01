@@ -59,9 +59,9 @@ ansi-styles@^3.2.1:
   dependencies:
     color-convert "^1.9.0"
 
-api-manage@^0.0.5:
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/api-manage/-/api-manage-0.0.5.tgz#de786267fbef8add3a7dfeeefe5f989f78485d58"
+api-manage@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/api-manage/-/api-manage-0.1.2.tgz#7fa9f2745ea0f76e35036fd181737549f123620d"
   dependencies:
     axios "^0.18.0"
 
