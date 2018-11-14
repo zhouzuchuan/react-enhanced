@@ -150,6 +150,9 @@ export function configureStore({
     //     )
     // }
 
+    RE.dispatch = RE.__store__.dispatch;
+    RE.getState = RE.__store__.getState;
+
     RE.Provider = props => <Provider {...{ ...props, store: RE.__store__ }} />;
 
     // if (!isUndefined(requestLoading)) RE.registerModel(loadingModel);

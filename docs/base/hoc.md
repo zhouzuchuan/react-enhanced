@@ -147,6 +147,64 @@ export default class Name extends Component {
 @Pull('$service', ['serveGetUserInfo'])
 ```
 
+## Request
+
+高阶组件 简单的封装 request 中间层，方便请求，减少样板代码
+
+样板代码
+
+```js
+{
+    [methodName]: (params, callback) => ({
+        request: props[methodName].bind(null, params),
+        callback
+    }),
+}
+```
+
+封装前 写法
+
+```js
+import React from 'react
+import {Pull, connect, bindActionCreators} from 'react-enhanced
+
+@Pull('$service', ['serveGetName', 'serveGetTree'])
+@connect(null, (dispatch, props) => bindActionCreators({
+    serveGetName: (params, callback) => ({
+        request: props.serveGetName.bind(null, params),
+        callback
+    }),
+    serveGetTree: (params, callback) => ({
+        request: props.serveGetTree.bind(null, params),
+        callback
+    })
+}, dispatch))
+export default class Home extends React.Compoment {
+    render() {
+
+        // serveGetName和serveGetTree在 this.props中取
+        return <div>react-enhanced</div>
+    }
+}
+
+```
+
+封装后 写法
+
+```js
+import React from 'react
+import {Request} from 'react-enhanced
+
+@Request('$service', ['serveGetName', 'serveGetTree'])
+export default class Home extends React.Compoment {
+    render() {
+        // serveGetName和serveGetTree在 this.props中取
+        return <div>react-enhanced</div>
+    }
+}
+
+```
+
 ## connect
 
 ## bindActionCreators

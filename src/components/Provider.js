@@ -1,6 +1,6 @@
 import React from 'react';
 import { Provider } from 'react-redux';
-import { Context, LOADING } from '../store';
+import { Context } from '../store';
 
 const Provider2 = props => (
     // <Context.Provider value={LOADING}>

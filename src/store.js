@@ -2,6 +2,7 @@ import pick from 'lodash.pick';
 import React from 'react';
 import { isArray, isObject } from './utils';
 import { TOP_WAREHOUSE_NAME } from './const';
+import { bindActionCreators } from 'redux';
 
 const RE = {};
 
@@ -39,12 +40,27 @@ export const push = (...params) => {
           }, wh)
         : {};
 };
+
+export const request = (...params) => {
+    return bindActionCreators(
+        Object.entries(pull(...params)).reduce(
+            (r, [k, v]) => ({
+                ...r,
+                [k]: (params, callback) => ({
+                    request: v.bind(null, params),
+                    callback
+                })
+            }),
+            {}
+        ),
+        RE.dispatch
+    );
+};
 export const Context = React.createContext();
-export const LOADING = {};
 
 RE.pull = pull;
 RE.push = push;
-RE.LOADING = {};
+RE.request = request;
 // RE.Context = Context;
 
 export default RE;
