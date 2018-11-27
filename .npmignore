@@ -62,6 +62,10 @@ rollup.config.js
 .prettierignore
 .editorconfig
 .gitignore
+.babelrc
+.gitignore
+.travis.yml
+yarn.lock
 *.lock
 src/*
 example/*
@@ -70,5 +74,6 @@ public/*
 scripts/*
 releaseNotes.md
 plan.md
+
 
 docs/*

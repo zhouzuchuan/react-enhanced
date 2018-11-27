@@ -2,10 +2,7 @@ let temp = {};
 
 export default {
     namespace: '@@LOADING',
-    state: {
-        // loading: false,
-        // key: ''
-    },
+    state: {},
     effects: {
         *__SET_LOADING_ACTION__(
             {

@@ -30,16 +30,7 @@ export default rl => {
             return !isEqual(np, this.props);
         }
         render() {
-            const {
-                loading,
-                className = '',
-                cover = false,
-                content,
-                children,
-                update,
-                mask = false,
-                loadKey
-            } = this.props;
+            const { className = '', cover = false, content, children, update, mask = false } = this.props;
 
             const childrenComponent = children ? children : null;
 
