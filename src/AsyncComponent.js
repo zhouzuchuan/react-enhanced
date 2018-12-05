@@ -29,6 +29,7 @@ export default (cl, params = {}) => {
                 component
             }),
             render({ component, ...models }, props) {
+                if (!component) return null;
                 const ReturnCompoment = component.default;
                 models && Object.values(models).forEach(v => RE.registerModel(v.default));
                 return <ReturnCompoment {...{ ...props2, ...props }} />;

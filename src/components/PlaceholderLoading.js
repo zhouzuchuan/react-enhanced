@@ -30,7 +30,16 @@ export default rl => {
             return !isEqual(np, this.props);
         }
         render() {
-            const { className = '', cover = false, content, children, update, mask = false } = this.props;
+            const {
+                className = '',
+                cover = false,
+                content,
+                children,
+                update,
+                mask = false,
+                wrapClassName = '',
+                wrapStyle = {}
+            } = this.props;
 
             const childrenComponent = children ? children : null;
 
@@ -47,7 +56,7 @@ export default rl => {
 
                 return !isNull(rl) ? (
                     mask ? (
-                        <div className="RE-LOADING-CONTAINER">
+                        <div className={'RE-LOADING-CONTAINER' + ' ' + wrapClassName} {...wrapStyle}>
                             {childrenComponent}
                             {component}
                         </div>
@@ -56,7 +65,13 @@ export default rl => {
                     )
                 ) : null;
             } else {
-                return mask ? <div className="RE-LOADING-WRAP">{childrenComponent}</div> : childrenComponent;
+                return mask ? (
+                    <div className={'RE-LOADING-WRAP' + ' ' + wrapClassName} {...wrapStyle}>
+                        {childrenComponent}
+                    </div>
+                ) : (
+                    childrenComponent
+                );
             }
         }
     }

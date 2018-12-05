@@ -13,10 +13,10 @@ export default {
             file: 'lib/index.js',
             format: 'es'
         },
-        // {
-        //     file: path.resolve(__dirname, '../../dlp-mes（达力普）/src/react-enhanced.js'),
-        //     format: 'es'
-        // },
+        {
+            file: path.resolve(__dirname, '../../dlp-mes（达力普）/src/react-enhanced.js'),
+            format: 'es'
+        },
         {
             file: path.resolve(__dirname, '../../dlp-sfc/src/react-enhanced.js'),
             format: 'es'
