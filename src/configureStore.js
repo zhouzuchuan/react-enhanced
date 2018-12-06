@@ -1,18 +1,14 @@
 import { createStore, applyMiddleware, combineReducers, compose } from 'redux';
 import React from 'react';
 import createSagaMiddleware from 'redux-saga';
-import {
-    // ConnectedRouter,
-    routerReducer,
-    routerMiddleware
-} from 'react-router-redux';
+import { createEpicMiddleware } from 'redux-observable';
+import { routerReducer, routerMiddleware } from 'react-router-redux';
 import createHistory from 'history/createBrowserHistory';
 
+import 'babel-regenerator-runtime';
 import apiManage from 'api-manage';
 
 import isEmpty from 'lodash.isempty';
-
-// import { Provider } from 'react-redux';
 
 import { all } from 'redux-saga/effects';
 
@@ -33,12 +29,14 @@ import loadingModel from './models/loading';
 
 import { TOP_WAREHOUSE_NAME, SERVE_NAME } from './const';
 
-require('babel-regenerator-runtime');
 // 创建 router histroy 中间件
 const historyMiddleware = routerMiddleware(createHistory());
 
 // 创建saga中间件
 const sagaMiddleware = createSagaMiddleware();
+
+// 创建epic中间件
+const epicMiddleware = createEpicMiddleware();
 
 /**
  *
@@ -59,6 +57,8 @@ export function configureStore({
     state = {},
     reducers = {},
     effects = [],
+    sagas = [],
+    epics = {},
     models = [],
     middlewares = [],
     requestCallback,
@@ -88,7 +88,8 @@ export function configureStore({
         _models: [],
         asyncReducers: { route: routerReducer },
         asyncSagas: {},
-        registerModel: registerModel.bind(null, sagaMiddleware),
+        asyncEpics: {},
+        registerModel: registerModel.bind(null, sagaMiddleware, epicMiddleware),
         AsyncComponent: AsyncComponent.bind(null, cl),
         Loading: PlaceholderLoading(rl)
     }).forEach(([n, m]) => {
@@ -99,27 +100,15 @@ export function configureStore({
     const middleware2 = [
         historyMiddleware,
         sagaMiddleware,
+        epicMiddleware,
         requestMiddleware.bind(null, RE, {
             requestCallback,
             requestError,
             resultLimit
         }),
         promiseMiddleware.bind(null, RE),
-        // sagaMiddleware,
         ...(middlewares || [])
     ];
-
-    // const operApplyMiddleware = applyMiddleware(...middleware2);
-
-    // RE.__store__ = createStore(
-    //     combineReducers({
-    //         ...reducers,
-    //         ...RE.asyncReducers
-    //         // route: routerReducer
-    //     }),
-    //     state,
-    //     process.env.NODE_ENV === 'development' ? composeWithDevTools(operApplyMiddleware) : operApplyMiddleware
-    // );
 
     const devtools =
         process.env.NODE_ENV !== 'production' && window.__REDUX_DEVTOOLS_EXTENSION__
@@ -141,6 +130,8 @@ export function configureStore({
         yield all(effects);
     });
 
+    // epicMiddleware.run(epics);
+
     // // 热重载reducers (requires Webpack or Browserify HMR to be enabled)
     // if (module.hot) {
     //     module.hot.accept('../reducers', () =>
@@ -154,8 +145,6 @@ export function configureStore({
     RE.getState = RE.__store__.getState;
 
     RE.Provider = props => <Provider {...{ ...props, store: RE.__store__ }} />;
-
-    // if (!isUndefined(requestLoading)) RE.registerModel(loadingModel);
 
     // 注入默认model
     [...(isArray(models) ? models : [models]), loadingModel].forEach(v => RE.registerModel(v));

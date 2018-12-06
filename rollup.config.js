@@ -34,11 +34,16 @@ export default {
         'redux-devtools-extension',
         'react-loadable',
         'redux-saga',
+        'redux-observable',
+        'rxjs',
         'redux-saga/effects',
         'axios',
         'lodash.get',
         'lodash.isempty',
-        'lodash.pick'
+        'lodash.pick',
+        'babel-regenerator-runtime',
+        'redux-devtools-extension',
+        'rxjs/operators'
     ],
     plugins: [
         postcss({
