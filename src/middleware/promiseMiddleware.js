@@ -1,8 +1,5 @@
-import get from 'lodash.get';
-import { isFunction, isArray, isObject, isString, isUndefined, isNull } from '../utils';
+import { isFunction } from '../utils';
 import { put, call, select } from 'redux-saga/effects';
-
-const take = (obj, path) => get(obj, path);
 
 export default (RE, store) => next => action => {
     const { dispatch, getState } = store;

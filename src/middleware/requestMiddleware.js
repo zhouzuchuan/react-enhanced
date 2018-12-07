@@ -13,17 +13,7 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => ne
         return;
     }
 
-    const {
-        request,
-        will,
-        error,
-        callback,
-        did,
-        RE_PROMISE,
-        __RE_PROMISE_RESOLVE__,
-        __RE_PROMISE_REJECT__,
-        ...rest
-    } = action;
+    const { request, will, error, callback, did, __RE_PROMISE_RESOLVE__, __RE_PROMISE_REJECT__, ...rest } = action;
 
     if (!request) {
         return isEffect(rest.type, RE)
@@ -34,7 +24,15 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => ne
                       ...rest
                   });
               })
-            : next(action);
+            : // : isEpic(rest.type, RE)
+              // ? new Promise((resolve, reject) => {
+              //       return next({
+              //           __RE_OBSERVABLE_RESOLVE__: resolve,
+              //           __RE_OBSERVABLE_REJECT__: reject,
+              //           ...rest
+              //       });
+              //   })
+              next(action);
     }
 
     if (!isFunction(request)) {
@@ -72,14 +70,14 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => ne
             const limitData = isString(resultLimit)
                 ? take(transferData, resultLimit)
                 : isArray(resultLimit)
-                    ? resultLimit.reduce((r, v) => {
-                          if (!isString(v)) {
-                              console.warn(`${JSON.stringify(v)} 不符合字段截取规则；请使用"result.data"这种规则！`);
-                              return r;
-                          }
-                          return [...r, take(transferData, v) || []];
-                      }, [])
-                    : transferData;
+                ? resultLimit.reduce((r, v) => {
+                      if (!isString(v)) {
+                          console.warn(`${JSON.stringify(v)} 不符合字段截取规则；请使用"result.data"这种规则！`);
+                          return r;
+                      }
+                      return [...r, take(transferData, v) || []];
+                  }, [])
+                : transferData;
 
             if (isUndefined(limitData)) {
                 console.warn('设置的 resultLimit 获取不到有效的数据');
@@ -144,6 +142,15 @@ function isEffect(type, RE) {
     if (!type || typeof type !== 'string') return false;
 
     if (RE._effects[type]) {
+        return true;
+    }
+    return false;
+}
+
+function isEpic(type, RE) {
+    if (!type || typeof type !== 'string') return false;
+
+    if (RE._epics[type]) {
         return true;
     }
     return false;

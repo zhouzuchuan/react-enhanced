@@ -23,6 +23,7 @@ import PlaceholderLoading from './components/PlaceholderLoading';
 
 import requestMiddleware from './middleware/requestMiddleware';
 import promiseMiddleware from './middleware/promiseMiddleware';
+// import observableMiddlevare from './middleware/observableMiddlevare';
 import registerModel from './registerModel';
 import AsyncComponent from './AsyncComponent';
 import loadingModel from './models/loading';
@@ -84,6 +85,7 @@ export function configureStore({
             }
         ),
         _effects: {},
+        _epics: {},
         _reducers: {},
         _models: [],
         asyncReducers: { route: routerReducer },
@@ -107,6 +109,7 @@ export function configureStore({
             resultLimit
         }),
         promiseMiddleware.bind(null, RE),
+        // observableMiddlevare.bind(null, RE),
         ...(middlewares || [])
     ];
 

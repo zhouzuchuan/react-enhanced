@@ -87,6 +87,11 @@ export default function registerModel(sagaMiddleware, epicMiddleware, models) {
                 ...RE._effects,
                 ...dealSagas
             };
+
+            RE._epics = {
+                ...RE._epics,
+                ...dealEpics
+            };
             return {
                 state: {
                     ...(r.state || {}),
