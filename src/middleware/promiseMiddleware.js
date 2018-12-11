@@ -29,6 +29,7 @@ export default (RE, store) => next => action => {
         }
         next2();
     } else {
-        next(rest);
+        // 如果为空则不继续执行
+        if (Object.values(rest).length) next(rest);
     }
 };
