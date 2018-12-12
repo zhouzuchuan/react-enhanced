@@ -1,34 +1,36 @@
-import { isFunction } from '../utils';
+import { isFunction, epicEnhance } from '../utils';
 import { Subject, queueScheduler } from 'rxjs';
 import { observeOn } from 'rxjs/operators';
 import { ActionsObservable, StateObservable } from 'redux-observable';
-import { resolve } from 'url';
 
 const actionSubject$ = new Subject().pipe(observeOn(queueScheduler));
 const stateSubject$ = new Subject().pipe(observeOn(queueScheduler));
 const action$ = new ActionsObservable(actionSubject$);
 
-export default (RE, store) => next => action => {
+export default (RE, store) => {
     const { dispatch, getState } = store;
-
-    if (isFunction(action)) {
-        action(dispatch, getState);
-        return;
-    }
-
-    const state$ = new StateObservable(stateSubject$, store.getState());
-
-    const { __RE_OBSERVABLE_RESOLVE__, __RE_OBSERVABLE_REJECT__, type, ...rest } = action;
-
-    if (isFunction(__RE_OBSERVABLE_RESOLVE__) && isFunction(__RE_OBSERVABLE_REJECT__)) {
-        const fns = RE._epics[type];
-        if (isFunction(fns)) {
-            __RE_OBSERVABLE_RESOLVE__(fns(action$, state$));
-        } else {
-            // console.log(__RE_OBSERVABLE_REJECT__);
-            // __RE_OBSERVABLE_REJECT__();
+    const state$ = new StateObservable(stateSubject$, getState());
+    return next => action => {
+        if (isFunction(action)) {
+            action(dispatch, getState);
+            return;
         }
-    } else {
-        next({ type, ...rest });
-    }
+        const { __RE_OBSERVABLE_RESOLVE__, __RE_OBSERVABLE_REJECT__, ...rest } = action;
+
+        if (isFunction(__RE_OBSERVABLE_RESOLVE__) && isFunction(__RE_OBSERVABLE_REJECT__)) {
+            const fns = RE._epics[rest.type];
+            if (isFunction(fns)) {
+                try {
+                    __RE_OBSERVABLE_RESOLVE__(epicEnhance(fns)(action$, state$));
+                } catch (e) {
+                    __RE_OBSERVABLE_REJECT__(e);
+                }
+            } else {
+                console.warn(`${rest.type} must be function!`);
+                __RE_OBSERVABLE_REJECT__(new Error());
+            }
+        } else {
+            if (Object.values(rest).length) next(rest);
+        }
+    };
 };

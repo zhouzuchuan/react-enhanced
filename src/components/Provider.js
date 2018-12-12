@@ -1,11 +1,6 @@
 import React from 'react';
 import { Provider } from 'react-redux';
-import { Context } from '../store';
 
-const Provider2 = props => (
-    // <Context.Provider value={LOADING}>
-    <Provider {...props} />
-    // </Context.Provider>
-);
+const Provider2 = props => <Provider {...props} />;
 
 export default Provider2;

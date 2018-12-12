@@ -2,17 +2,16 @@
  * 异步加载组件以及model
  * */
 
-import Loadable from 'react-loadable';
 import React from 'react';
+import Loadable from 'react-loadable';
 import RE from './store';
-// import Loading from './components/Loading.js';
 import { isFunction, isArray } from './utils';
 
-export default (cl, params = {}) => {
+export default (params = {}) => {
     const isMore = isFunction(params);
 
     const defaultParams = {
-        loading: () => cl
+        loading: () => RE.componentLoading
     };
 
     if (isMore) {

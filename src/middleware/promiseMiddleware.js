@@ -14,6 +14,7 @@ export default (RE, store) => next => action => {
     function* actionG() {
         try {
             const ret = yield RE._effects[rest.type](rest, { put, call, select });
+
             // next(rest);
             __RE_PROMISE_RESOLVE__(ret);
         } catch (e) {

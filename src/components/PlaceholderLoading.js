@@ -24,73 +24,83 @@ const returnUpdate = (include, exclude, store) => {
     }
 };
 
-export default rl => {
-    class Loading extends React.Component {
-        shouldComponentUpdate(np) {
-            return !isEqual(np, this.props);
-        }
-        render() {
-            const {
-                className = '',
-                cover = false,
-                content,
-                children,
-                update,
-                mask = false,
-                wrapClassName = '',
-                wrapStyle = {}
-            } = this.props;
+class Loading extends React.Component {
+    shouldComponentUpdate(np) {
+        return !isEqual(np, this.props);
+    }
+    render() {
+        const {
+            className = '',
+            cover = false,
+            content,
+            children,
+            update,
+            mask = false,
+            wrapClassName = '',
+            wrapStyle = {}
+        } = this.props;
 
-            const childrenComponent = children ? children : null;
+        const childrenComponent = children ? children : null;
 
-            if (update) {
-                const component = (
-                    <div className="RE-LOADING-WRAP">
-                        <div className={className}>
-                            {null}
-                            {cover ? null : rl}
-                            {content}
-                        </div>
+        if (update) {
+            const component = (
+                <div className="RE-LOADING-WRAP">
+                    <div className={className}>
+                        {null}
+                        {cover ? null : RE.requestLoading}
+                        {content}
                     </div>
-                );
+                </div>
+            );
 
-                return !isNull(rl) ? (
-                    mask ? (
-                        <div className={'RE-LOADING-CONTAINER' + ' ' + wrapClassName} {...wrapStyle}>
-                            {childrenComponent}
-                            {component}
-                        </div>
-                    ) : (
-                        component
-                    )
-                ) : null;
-            } else {
-                return mask ? (
-                    <div className={'RE-LOADING-WRAP' + ' ' + wrapClassName} {...wrapStyle}>
+            return !isNull(RE.requestLoading) ? (
+                mask ? (
+                    <div className={'RE-LOADING-CONTAINER' + ' ' + wrapClassName} {...wrapStyle}>
                         {childrenComponent}
+                        {component}
                     </div>
                 ) : (
-                    childrenComponent
-                );
-            }
+                    component
+                )
+            ) : null;
+        } else {
+            return mask ? (
+                <div className={'RE-LOADING-WRAP' + ' ' + wrapClassName} {...wrapStyle}>
+                    {childrenComponent}
+                </div>
+            ) : (
+                childrenComponent
+            );
         }
     }
+}
+Loading.propTypes = ['include', 'exclude'].reduce(
+    (r, v) => ({ ...r, [v]: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]) }),
+    { content: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.element), PropTypes.element]) }
+);
 
-    Loading.propTypes = ['include', 'exclude'].reduce(
-        (r, v) => ({ ...r, [v]: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]) }),
-        { content: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.element), PropTypes.element]) }
-    );
+export default connect(
+    store => {
+        return store['@@LOADING'] || {};
+    },
+    null,
+    (loadingStore, action, { include = null, exclude = null, ...rest }) => {
+        return {
+            ...rest,
+            update: returnUpdate(include, exclude, loadingStore)
+        };
+    }
+)(Loading);
 
-    return connect(
-        store => {
-            return store['@@LOADING'] || {};
-        },
-        null,
-        (loadingStore, action, { include = null, exclude = null, ...rest }) => {
-            return {
-                ...rest,
-                update: returnUpdate(include, exclude, loadingStore)
-            };
-        }
-    )(Loading);
-};
+// return connect(
+//     store => {
+//         return store['@@LOADING'] || {};
+//     },
+//     null,
+//     (loadingStore, action, { include = null, exclude = null, ...rest }) => {
+//         return {
+//             ...rest,
+//             update: returnUpdate(include, exclude, loadingStore)
+//         };
+//     }
+// )(Loading);

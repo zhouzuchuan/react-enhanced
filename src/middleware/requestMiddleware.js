@@ -17,22 +17,22 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => ne
 
     if (!request) {
         return isEffect(rest.type, RE)
-            ? new Promise((resolve, reject) => {
-                  return next({
+            ? new Promise((resolve, reject) =>
+                  next({
                       __RE_PROMISE_RESOLVE__: resolve,
                       __RE_PROMISE_REJECT__: reject,
                       ...rest
-                  });
-              })
-            : // : isEpic(rest.type, RE)
-              // ? new Promise((resolve, reject) => {
-              //       return next({
-              //           __RE_OBSERVABLE_RESOLVE__: resolve,
-              //           __RE_OBSERVABLE_REJECT__: reject,
-              //           ...rest
-              //       });
-              //   })
-              next(action);
+                  })
+              )
+            : isEpic(rest.type, RE)
+            ? new Promise((resolve, reject) =>
+                  next({
+                      __RE_OBSERVABLE_RESOLVE__: resolve,
+                      __RE_OBSERVABLE_REJECT__: reject,
+                      ...rest
+                  })
+              )
+            : next(action);
     }
 
     if (!isFunction(request)) {
@@ -124,6 +124,7 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => ne
                     data: { [requestName]: false }
                 }
             });
+            return limitData;
         })
         .catch(err => {
             if (isFunction(mergeError)) {

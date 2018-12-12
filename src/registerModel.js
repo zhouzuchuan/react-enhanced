@@ -1,8 +1,8 @@
 import { combineReducers } from 'redux';
 import { BehaviorSubject } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
-import { getService } from 'api-manage';
 import { combineEpics } from 'redux-observable';
+import pick from 'lodash.pick';
 import RE from './store';
 import { fork, takeLatest, all, put, select, call } from 'redux-saga/effects';
 
@@ -63,7 +63,12 @@ export function injectAsyncEpics(epics, epicMiddleware) {
 }
 
 export default function registerModel(sagaMiddleware, epicMiddleware, models) {
-    const deal = (isFunction(models) ? [models(getService())] : Array.isArray(models) ? models : [models])
+    const deal = (isFunction(models)
+        ? [models(pick(RE, ['pull', 'push', 'request']))]
+        : Array.isArray(models)
+        ? models
+        : [models]
+    )
         .filter(model => {
             if (!isObject(model)) {
                 console.warn(`model 必须导出对象，请检查！`);

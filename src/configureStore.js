@@ -23,7 +23,7 @@ import PlaceholderLoading from './components/PlaceholderLoading';
 
 import requestMiddleware from './middleware/requestMiddleware';
 import promiseMiddleware from './middleware/promiseMiddleware';
-// import observableMiddlevare from './middleware/observableMiddlevare';
+import observableMiddlevare from './middleware/observableMiddlevare';
 import registerModel from './registerModel';
 import AsyncComponent from './AsyncComponent';
 import loadingModel from './models/loading';
@@ -69,7 +69,7 @@ export function configureStore({
     loading = 0,
     api = {}
 } = {}) {
-    const [rl, cl] = loadFormat(loading);
+    const [requestLoading, componentLoading] = loadFormat(loading);
 
     const { name = SERVE_NAME, ...apiParams } = api;
 
@@ -92,8 +92,11 @@ export function configureStore({
         asyncSagas: {},
         asyncEpics: {},
         registerModel: registerModel.bind(null, sagaMiddleware, epicMiddleware),
-        AsyncComponent: AsyncComponent.bind(null, cl),
-        Loading: PlaceholderLoading(rl)
+        AsyncComponent,
+        Loading: PlaceholderLoading,
+
+        requestLoading,
+        componentLoading
     }).forEach(([n, m]) => {
         RE[n] = m;
     });
@@ -109,7 +112,7 @@ export function configureStore({
             resultLimit
         }),
         promiseMiddleware.bind(null, RE),
-        // observableMiddlevare.bind(null, RE),
+        observableMiddlevare.bind(null, RE),
         ...(middlewares || [])
     ];
 

@@ -10,6 +10,9 @@ import RE from '../store';
 import { isString, isArray } from '../utils';
 
 export default (inject = [], CONTEXT = []) => WrappedComponent => props => {
+    console.warn(
+        'Install 将在未来的2.0版本删除，Loading以及AsyncComponent的使用，请查看文档 https://zhouzuchuan.github.io/react-enhanced/#/base/hoc'
+    );
     const newProps = {
         ...props,
         ...(isString(inject) || isArray(inject) ? pick(RE, inject) : {})
