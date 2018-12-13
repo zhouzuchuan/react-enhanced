@@ -64,6 +64,7 @@ rollup.config.js
 .gitignore
 .babelrc
 .gitignore
+.eslintrc.js
 .travis.yml
 yarn.lock
 *.lock
@@ -77,3 +78,5 @@ plan.md
 
 
 docs/*
+
+node_modules/*

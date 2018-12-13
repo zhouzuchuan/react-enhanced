@@ -10,6 +10,66 @@
 
 当前 model 的数据状态
 
+## epics
+
+`epic` 是开源库 [redux-observable](https://github.com/redux-observable/redux-observable) 核心概念，它是一个函数，接收 actions 流作为参数并且返回 actions 流
+
+进入 `redux-observable` 之前需要理解 `RxJS v6` 响应式编程的 `Observables。` 如果你是第一次听说 `RxJS`, 请转向 [地址](http://reactivex.io/rxjs/)
+
+```js
+import { switchMap, throttleTime } from 'rxjs/operators';
+
+export default {
+    // ...
+    epics: {
+        getToken: (epic$) => epic$.pipe(
+            // rxjs 操作符
+            throttleTime(1000),
+            switchMap(() =>
+                from(serveVerifyOrder()).pipe(
+                    map(v => ({
+                        type: 'delectProcess/setState',
+                        payload: v
+                    }))
+                )
+            )
+        );
+    }
+    // ...
+};
+```
+
+```
+PS: 为什么 epic$ 是以美元符结尾呢? 这是 RxJS 的基本公约用来标识流。
+```
+
+在 `epic` 中有三个参数 `epic$`、 `store$`、 `action$`, 首先 `action$` 就是流，`store$` 是响应 store 的流，当 store 有更新，订阅的流则会响应，`epic$` 是浅封装后的 `action$`，是绑定的 `dispatch`的 type
+
+```js
+
+export default {
+    // ...
+    epics: {
+         login: (epic$, store$, action$) => epic$.pipe(
+            takeUntil(action$.pipe(ofType('app/logout'))),
+            combineLatest(
+                store$.pipe(
+                    pluck('delectProcess'),
+                    take(10),
+                    map(v => v),
+                    distinctUntilChanged(is)
+                )
+            ),
+            switchMap(([action, params]) => {
+                console.log(params, '+++++++++++');
+                return [];
+            })
+        );
+    }
+    // ...
+};
+```
+
 ## effects
 
 `Effect` 来自于函数编程的概念，被称为副作用（因为它使得我们的函数变得不纯，同样的输入不一定获得同样的输出），在 `react-enhanced` 应用中，最常见的就是异步操作。

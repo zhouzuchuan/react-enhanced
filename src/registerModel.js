@@ -1,34 +1,34 @@
-import { combineReducers } from 'redux';
-import { BehaviorSubject } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
-import { combineEpics } from 'redux-observable';
-import pick from 'lodash.pick';
-import RE from './store';
-import { fork, takeLatest, all, put, select, call } from 'redux-saga/effects';
+import { combineReducers } from 'redux'
+import { BehaviorSubject } from 'rxjs'
+import { mergeMap } from 'rxjs/operators'
+import { combineEpics } from 'redux-observable'
+import pick from 'lodash.pick'
+import RE from './store'
+import { fork, takeLatest, all, put, select, call } from 'redux-saga/effects'
 
-import { epicEnhance, addNameSpace, isUndefined, isFunction, isObject } from './utils';
+import { epicEnhance, addNameSpace, isUndefined, isFunction, isObject, console } from './utils'
 
 export const createReducer = (initialState, handlers) => (state = initialState, action) => {
     if (handlers.hasOwnProperty(action.type)) {
-        return handlers[action.type](state, action);
+        return handlers[action.type](state, action)
     } else {
-        return state;
+        return state
     }
-};
+}
 
 export function injectAsyncReducers(asyncReducers, initialState) {
-    let flag = false;
+    let flag = false
 
     if (asyncReducers) {
         for (let [n, m] of Object.entries(asyncReducers)) {
             if (Object.prototype.hasOwnProperty.call(asyncReducers, n)) {
                 if (RE && !(RE.asyncReducers || {})[n]) {
-                    RE.asyncReducers[n] = createReducer(initialState[n] || {}, m);
-                    flag = true;
+                    RE.asyncReducers[n] = createReducer(initialState[n] || {}, m)
+                    flag = true
                 }
             }
         }
-        flag && RE.__store__.replaceReducer(combineReducers(RE.asyncReducers));
+        flag && RE.__store__.replaceReducer(combineReducers(RE.asyncReducers))
     }
 }
 
@@ -37,8 +37,8 @@ export function injectAsyncSagas(sagas, sagaMiddleware) {
         for (let [n, m] of Object.entries(sagas)) {
             if (Object.prototype.hasOwnProperty.call(sagas, n)) {
                 if (RE && !(RE.asyncSagas || {})[n]) {
-                    RE.asyncSagas[n] = m;
-                    sagaMiddleware.run(m);
+                    RE.asyncSagas[n] = m
+                    sagaMiddleware.run(m)
                 }
             }
         }
@@ -50,15 +50,15 @@ export function injectAsyncEpics(epics, epicMiddleware) {
         const epic$ = new BehaviorSubject(
             combineEpics(
                 ...Object.entries(epics).reduce((r, [n, m = {}]) => {
-                    RE.asyncEpics[n] = m;
-                    return [...r, ...Object.values(m).map(v => epicEnhance(v))];
+                    RE.asyncEpics[n] = m
+                    return [...r, ...Object.values(m).map(v => epicEnhance(v))]
                 }, [])
             )
-        );
+        )
 
-        const rootEpic = (action$, state$) => epic$.pipe(mergeMap(epic => epic(action$, state$)));
+        const rootEpic = (action$, state$) => epic$.pipe(mergeMap(epic => epic(action$, state$)))
 
-        epicMiddleware.run(rootEpic);
+        epicMiddleware.run(rootEpic)
     }
 }
 
@@ -71,32 +71,32 @@ export default function registerModel(sagaMiddleware, epicMiddleware, models) {
     )
         .filter(model => {
             if (!isObject(model)) {
-                console.warn(`model 必须导出对象，请检查！`);
-                return false;
+                console.warn('model 必须导出对象，请检查！')
+                return false
             }
-            const { namespace } = model;
+            const { namespace } = model
             if (isUndefined(namespace)) {
-                console.warn(`namespace 必填并且唯一，请检查！`);
-                return false;
+                console.warn('namespace 必填并且唯一，请检查！')
+                return false
             }
 
-            RE._models.push(namespace);
-            return true;
+            RE._models.push(namespace)
+            return true
         })
         .reduce((r, { namespace, effects = {}, reducers = {}, state = {}, epics = {} }) => {
-            const dealSagas = addNameSpace(effects, namespace);
-            const dealEpics = addNameSpace(epics, namespace);
-            const dealReducers = addNameSpace(reducers, namespace);
+            const dealSagas = addNameSpace(effects, namespace)
+            const dealEpics = addNameSpace(epics, namespace)
+            const dealReducers = addNameSpace(reducers, namespace)
 
             RE._effects = {
                 ...RE._effects,
                 ...dealSagas
-            };
+            }
 
             RE._epics = {
                 ...RE._epics,
                 ...dealEpics
-            };
+            }
             return {
                 state: {
                     ...(r.state || {}),
@@ -114,13 +114,13 @@ export default function registerModel(sagaMiddleware, epicMiddleware, models) {
                     ...(r.epics || {}),
                     [namespace]: dealEpics
                 }
-            };
-        }, {});
+            }
+        }, {})
 
-    if (!deal.sagas) return;
+    if (!deal.sagas) return
 
-    injectAsyncReducers(deal.reducers, deal.state);
-    injectAsyncEpics(deal.epics, epicMiddleware);
+    injectAsyncReducers(deal.reducers, deal.state)
+    injectAsyncEpics(deal.epics, epicMiddleware)
     injectAsyncSagas(
         Object.entries(deal.sagas).reduce((r, [name, fns]) => {
             return {
@@ -149,15 +149,15 @@ export default function registerModel(sagaMiddleware, epicMiddleware, models) {
                                                     call
                                                 })
                                             )
-                                        ]);
-                                    });
+                                        ])
+                                    })
                                 })
-                            ]);
+                            ])
                         })
-                    ]);
+                    ])
                 }
-            };
+            }
         }, {}),
         sagaMiddleware
-    );
+    )
 }

@@ -63,5 +63,7 @@ src/.*
 .editorconfig
 releaseNotes.md
 plan.md
+*.lock
+.stylelintrc.json
 
 

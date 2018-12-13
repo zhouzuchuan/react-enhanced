@@ -1,47 +1,39 @@
-let temp = {};
+import { map } from 'rxjs/operators'
+
+import { RE_LOADING_NAME } from '../const'
+
+const temp = {}
 
 export default {
-    namespace: '@@LOADING',
-    state: {},
-    effects: {
-        *__SET_LOADING_ACTION__(
-            {
-                payload: { timestamp, data }
-            },
-            { put }
-        ) {
-            Object.entries(data).forEach(([k, v]) => {
-                if (v) {
-                    temp = {
-                        ...temp,
-                        [k]: {
-                            ...(temp[k] || {}),
-                            [timestamp]: v
+    namespace: RE_LOADING_NAME,
+    epics: {
+        __SET_LOADING_ACTION__: epic$ =>
+            epic$.pipe(
+                map(({ payload: { timestamp, data } }) => ({
+                    type: `${RE_LOADING_NAME}/__SET_SUCCESS__`,
+                    payload: Object.entries(data).reduce((r, [k, v]) => {
+                        if (v) {
+                            Reflect.set(temp, k, {
+                                ...(temp[k] || {}),
+                                [timestamp]: v
+                            })
+                        } else {
+                            Reflect.deleteProperty(temp[k], timestamp)
                         }
-                    };
-                } else {
-                    delete temp[k][timestamp];
-                }
-            });
 
-            yield put({
-                type: '@@LOADING/__SET_SUCCESS__',
-                payload: Object.entries(data).reduce((r, [k, v]) => {
-                    const curr = Object.values(temp[k] || {});
-                    return {
-                        ...r,
-                        [k]: curr.length ? curr.some(o => o) : false
-                    };
-                }, {})
-            });
-        }
+                        const curr = Object.values(temp[k] || {})
+                        return {
+                            ...r,
+                            [k]: curr.length ? curr.some(o => o) : false
+                        }
+                    }, {})
+                }))
+            )
     },
     reducers: {
-        __SET_SUCCESS__(state, { payload }) {
-            return {
-                ...state,
-                ...payload
-            };
-        }
+        __SET_SUCCESS__: (state, { payload }) => ({
+            ...state,
+            ...payload
+        })
     }
-};
+}

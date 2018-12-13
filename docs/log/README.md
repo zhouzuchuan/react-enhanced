@@ -1,5 +1,16 @@
 # 更新日志
 
+## v1.0.0 (2018.12.14)
+
+-   升级 api-mange、data-mock 依赖
+-   新增高阶组件 Request 来方便简化 request 中间件使用
+-   新增高阶组件 withEnhance 方便注入 React-enhanced 内置方法 pull、push、request
+-   修复以及优化部分细节、BUG
+-   model 支持函数写法，可以注入 pull、push、request 方法
+-   引入 Rxjs 思想，model 副作用改用 redux-observable 组织，redux-saga 依然兼容 1.x，2.0 版本会移除
+-   Install 列入不稳定黑名单 ，依然兼容 1.x，2.0 版本会移除
+-   Loading 组件改用开源库 react-spinkit 重构，提供更多 loading 样式
+
 ## v0.2.0 (2018.10.31)
 
 -   `【修复】`：修复 `Loading` 组件流程控制

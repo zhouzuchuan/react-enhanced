@@ -1,10 +1,10 @@
-import path from 'path';
-import babel from 'rollup-plugin-babel';
-import resolve from 'rollup-plugin-node-resolve';
-import commonjs from 'rollup-plugin-commonjs';
-import postcss from 'rollup-plugin-postcss';
+import path from 'path'
+import babel from 'rollup-plugin-babel'
+import resolve from 'rollup-plugin-node-resolve'
+import commonjs from 'rollup-plugin-commonjs'
+import postcss from 'rollup-plugin-postcss'
 
-import cssnext from 'postcss-cssnext';
+import cssnext from 'postcss-cssnext'
 
 export default {
     input: 'src/index.js',
@@ -34,6 +34,7 @@ export default {
         'redux-devtools-extension',
         'react-loadable',
         'redux-saga',
+        'react-spinkit',
         'redux-observable',
         'rxjs',
         'redux-saga/effects',
@@ -41,6 +42,7 @@ export default {
         'lodash.get',
         'lodash.isempty',
         'lodash.pick',
+        'lodash.isequal',
         'babel-regenerator-runtime',
         'redux-devtools-extension',
         'rxjs/operators'
@@ -63,4 +65,4 @@ export default {
             exclude: ['node_modules/**']
         })
     ]
-};
+}
