@@ -117,7 +117,7 @@ export default function registerModel(sagaMiddleware, epicMiddleware, models) {
             }
         }, {})
 
-    if (!deal.sagas) return
+    if (!deal.sagas && !deal.epics) return
 
     injectAsyncReducers(deal.reducers, deal.state)
     injectAsyncEpics(deal.epics, epicMiddleware)
