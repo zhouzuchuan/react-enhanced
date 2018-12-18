@@ -31,6 +31,7 @@ export default {
         'prop-types',
         'react-router-redux',
         'history/createBrowserHistory',
+        'history/createHashHistory',
         'redux-devtools-extension',
         'react-loadable',
         'redux-saga',
@@ -43,6 +44,7 @@ export default {
         'lodash.isempty',
         'lodash.pick',
         'lodash.isequal',
+        'classnames',
         'babel-regenerator-runtime',
         'redux-devtools-extension',
         'rxjs/operators'

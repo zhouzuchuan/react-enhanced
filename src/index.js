@@ -14,4 +14,5 @@ export const component = {
     Loading
 }
 
+export { default as Loading } from './components/Loading'
 export { default as asyncComponent } from './AsyncComponent'
