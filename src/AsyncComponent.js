@@ -5,38 +5,27 @@
 import React from 'react'
 import Loadable from 'react-loadable'
 import RE from './store'
-import { isFunction, isArray } from './utils'
+import { isFunction, isArray, isObject } from './utils'
 
 export default (params = {}) => {
-    const isMore = isFunction(params)
-
+    let loader = () => Promise.resolve()
     const ComponentLoading = RE.ComponentLoading
 
-    const defaultParams = {
-        loading() {
-            return <ComponentLoading />
-        }
+    if (isFunction(params)) {
+        loader = params
+    } else if (isObject(params)) {
+        const { component, model = [] } = params
+        loader = component
+        //  提前加载 component
+        Promise.all([component, ...(isArray(model) ? model : [model])].map(v => v())).then(([c, ...m]) => {
+            m && Object.values(m).forEach(v => RE.registerModel(v.default))
+        })
     }
 
-    if (isMore) {
-        return Loadable({
-            ...defaultParams,
-            loader: params
-        })
-    } else {
-        const { props: props2 = {}, component, model, ...rest } = params
-        return Loadable.Map({
-            ...defaultParams,
-            ...rest,
-            loader: (model ? (isArray(model) ? model : [model]) : []).reduce((r, v, i) => ({ ...r, [i]: v }), {
-                component
-            }),
-            render({ component, ...models }, props) {
-                if (!component) return null
-                const ReturnCompoment = component.default
-                models && Object.values(models).forEach(v => RE.registerModel(v.default))
-                return <ReturnCompoment {...{ ...props2, ...props }} />
-            }
-        })
-    }
+    return Loadable({
+        loading() {
+            return <ComponentLoading />
+        },
+        loader
+    })
 }

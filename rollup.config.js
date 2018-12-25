@@ -3,6 +3,8 @@ import babel from 'rollup-plugin-babel'
 import resolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
 import postcss from 'rollup-plugin-postcss'
+import { uglify } from 'rollup-plugin-uglify'
+import replace from 'rollup-plugin-replace'
 
 import cssnext from 'postcss-cssnext'
 
@@ -11,6 +13,10 @@ export default {
     output: [
         {
             file: 'lib/index.js',
+            format: 'cjs'
+        },
+        {
+            file: path.resolve(__dirname, '../../electron/electron2/app/react-enhanced.js'),
             format: 'es'
         },
         {
@@ -19,6 +25,10 @@ export default {
         },
         {
             file: path.resolve(__dirname, '../../dlp-sfc/src/react-enhanced.js'),
+            format: 'es'
+        },
+        {
+            file: path.resolve(__dirname, '../../dlp-qms/src/react-enhanced.js'),
             format: 'es'
         }
     ],
@@ -30,10 +40,14 @@ export default {
         'react-redux',
         'prop-types',
         'react-router-redux',
+        'connected-react-router',
         'history/createBrowserHistory',
         'history/createHashHistory',
         'redux-devtools-extension',
         'react-loadable',
+        'model-redux',
+        'model-redux/lib/effects/epics',
+        'model-redux/lib/effects/sagas',
         'redux-saga',
         'react-spinkit',
         'redux-observable',
@@ -65,6 +79,10 @@ export default {
         }),
         babel({
             exclude: ['node_modules/**']
+        }),
+        uglify(),
+        replace({
+            REACT_SPINKIT_NO_STYLES: true
         })
     ]
 }

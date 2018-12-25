@@ -1,18 +1,13 @@
-import { createStore, applyMiddleware, combineReducers, compose } from 'redux'
-// import React from 'react'
-import createSagaMiddleware from 'redux-saga'
-import { createEpicMiddleware } from 'redux-observable'
-import { routerReducer, routerMiddleware } from 'react-router-redux'
-import createHistory from 'history/createHashHistory'
+import { routerReducer } from 'react-router-redux'
+import modelRedux from 'model-redux'
+import pick from 'lodash.pick'
 
 import 'babel-regenerator-runtime'
 import apiManage from 'api-manage'
 
 import isEmpty from 'lodash.isempty'
 
-import { all } from 'redux-saga/effects'
-
-import { isArray, loadFormat } from './utils'
+import { isArray, loadFormat, isFunction } from './utils'
 import RE from './store'
 
 import Provider from './components/Provider'
@@ -20,22 +15,15 @@ import Provider from './components/Provider'
 import Loading from './components/Loading'
 
 import requestMiddleware from './middleware/requestMiddleware'
-import promiseMiddleware from './middleware/promiseMiddleware'
-import observableMiddlevare from './middleware/observableMiddlevare'
-import registerModel from './registerModel'
 import AsyncComponent from './AsyncComponent'
 import loadingModel from './models/loading'
 
 import { TOP_WAREHOUSE_NAME, SERVE_NAME } from './const'
 
-// 创建 router histroy 中间件
-const historyMiddleware = routerMiddleware(createHistory())
+import sagas from 'model-redux/lib/effects/sagas'
+import epics from 'model-redux/lib/effects/epics'
 
-// 创建saga中间件
-const sagaMiddleware = createSagaMiddleware()
-
-// 创建epic中间件
-const epicMiddleware = createEpicMiddleware()
+console.log(epics, sagas)
 
 /**
  *
@@ -53,11 +41,7 @@ const epicMiddleware = createEpicMiddleware()
  * @returns
  */
 export function configureStore({
-    state = {},
-    reducers = {},
-    effects = [],
     models = [],
-    middlewares = [],
     requestCallback,
     requestError,
     resultLimit,
@@ -87,7 +71,8 @@ export function configureStore({
         asyncReducers: { route: routerReducer },
         asyncSagas: {},
         asyncEpics: {},
-        registerModel: registerModel.bind(null, sagaMiddleware, epicMiddleware),
+        // registerModel: registerModel.bind(null, sagaMiddleware, epicMiddleware),
+
         AsyncComponent,
         Loading,
 
@@ -97,40 +82,24 @@ export function configureStore({
         RE[n] = m
     })
 
-    // 中间件列表
-    const middleware2 = [
-        historyMiddleware,
-        sagaMiddleware,
-        epicMiddleware,
-        requestMiddleware.bind(null, RE, {
-            requestCallback,
-            requestError,
-            resultLimit
-        }),
-        promiseMiddleware.bind(null, RE),
-        observableMiddlevare.bind(null, RE),
-        ...(middlewares || [])
-    ]
-
-    const devtools =
-        process.env.NODE_ENV !== 'production' && window.__REDUX_DEVTOOLS_EXTENSION__
-            ? window.__REDUX_DEVTOOLS_EXTENSION__
-            : () => noop => noop
-
-    RE.__store__ = createStore(
-        combineReducers({
-            ...reducers,
-            ...RE.asyncReducers
-            // route: routerReducer
-        }),
-        state,
-        compose(...[applyMiddleware(...middleware2), devtools()])
-    )
-
-    // 处理saga
-    sagaMiddleware.run(function*() {
-        yield all(effects)
+    const { store, registerModel } = modelRedux.create({
+        middlewares: [
+            [
+                requestMiddleware.bind(null, RE, {
+                    requestCallback,
+                    requestError,
+                    resultLimit
+                })
+            ]
+        ]
+        // effects: epics
     })
+
+    RE.registerModel = fns => {
+        return registerModel(isFunction(fns) ? [fns(pick(RE, ['pull', 'push', 'request']))] : fns)
+    }
+
+    RE.__store__ = store
 
     // // 热重载reducers (requires Webpack or Browserify HMR to be enabled)
     // if (module.hot) {
