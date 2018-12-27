@@ -23,8 +23,6 @@ import { TOP_WAREHOUSE_NAME, SERVE_NAME } from './const'
 import sagas from 'model-redux/lib/effects/sagas'
 import epics from 'model-redux/lib/effects/epics'
 
-console.log(epics, sagas)
-
 /**
  *
  *
@@ -45,6 +43,7 @@ export function configureStore({
     requestCallback,
     requestError,
     resultLimit,
+    middlewares,
     warehouse = [],
     loading = 'wave',
     api = {}
@@ -90,9 +89,10 @@ export function configureStore({
                     requestError,
                     resultLimit
                 })
-            ]
-        ]
-        // effects: epics
+            ],
+            middlewares
+        ],
+        effects: [epics, sagas('effects')]
     })
 
     RE.registerModel = fns => {

@@ -14,8 +14,6 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => {
             return
         }
 
-        console.log(action)
-
         const { request, will, error, callback, did, ...rest } = action
 
         if (!request) {
