@@ -67,4 +67,4 @@ plan.md
 .stylelintrc.json
 
 
-lib/
+lib/*

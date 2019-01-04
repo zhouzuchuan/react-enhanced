@@ -23,21 +23,6 @@ import { TOP_WAREHOUSE_NAME, SERVE_NAME } from './const'
 import sagas from 'model-redux/lib/effects/sagas'
 import epics from 'model-redux/lib/effects/epics'
 
-/**
- *
- *
- * @export
- * @param {any} [{
- *     state： 默认state,
- *     reducers： 全局reducers,
- *     effects： 全局effects,
- *     middlewares： saga中间件,
- *     requestCallback：请求统一回调,
- *     requestError：请求统一错误处理,
- *     resultLimit：根据返回的数据数据格式，统一自定义返回
- * }={}]
- * @returns
- */
 export function configureStore({
     models = [],
     requestCallback,

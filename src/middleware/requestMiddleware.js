@@ -1,5 +1,5 @@
 import get from 'lodash.get'
-import { isFunction, isArray, isObject, isString, isUndefined } from '../utils'
+import { isFunction, isArray, isObject, isString, isUndefined, console } from '../utils'
 
 import { RE_LOADING_NAME } from '../const'
 
@@ -92,9 +92,9 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => {
                 if (isObject(did) && isString(did.type)) {
                     const { type, payload, ...rest2 } = did
                     dispatch({
-                        type: did.type,
                         payload: isUndefined(payload) ? limitData : isFunction(payload) ? payload(limitData) : payload,
-                        ...rest2
+                        ...rest2,
+                        type
                     })
                 } else if (isString(did)) {
                     dispatch({

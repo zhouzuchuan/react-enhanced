@@ -19,11 +19,13 @@ const extractParams = (params, callback) => {
         console.warn(`仓库名 ${id} 并未注册，请在 init 初始化中注册 warehouse！`)
         return {}
     }
+
     return callback(wh, limit)
 }
 
 // 取
-export const pull = (...params) => extractParams(params, (wh, limit) => pick(wh, isArray(limit) ? limit : [limit]))
+export const pull = (...params) =>
+    extractParams(params, (wh, limit) => (limit === true ? wh : pick(wh, isArray(limit) ? limit : [limit])))
 // 存
 export const push = (...params) =>
     extractParams(params, (wh, limit) =>

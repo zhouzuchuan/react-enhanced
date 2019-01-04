@@ -1,6 +1,6 @@
 # 更新日志
 
-## v1.0.0 (2018.12.14)
+## v1.0.0 (未发)
 
 -   升级 api-mange、data-mock 依赖
 -   新增高阶组件 Request 来方便简化 request 中间件使用
@@ -10,6 +10,8 @@
 -   引入 Rxjs 思想，model 副作用改用 redux-observable 组织，redux-saga 依然兼容 1.x，2.0 版本会移除
 -   Install 列入不稳定黑名单 ，依然兼容 1.x，2.0 版本会移除
 -   Loading 组件改用开源库 react-spinkit 重构，提供更多 loading 样式
+-   request 以及 pull 方法，第二个参数支持 true，拉取以及注入仓库的全部功能
+-   添加 tools 模块，并且在其上了从 immutable 上获取数据的统一方法 immutableSelector
 
 ## v0.2.0 (2018.10.31)
 

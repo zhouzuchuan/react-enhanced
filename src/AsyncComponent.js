@@ -17,7 +17,8 @@ export default (params = {}) => {
         const { component, model = [] } = params
         loader = component
         //  提前加载 component
-        Promise.all([component, ...(isArray(model) ? model : [model])].map(v => v())).then(([c, ...m]) => {
+        Promise.all([component, ...(isArray(model) ? model : [model])].map(v => v())).then(data => {
+            const m = data.slice(1)
             m && Object.values(m).forEach(v => RE.registerModel(v.default))
         })
     }

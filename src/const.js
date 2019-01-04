@@ -10,4 +10,4 @@ export const SERVE_NAME = '$service'
 export const TOP_WAREHOUSE_NAME = Symbol()
 
 // loading model 名称
-export const RE_LOADING_NAME = 'RE_loading'
+export const RE_LOADING_NAME = '_loading_model_'

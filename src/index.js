@@ -16,3 +16,7 @@ export const component = {
 
 export { default as Loading } from './components/Loading'
 export { default as asyncComponent } from './AsyncComponent'
+
+// 新组织
+
+export { default as tools } from './tools'
