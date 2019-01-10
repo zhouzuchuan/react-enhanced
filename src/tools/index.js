@@ -1,4 +1,14 @@
 import last from 'lodash.last'
+import { console } from '../utils'
+
+import RE from '../store'
+
+export const registerModel = (...a) => {
+    if (RE.registerModel) {
+        return RE.registerModel(...a)
+    }
+    console.error('registerModel 不存在，请先 init！')
+}
 
 // 获取 immutable 数据
 export const immutableSelector = (source, keyArr) =>
@@ -14,5 +24,6 @@ export const immutableSelector = (source, keyArr) =>
     }, {})
 
 export default {
-    immutableSelector
+    immutableSelector,
+    registerModel
 }

@@ -16,19 +16,19 @@ export default {
             format: 'cjs'
         },
         {
-            file: path.resolve(__dirname, '../../electron/electron2/app/react-enhanced.js'),
+            file: path.resolve(__dirname, '../visiual-end/app/react-enhanced.js'),
             format: 'es'
         },
         {
-            file: path.resolve(__dirname, '../../dlp-mes（达力普）/src/react-enhanced.js'),
+            file: path.resolve(__dirname, '../../project/dlp-mes（达力普）/src/react-enhanced.js'),
             format: 'es'
         },
         {
-            file: path.resolve(__dirname, '../../dlp-sfc/src/react-enhanced.js'),
+            file: path.resolve(__dirname, '../../project/dlp-sfc/src/react-enhanced.js'),
             format: 'es'
         },
         {
-            file: path.resolve(__dirname, '../../dlp-qms/src/react-enhanced.js'),
+            file: path.resolve(__dirname, '../../project/dlp-qms/src/react-enhanced.js'),
             format: 'es'
         }
     ],
