@@ -75,6 +75,7 @@ public/*
 scripts/*
 releaseNotes.md
 plan.md
+.stylelintrc.json
 
 
 docs/*
