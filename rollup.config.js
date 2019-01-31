@@ -1,4 +1,3 @@
-import path from 'path'
 import babel from 'rollup-plugin-babel'
 import resolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
@@ -13,24 +12,8 @@ export default {
     output: [
         {
             file: 'lib/index.js',
-            format: 'cjs'
+            format: 'cjs',
         },
-        {
-            file: path.resolve(__dirname, '../visiual-end/app/react-enhanced.js'),
-            format: 'es'
-        },
-        {
-            file: path.resolve(__dirname, '../../project/dlp-mes（达力普）/src/react-enhanced.js'),
-            format: 'es'
-        },
-        {
-            file: path.resolve(__dirname, '../../project/dlp-sfc/src/react-enhanced.js'),
-            format: 'es'
-        },
-        {
-            file: path.resolve(__dirname, '../../project/dlp-qms/src/react-enhanced.js'),
-            format: 'es'
-        }
     ],
     external: [
         'react',
@@ -61,28 +44,34 @@ export default {
         'classnames',
         'babel-regenerator-runtime',
         'redux-devtools-extension',
-        'rxjs/operators'
+        'rxjs/operators',
     ],
     plugins: [
         postcss({
             extensions: ['.css', '.less'],
-            plugins: [cssnext()]
+            plugins: [cssnext()],
         }),
         resolve({
-            jsnext: true
+            jsnext: true,
         }),
         commonjs({
             include: 'node_modules/**',
             namedExports: {
-                './node_modules/react/react.js': ['cloneElement', 'createElement', 'PropTypes', 'Children', 'Component']
-            }
+                './node_modules/react/react.js': [
+                    'cloneElement',
+                    'createElement',
+                    'PropTypes',
+                    'Children',
+                    'Component',
+                ],
+            },
         }),
         babel({
-            exclude: ['node_modules/**']
+            exclude: ['node_modules/**'],
         }),
         uglify(),
         replace({
-            REACT_SPINKIT_NO_STYLES: true
-        })
-    ]
+            REACT_SPINKIT_NO_STYLES: true,
+        }),
+    ],
 }
