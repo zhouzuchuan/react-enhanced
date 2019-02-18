@@ -5,10 +5,7 @@ import { isFunction, isArray, isObject } from './utils'
 
 /**
  * 异步加载组件以及注入model
- *
- *
  * */
-
 export default (params = {}) => {
     let loader = {}
     const ComponentLoading = RE.ComponentLoading

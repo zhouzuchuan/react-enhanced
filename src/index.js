@@ -11,12 +11,11 @@ export { connect } from 'react-redux'
 export { bindActionCreators } from 'redux'
 
 export const component = {
-    Loading
+    Loading,
 }
 
 export { default as Loading } from './components/Loading'
 export { default as asyncComponent } from './AsyncComponent'
 
 // 新组织
-
 export { default as tools } from './tools'
