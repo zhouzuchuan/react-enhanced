@@ -1,7 +1,7 @@
 import get from 'lodash.get'
 import { isFunction, isArray, isObject, isString, isUndefined, console } from '../utils'
 
-import { RE_LOADING_NAME } from '../const'
+import { LOADING_MODEL_NAME } from '../const'
 
 const take = (obj, path) => get(obj, path)
 
@@ -30,7 +30,7 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => {
             dispatch(will)
         } else if (isString(will)) {
             dispatch({
-                type: will
+                type: will,
             })
         }
 
@@ -42,11 +42,8 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => {
         const timestamp = new Date().getTime()
 
         dispatch({
-            type: `${RE_LOADING_NAME}/__SET_LOADING_ACTION__`,
-            payload: {
-                timestamp,
-                data: { [requestName]: true }
-            }
+            type: `${LOADING_MODEL_NAME}/set`,
+            payload: [requestName, timestamp],
         })
 
         return request()
@@ -75,7 +72,7 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => {
                     dispatch({
                         type: requestCallback,
                         payload: transferData,
-                        ...rest
+                        ...rest,
                     })
                 }
 
@@ -85,7 +82,7 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => {
                     dispatch({
                         type: callback,
                         payload: limitData,
-                        ...rest
+                        ...rest,
                     })
                 }
 
@@ -94,21 +91,18 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => {
                     dispatch({
                         payload: isUndefined(payload) ? limitData : isFunction(payload) ? payload(limitData) : payload,
                         ...rest2,
-                        type
+                        type,
                     })
                 } else if (isString(did)) {
                     dispatch({
                         type: did,
-                        payload: limitData
+                        payload: limitData,
                     })
                 }
 
                 dispatch({
-                    type: `${RE_LOADING_NAME}/__SET_LOADING_ACTION__`,
-                    payload: {
-                        timestamp,
-                        data: { [requestName]: false }
-                    }
+                    type: `${LOADING_MODEL_NAME}/remove`,
+                    payload: [requestName, timestamp],
                 })
                 return limitData
             })
@@ -118,7 +112,7 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => {
                 } else if (isString(mergeError)) {
                     dispatch({
                         type: mergeError,
-                        ...rest
+                        ...rest,
                     })
                 }
             })

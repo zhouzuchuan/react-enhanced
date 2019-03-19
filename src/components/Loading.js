@@ -1,17 +1,18 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import { Map } from 'immutable'
 import isEqual from 'lodash.isequal'
 import classnames from 'classnames'
 import { isNull, isArray } from '../utils'
 
 import RE from '../store'
 
-import { RE_LOADING_NAME } from '../const'
+import { LOADING_MODEL_NAME } from '../const'
 
 import './loading.css'
 
-const returnArray = (v, s = {}) => (isArray(v) ? v : [v]).some(o => s[o])
+const returnArray = (v, s = Map()) => (isArray(v) ? v : [v]).some(o => !(s.get(o) || Map()).isEmpty())
 
 const returnUpdate = (include, exclude, store) => {
     if (isNull(include)) {
@@ -81,11 +82,11 @@ Loading.propTypes = ['include', 'exclude'].reduce(
 )
 
 export default connect(
-    store => {
-        return store[RE_LOADING_NAME] || {}
-    },
+    store => ({
+        loadingStore: store[LOADING_MODEL_NAME],
+    }),
     null,
-    (loadingStore, action, { include = null, exclude = null, ...rest }) => {
+    ({ loadingStore }, action, { include = null, exclude = null, ...rest }) => {
         return {
             ...rest,
             update: returnUpdate(include, exclude, loadingStore),

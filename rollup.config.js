@@ -45,6 +45,7 @@ export default {
         'babel-regenerator-runtime',
         'redux-devtools-extension',
         'rxjs/operators',
+        'immutable',
     ],
     plugins: [
         postcss({

@@ -10,6 +10,8 @@ export { configureStore as init } from './configureStore'
 export { connect } from 'react-redux'
 export { bindActionCreators } from 'redux'
 
+export { LOADING_MODEL_NAME } from './const'
+
 export const component = {
     Loading,
 }

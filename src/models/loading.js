@@ -1,39 +1,11 @@
-import { map } from 'rxjs/operators'
-
-import { RE_LOADING_NAME } from '../const'
-
-const temp = {}
+import { fromJS } from 'immutable'
+import { LOADING_MODEL_NAME } from '../const'
 
 export default {
-    namespace: RE_LOADING_NAME,
-    epics: {
-        __SET_LOADING_ACTION__: epic$ =>
-            epic$.pipe(
-                map(({ payload: { timestamp, data } }) => ({
-                    type: `${RE_LOADING_NAME}/__SET_SUCCESS__`,
-                    payload: Object.entries(data).reduce((r, [k, v]) => {
-                        if (v) {
-                            Reflect.set(temp, k, {
-                                ...(temp[k] || {}),
-                                [timestamp]: v
-                            })
-                        } else {
-                            Reflect.deleteProperty(temp[k], timestamp)
-                        }
-
-                        const curr = Object.values(temp[k] || {})
-                        return {
-                            ...r,
-                            [k]: curr.length ? curr.some(o => o) : false
-                        }
-                    }, {})
-                }))
-            )
-    },
+    namespace: LOADING_MODEL_NAME,
+    state: fromJS({}),
     reducers: {
-        __SET_SUCCESS__: (state, { payload }) => ({
-            ...state,
-            ...payload
-        })
-    }
+        remove: (state, { payload }) => state.deleteIn(payload),
+        set: (state, { payload }) => state.setIn(payload, 1),
+    },
 }
