@@ -21,3 +21,5 @@ export { default as asyncComponent } from './AsyncComponent'
 
 // 新组织
 export { default as tools } from './tools'
+
+export { default as hooks } from './hooks'

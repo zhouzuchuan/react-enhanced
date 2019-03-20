@@ -14,6 +14,10 @@ export default {
             file: 'lib/index.js',
             format: 'cjs',
         },
+        {
+            file: '../../project/dlp-sfc/src/react-enhanced.js',
+            format: 'es',
+        },
     ],
     external: [
         'react',
