@@ -64,7 +64,7 @@ class Loading extends React.Component {
                     RE_update: update,
                     [wrapClassName]: wrapClassName,
                 })}
-                {...wrapStyle}
+                style={wrapStyle} 
             >
                 {children}
                 {createChldren}
