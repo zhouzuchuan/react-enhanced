@@ -14,7 +14,7 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => {
             return
         }
 
-        const { request, will, error, callback, did, ...rest } = action
+        const { request, will, error, callback, failCallback, did, ...rest } = action
 
         if (!request) {
             return next(action)
@@ -66,45 +66,57 @@ export default (RE, { requestCallback, requestError, resultLimit }, store) => {
                     console.warn('设置的 resultLimit 获取不到有效的数据')
                 }
 
+                let throttle = true
+
                 if (isFunction(requestCallback)) {
-                    requestCallback(transferData, rest, dispatch, getState)
-                } else if (isString(requestCallback)) {
-                    dispatch({
-                        type: requestCallback,
-                        payload: transferData,
-                        ...rest,
-                    })
+                    throttle = requestCallback(transferData, rest, dispatch, getState)
                 }
 
-                if (isFunction(callback)) {
-                    callback(limitData, transferData)
-                } else if (isString(callback)) {
+                // 如果没有请求不合格 则返回
+                if (!throttle) {
                     dispatch({
-                        type: callback,
-                        payload: limitData,
-                        ...rest,
+                        type: `${LOADING_MODEL_NAME}/remove`,
+                        payload: [requestName, timestamp],
                     })
-                }
+                    if (isFunction(failCallback)) {
+                        failCallback(transferData)
+                    }
+                    return
+                } else {
+                    if (isFunction(callback)) {
+                        callback(limitData, transferData)
+                    } else if (isString(callback)) {
+                        dispatch({
+                            type: callback,
+                            payload: limitData,
+                            ...rest,
+                        })
+                    }
 
-                if (isObject(did) && isString(did.type)) {
-                    const { type, payload, ...rest2 } = did
-                    dispatch({
-                        payload: isUndefined(payload) ? limitData : isFunction(payload) ? payload(limitData) : payload,
-                        ...rest2,
-                        type,
-                    })
-                } else if (isString(did)) {
-                    dispatch({
-                        type: did,
-                        payload: limitData,
-                    })
-                }
+                    if (isObject(did) && isString(did.type)) {
+                        const { type, payload, ...rest2 } = did
+                        dispatch({
+                            payload: isUndefined(payload)
+                                ? limitData
+                                : isFunction(payload)
+                                ? payload(limitData)
+                                : payload,
+                            ...rest2,
+                            type,
+                        })
+                    } else if (isString(did)) {
+                        dispatch({
+                            type: did,
+                            payload: limitData,
+                        })
+                    }
 
-                dispatch({
-                    type: `${LOADING_MODEL_NAME}/remove`,
-                    payload: [requestName, timestamp],
-                })
-                return limitData
+                    dispatch({
+                        type: `${LOADING_MODEL_NAME}/remove`,
+                        payload: [requestName, timestamp],
+                    })
+                    return limitData
+                }
             })
             .catch(err => {
                 if (isFunction(mergeError)) {
