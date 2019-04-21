@@ -1,6 +1,18 @@
 # 更新日志
 
-## v1.0.0 (未发)
+## v2.0.0 (2019.4.21)
+
+-   重新定位 react-enhanced 方向（辅助增强）
+-   model-redux 外部使用，不在内置封装
+-   删除高阶组件 withEnhance，pull、push、request、Model、Install
+-   新增 hooks 调用方法：
+    新增 useWarehouse 使用仓库系统 返回 指定的仓库以及仓库的 pull push
+    新增 useRequest 使用 request 中间件封装
+    新增 useAction 使用统一封装 action
+-   中间件接口暴露，requestMiddleware 中间件 requestCallback 返回 true 才执行 request 的 callback 回调
+-   修复以及优化部分细节、BUG
+
+## v1.0.0 (2018.12.1)
 
 -   升级 api-mange、data-mock 依赖
 -   新增高阶组件 Request 来方便简化 request 中间件使用
