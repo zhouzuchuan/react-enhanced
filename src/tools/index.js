@@ -33,8 +33,9 @@ export const registerModel = (...a) => {
  * immutableSelector(app, [['children']])
  *
  */
-export const immutableSelector = (source, pathArr) =>
-    pathArr.reduce((r, v) => {
+export const immutableSelector = (source, pathArr) => {
+    console.log(source)
+    return pathArr.reduce((r, v) => {
         const isJS = Array.isArray(v)
         const path = (isJS ? v.join('.') : v).split('.')
         const key = last(last(path).split('|'))
@@ -44,6 +45,7 @@ export const immutableSelector = (source, pathArr) =>
             [key]: isJS ? data.toJS() : data,
         }
     }, {})
+}
 
 export default {
     immutableSelector,

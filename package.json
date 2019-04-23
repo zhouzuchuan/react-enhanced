@@ -1,6 +1,6 @@
 {
     "name": "react-enhanced",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "description": "react 无侵入架构增强器",
     "main": "lib",
     "scripts": {

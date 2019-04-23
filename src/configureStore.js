@@ -2,6 +2,7 @@ import pick from 'lodash.pick'
 
 import 'babel-regenerator-runtime'
 import apiManage from 'api-manage'
+import Provider from './components/Provider'
 
 import isEmpty from 'lodash.isempty'
 
@@ -13,7 +14,7 @@ import loadingModel from './models/loading'
 import { TOP_WAREHOUSE_NAME, SERVE_NAME } from './const'
 
 export function configureStore(
-    { store, registerModel },
+    { store, registerModel, persistor },
     { models = [], warehouse = [], loading = 'wave', api = {} } = {},
 ) {
     const [RequestLoading, ComponentLoading] = loadFormat(loading)
@@ -38,14 +39,16 @@ export function configureStore(
     })
 
     RE.__store__ = store
+    RE.persistor = persistor
 
     RE.registerModel = fns => {
         return registerModel(isFunction(fns) ? [fns(pick(RE, ['pull', 'push', 'request']))] : fns)
     }
 
     RE.dispatch = RE.__store__.dispatch
-    // RE.getState = RE.__store__.getState
 
     // 注入默认model
     ;[...(isArray(models) ? models : [models]), loadingModel].forEach(v => RE.registerModel(v))
+
+    return { Provider }
 }
