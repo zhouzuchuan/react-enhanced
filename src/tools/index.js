@@ -34,7 +34,6 @@ export const registerModel = (...a) => {
  *
  */
 export const immutableSelector = (source, pathArr) => {
-    console.log(source)
     return pathArr.reduce((r, v) => {
         const isJS = Array.isArray(v)
         const path = (isJS ? v.join('.') : v).split('.')
