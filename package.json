@@ -1,6 +1,6 @@
 {
     "name": "react-enhanced",
-    "version": "2.0.4",
+    "version": "2.0.5",
     "description": "react 无侵入架构增强器",
     "main": "lib",
     "scripts": {
@@ -26,7 +26,7 @@
     },
     "homepage": "https://github.com/zhouzuchuan/react-enhanced#readme",
     "dependencies": {
-        "api-manage": "^0.3.0",
+        "api-manage": "^0.4.0",
         "babel-regenerator-runtime": "^6.5.0",
         "connected-react-router": "^6.0.0",
         "history": "^4.7.2",
@@ -36,7 +36,7 @@
         "lodash.isequal": "^4.5.0",
         "lodash.last": "^3.0.0",
         "lodash.pick": "^4.4.0",
-        "model-redux": "^1.4.3",
+        "model-redux": "^1.4.4",
         "react": "^16.4.1",
         "react-dom": "^16.4.1",
         "react-loadable": "^5.5.0",

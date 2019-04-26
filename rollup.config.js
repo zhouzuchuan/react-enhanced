@@ -15,7 +15,7 @@ export default {
             format: 'cjs',
         },
         {
-            file: '../../project/dlp-sfc/src/react-enhanced.js',
+            file: '../react-typescript-boilerplate/src/react-enhanced.js',
             format: 'es',
         },
     ],

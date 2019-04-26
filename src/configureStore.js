@@ -7,15 +7,30 @@ import Provider from './components/Provider'
 
 import isEmpty from 'lodash.isempty'
 
-import { isArray, loadFormat, isFunction } from './utils'
+import { isArray, loadFormat, isFunction, isObject } from './utils'
 import RE from './store'
 
 import loadingModel from './models/loading'
 
-import { TOP_WAREHOUSE_NAME, SERVE_NAME } from './const'
+import { TOP_WAREHOUSE_NAME, SERVE_NAME, LOADING_MODEL_NAME } from './const'
 
 export function configureStore({ models = [], warehouse = [], loading = 'wave', api = {}, modelConfig = {} } = {}) {
-    const { store, registerModel, persistor } = modelRedux.create(modelConfig)
+    let dealmodelConfig = modelConfig
+
+    if (modelConfig.persist) {
+        dealmodelConfig = {
+            ...modelConfig,
+            persist: {
+                blacklist: [
+                    LOADING_MODEL_NAME,
+                    ...(isArray(modelConfig.persist.blacklist) ? modelConfig.persist.blacklist : []),
+                ],
+                ...(isObject(modelConfig.persist) ? modelConfig.persist : {}),
+            },
+        }
+    }
+
+    const { store, registerModel, persistor } = modelRedux.create(dealmodelConfig)
 
     const [RequestLoading, ComponentLoading] = loadFormat(loading)
 
