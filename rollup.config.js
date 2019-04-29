@@ -47,9 +47,12 @@ export default {
         'lodash.isequal',
         'classnames',
         'babel-regenerator-runtime',
-        'redux-devtools-extension',
+        'redux-persist',
+        'redux-persist/integration/react',
         'rxjs/operators',
         'immutable',
+        'styled-components',
+        'react-router-dom',
     ],
     plugins: [
         postcss({

@@ -1,6 +1,6 @@
 {
     "name": "react-enhanced",
-    "version": "2.0.5",
+    "version": "2.0.6",
     "description": "react 无侵入架构增强器",
     "main": "lib",
     "scripts": {
@@ -36,7 +36,7 @@
         "lodash.isequal": "^4.5.0",
         "lodash.last": "^3.0.0",
         "lodash.pick": "^4.4.0",
-        "model-redux": "^1.4.4",
+        "model-redux": "^1.4.5",
         "react": "^16.4.1",
         "react-dom": "^16.4.1",
         "react-loadable": "^5.5.0",
@@ -45,6 +45,7 @@
         "react-spinkit": "^3.0.0",
         "redux-devtools-extension": "^2.13.2",
         "redux-observable": "^1.0.0",
+        "redux-persist": "^5.10.0",
         "redux-saga": "^0.16.0",
         "rxjs": "^6.3.3",
         "styled-components": "^4.1.3"

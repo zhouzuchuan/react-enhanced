@@ -4,13 +4,14 @@ import { connect } from 'react-redux'
 import { Map } from 'immutable'
 import isEqual from 'lodash.isequal'
 import classnames from 'classnames'
+import styled from 'styled-components'
 import { isNull, isArray } from '../utils'
 
 import RE from '../store'
 
 import { LOADING_MODEL_NAME } from '../const'
 
-import './loading.css'
+// import './loading.css'
 
 const returnArray = (v, s = Map()) => (isArray(v) ? v : [v]).some(o => !(s.get(o) || Map()).isEmpty())
 
@@ -68,7 +69,7 @@ export default connect(
 
             const RequestLoading = RE.RequestLoading
             const createChldren = update ? (
-                <div className="RE_loading">
+                <WrapIn>
                     <div
                         className={classnames({
                             [className]: className,
@@ -78,20 +79,18 @@ export default connect(
                         {cover ? null : <RequestLoading {...spin} />}
                         {content}
                     </div>
-                </div>
+                </WrapIn>
             ) : null
 
+            const Wrap = update ? WrapLoading : WrapEmpty
+
             return mask ? (
-                <div
-                    className={classnames('RE_loading_wrap', {
-                        RE_update: update,
-                        [wrapClassName]: wrapClassName,
-                    })}
+                <Wrap className={wrapClassName}
                     style={wrapStyle}
                 >
                     {children}
                     {createChldren}
-                </div>
+                </Wrap>
             ) : update ? (
                 createChldren
             ) : (
@@ -100,3 +99,50 @@ export default connect(
         }
     },
 )
+
+const WrapIn = styled.div`
+    text-align: center;
+
+    & > :first-child > .sk-spinner {
+        display: inline-block;
+        vertical-align: middle;
+    }
+`
+
+const WrapLoading = styled.div`
+    position: relative;
+
+    & > * {
+        pointer-events: none;
+        filter: blur(0.8px);
+        opacity: 0.5;
+    }
+
+    & > ${WrapIn} {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 5;
+        width: 100%;
+        height: 100%;
+        max-height: 300px;
+        pointer-events: auto;
+        filter: blur(0);
+        opacity: 1;
+
+        &::after {
+            display: inline-block;
+            width: 0;
+            height: 100%;
+            line-height: 0;
+            vertical-align: middle;
+            content: '';
+        }
+
+        & > :first-child {
+            display: inline-block;
+            vertical-align: middle;
+        }
+    }
+`
+const WrapEmpty = styled.div``

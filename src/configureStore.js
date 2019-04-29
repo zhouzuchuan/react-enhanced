@@ -7,14 +7,21 @@ import Provider from './components/Provider'
 
 import isEmpty from 'lodash.isempty'
 
-import { isArray, loadFormat, isFunction, isObject } from './utils'
+import { isArray, loadFormat, isFunction, isObject, console } from './utils'
 import RE from './store'
 
 import loadingModel from './models/loading'
 
 import { TOP_WAREHOUSE_NAME, SERVE_NAME, LOADING_MODEL_NAME } from './const'
 
-export function configureStore({ models = [], warehouse = [], loading = 'wave', api = {}, modelConfig = {} } = {}) {
+export function configureStore({
+    models = [],
+    warehouse = [],
+    loading = 'wave',
+    guard = () => true,
+    api = {},
+    modelConfig = {},
+} = {}) {
     let dealmodelConfig = modelConfig
 
     if (modelConfig.persist) {
@@ -36,6 +43,13 @@ export function configureStore({ models = [], warehouse = [], loading = 'wave', 
 
     const { name = SERVE_NAME, ...apiParams } = api
 
+    let guardFunction = guard
+
+    if (!isFunction(guardFunction)) {
+        console('guard must be function!')
+        guardFunction = () => true
+    }
+
     Object.entries({
         __warehouse__: warehouse.reduce(
             (r, v) => ({
@@ -49,6 +63,7 @@ export function configureStore({ models = [], warehouse = [], loading = 'wave', 
         ),
         RequestLoading,
         ComponentLoading,
+        guardFunction,
     }).forEach(([n, m]) => {
         RE[n] = m
     })
