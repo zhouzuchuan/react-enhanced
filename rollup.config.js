@@ -14,10 +14,10 @@ export default {
             file: 'lib/index.js',
             format: 'cjs',
         },
-        {
-            file: '../react-typescript-boilerplate/src/react-enhanced.js',
-            format: 'es',
-        },
+        // {
+        //     file: '../react-typescript-boilerplate/src/react-enhanced.js',
+        //     format: 'es',
+        // },
     ],
     external: [
         'react',
