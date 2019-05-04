@@ -4,6 +4,8 @@ export { default as tools } from './tools'
 
 export { default as hooks } from './hooks'
 
+export { default as hocs } from './HOC'
+
 export { default as middlewares } from './middlewares'
 
 export { default as components } from './components'
