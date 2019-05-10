@@ -1,38 +1,24 @@
-# Request 中间件
+# Request 层
 
-内置一套 request 的 redux 中间件，主要是用来简化请求 action 的流程，以及方便对其流程控制，以及样板代码
-
-## 声明
-
-需要在 init.modelConfig.middlewares 来声明该中间件
+主要是用来简化请求 action 的流程，以及方便对其流程控制
 
 ```js
-const { Provider } = init({
-    /// ...
-    modelConfig: {
-        middlewares: [
-            [
-                middlewares.requestMiddleware.bind(null, {
-                    requestCallback: (req: any) => true,
-                    resultLimit: 'result',
-                }),
-            ],
-        ],
+// action
+{
+    request: serveGetList,
+    will: {
+        type: 'app/willAction',
+    }
+    callback: (data) => {
+        console.log(data)
     },
-});
+    did: 'app/didAction',
+}
 ```
 
-### 参数
+## 参数
 
--   `requestCallback`【function】： 调用验证，必须返回 true 才能通过 request 层获取请求参数，否则不执行
--   `resultLimit`：【string】 数据路径，request 层返回的数据 是真实返回数据通过该数据路径取到的数据，如果要取嵌套路径，则可以通过 `.` 分割
--   `requestError`：【function】 全局错误处理
-
-## 使用
-
-### 参数
-
-#### `request`
+### request
 
 请求函数
 
@@ -45,7 +31,7 @@ const serveGetList = () => axios.get('http://....')
 }
 ```
 
-#### `will`
+### will
 
 请求前执行
 
@@ -68,7 +54,7 @@ const serveGetList = () => axios.get('http://....')
 }
 ```
 
-#### `did`
+### did
 
 请求成功后执行
 
@@ -109,7 +95,7 @@ const serveGetList = () => axios.get('http://....')
 }
 ```
 
-#### `callback`
+### callback
 
 请求成功后执行（在 `did` 之前触发）
 
@@ -124,20 +110,7 @@ const serveGetList = () => axios.get('http://....')
 }
 ```
 
-#### failCallback
-
-如果声明参数 `requestCallback` 返回 `false` 则调用改钩子
-
-```js
-{
-    request: serveGetList.bind(null, payload),
-    error: (err) => {
-        // ...
-    }
-}
-```
-
-#### error
+### error
 
 请求失败或者函数执行错误调用
 
@@ -149,10 +122,6 @@ const serveGetList = () => axios.get('http://....')
     }
 }
 ```
-
-### useRequest
-
-具体[点击这里](/deep/hook?id=userequest)
 
 ## 注意
 

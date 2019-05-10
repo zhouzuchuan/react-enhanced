@@ -5,7 +5,7 @@ import { LOADING_MODEL_NAME } from '../const'
 
 const take = (obj, path) => get(obj, path)
 
-export default ({ requestCallback, requestError = () => null, resultLimit }, store) => {
+export default ({ requestCallback = () => true, requestError = () => null, resultLimit }, store) => {
     return next => action => {
         const { dispatch, getState } = store
 

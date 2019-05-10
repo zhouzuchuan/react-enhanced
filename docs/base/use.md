@@ -2,35 +2,25 @@
 
 ## 快速上手
 
-通过 [react-enhanced-cli](https://github.com/zhouzuchuan/react-enhanced-cli) 官方 cli，初始工程
-
-### 安装 CLI
+通过 [project-boilerplates](https://github.com/zhouzuchuan/project-boilerplates) 生成开发工程
 
 ```bash
-npm install react-enhanced-cli -g
+
+npm install project-boilerplates -g
+
+pb init
+
 ```
 
-### 创建应用
-
-安装完 react-enhanced-cli 之后，就可以在命令行里访问到 rec 命令。可以通过 rec create 创建新应用
-
-```bash
-rec create rec-app
-```
-
-然后我们 cd 进入 rec-app 目录，并启动本地开发服务：
-
-```bash
-cd rec-app
-
-npm run start
-```
+通过命令 `pb` 初始化，选择 `React Of Typescript` 模板
 
 ## 已开发项目使用
 
 ### 下载
 
 ```bash
+yarn add react-enhanced
+# or
 npm install react-enhanced
 ```
 
@@ -51,6 +41,6 @@ ReactDOM.render(
     <Provider>
         <App />
     </Provider>,
-    document.getElementById('root')
+    document.getElementById('root'),
 );
 ```
