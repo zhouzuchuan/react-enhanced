@@ -36,3 +36,22 @@ immutableSelector(app, ['name', 'age']);
 // 获取的Imuutable数据 经过toJS处理
 immutableSelector(app, [['children']]);
 ```
+
+## immutableSetState
+
+公用处理 model state reducers
+
+action.payload key 可是是选取路径集合，采用.拼接路径， value 则是值
+
+```js
+
+{
+   type: `${namespace}/immutableSetState`,
+   payload: {
+       id: 1,
+       ['user.age]: 29,
+   }
+}
+
+
+```

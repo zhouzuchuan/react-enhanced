@@ -7,7 +7,7 @@ export const extendsClass = A => class extends A {}
 
 export default class RcRoute extends React.Component {
     componentRender = (mothed, ...params) => {
-        if (RE.guardFunction && !RE.guardFunction(...params)) {
+        if (RE.guardFunction && !RE.guardFunction(params[0], RE.dispatch)) {
             return null
         }
 

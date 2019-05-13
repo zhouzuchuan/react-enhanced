@@ -1,8 +1,5 @@
-# 高阶函数
-
-## Install
-
-高阶组件，向组件注入方法，如注入 AsyncComponent
+# 高阶组件
+ 
 
 ### AsyncComponent
 

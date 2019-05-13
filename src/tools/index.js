@@ -1,4 +1,5 @@
 import last from 'lodash.last'
+import { fromJS } from 'immutable'
 import { console } from '../utils'
 
 import RE from '../store'
@@ -46,7 +47,36 @@ export const immutableSelector = (source, pathArr) => {
     }, {})
 }
 
+/**
+ *
+ * model的公用reducers
+ * 设置 model  immutable对象 state
+ *
+ * @param {*} state
+ * 当前model的state
+ *
+ * @param {Array} action
+ * redux action
+ * action.payload key 可是是选取路径集合，采用.拼接路径， value则是值
+ *
+ * @return {*} 新的state
+ *
+ * @example
+ *
+ * {
+ *  type: `${namespace}/immutableSetState`,
+ *  payload: {
+ *      id: 1,
+ *      ['user.age]: 29,
+ *  }
+ * }
+ *
+ */
+export const immutableSetState = (state, action) =>
+    Object.entries(action.payload || {}).reduce((r, [k, v]: any[]) => r.setIn(k.split('.'), fromJS(v)), state)
+
 export default {
     immutableSelector,
+    immutableSetState,
     registerModel,
 }

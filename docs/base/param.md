@@ -13,7 +13,7 @@ const { Provider } = init({
         list: apiList,
     },
     // 路由守卫（必须使用components.Route组件）
-    guard: (router: RouteProps) => true,
+    guard: (router: RouteProps, dispatch: Dispatch) => true,
     modelConfig: {
         persist: {
             // 通过在这里设置需要持久化的 model (model的namespace)

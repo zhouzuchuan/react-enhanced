@@ -1,5 +1,10 @@
 # 更新日志
 
+## v2.0.8 (2019.5.13)
+
+-   guard 路由守卫添加第二个参数 `dispatch`
+-   tools 新增 `immutableSetState` 方法
+
 ## v2.0.0 (2019.4.21)
 
 -   重新定位 react-enhanced 方向（辅助增强）
