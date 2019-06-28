@@ -78,6 +78,6 @@ plan.md
 .stylelintrc.json
 
 
-docs/*
+docs/
 
 node_modules/*
