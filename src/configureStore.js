@@ -37,7 +37,7 @@ export function configureStore({
         }
     }
 
-    const { store, registerModel, persistor } = modelRedux.create(dealmodelConfig)
+    const { store, registerModel } = modelRedux.create(dealmodelConfig)
 
     const [RequestLoading, ComponentLoading] = loadFormat(loading)
 
@@ -69,7 +69,6 @@ export function configureStore({
     })
 
     RE.__store__ = store
-    RE.persistor = persistor
 
     RE.registerModel = fns => {
         return registerModel(isFunction(fns) ? [fns(pick(RE, ['pull', 'push', 'request']))] : fns)

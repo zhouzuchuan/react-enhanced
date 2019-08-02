@@ -47,8 +47,6 @@ export default {
         'lodash.isequal',
         'classnames',
         'babel-regenerator-runtime',
-        'redux-persist',
-        'redux-persist/integration/react',
         'rxjs/operators',
         'immutable',
         'styled-components',
