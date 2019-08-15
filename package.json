@@ -1,6 +1,6 @@
 {
     "name": "react-enhanced",
-    "version": "2.1.3",
+    "version": "2.1.4",
     "description": "react 无侵入架构增强器",
     "main": "lib",
     "scripts": {
@@ -36,7 +36,7 @@
         "lodash.isequal": "^4.5.0",
         "lodash.last": "^3.0.0",
         "lodash.pick": "^4.4.0",
-        "model-redux": "^1.5.0",
+        "model-redux": "^1.6.1",
         "react": "^16.4.1",
         "react-dom": "^16.4.1",
         "react-loadable": "^5.5.0",
