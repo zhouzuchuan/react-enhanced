@@ -1,5 +1,11 @@
 # 更新日志
 
+## v2.2.0 (2019.9.10)
+
+-   升级 model-reudx 并且删除 redux-persist 依赖使用
+-   重构路由组件 Route
+-   react version > 16.8.0 使用 React.Lazy 和 React.Suspense 来代替 react-loadable 实现动态路由加载 （3.X 会删除 react-loadable 依赖）
+
 ## v2.1.0 (2019.6.28)
 
 -   路由 bug

@@ -51,6 +51,7 @@ export default {
         'immutable',
         'styled-components',
         'react-router-dom',
+        'semver',
     ],
     plugins: [
         postcss({
