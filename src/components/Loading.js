@@ -49,8 +49,9 @@ export default connect(
                     PropTypes.arrayOf(PropTypes.element),
                     PropTypes.element,
                 ]),
+                visible: PropTypes.bool,
             },
-        )
+        );
         shouldComponentUpdate(np) {
             return !isEqual(np, this.props)
         }
@@ -65,10 +66,14 @@ export default connect(
                 cover = false,
                 content,
                 spin = {},
+
+                visible,
             } = this.props
 
+            const loading = typeof visible === 'undefined' ? update : visible
+
             const RequestLoading = RE.RequestLoading
-            const createChldren = update ? (
+            const createChldren = loading ? (
                 <WrapIn>
                     <div
                         className={classnames({
@@ -82,16 +87,15 @@ export default connect(
                 </WrapIn>
             ) : null
 
-            const Wrap = update ? WrapLoading : WrapEmpty
+            const Wrap = loading ? WrapLoading : WrapEmpty
 
             return mask ? (
                 <Wrap className={wrapClassName}
-                    style={wrapStyle}
-                >
+style={wrapStyle}>
                     {children}
                     {createChldren}
                 </Wrap>
-            ) : update ? (
+            ) : loading ? (
                 createChldren
             ) : (
                 children
