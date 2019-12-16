@@ -25,7 +25,7 @@ export default (() =>
                   LazyComponents = React.lazy(params)
               }
 
-              return function H() {
+              return function H(props) {
                   const [rely, setRely] = React.useState(false)
 
                   React.useEffect(() => {
@@ -33,7 +33,9 @@ export default (() =>
                           // 注入model
                           Promise.all(models.map(v => v())).then(data => {
                               if (data.length) {
-                                  Object.values(data).forEach(v => RE.registerModel(v.default))
+                                  Object.values(data).forEach(v =>
+                                      RE.registerModel(v.default),
+                                  )
                                   setRely(true)
                               }
                           })
@@ -44,12 +46,12 @@ export default (() =>
 
                   return rely ? (
                       <React.Suspense fallback={<ComponentLoading />}>
-                          <LazyComponents />
+                          <LazyComponents {...props} />
                       </React.Suspense>
                   ) : (
                       <ComponentLoading />
                   )
-              };
+              }
           }
         : (params = {}) => {
               let loader = {}
@@ -65,16 +67,23 @@ export default (() =>
                   const { component, model = [] } = params
 
                   // //  提前注入model
-                  Promise.all([...(isArray(model) ? model : [model])].map(v => v())).then(data => {
+                  Promise.all(
+                      [...(isArray(model) ? model : [model])].map(v => v()),
+                  ).then(data => {
                       if (data.length) {
-                          Object.values(data).forEach(v => RE.registerModel(v.default))
+                          Object.values(data).forEach(v =>
+                              RE.registerModel(v.default),
+                          )
                           temp = true
                       }
                   })
 
-                  loader = (isArray(model) ? model : [model]).reduce((r, v, i) => ({ ...r, [`model${i}`]: v }), {
-                      component,
-                  })
+                  loader = (isArray(model) ? model : [model]).reduce(
+                      (r, v, i) => ({ ...r, [`model${i}`]: v }),
+                      {
+                          component,
+                      },
+                  )
               }
 
               return Loadable.Map({
@@ -88,7 +97,9 @@ export default (() =>
                       !temp &&
                           models &&
                           Object.entries(models).forEach(
-                              ([k, v]) => k.startsWith('model') && RE.registerModel(v.default),
+                              ([k, v]) =>
+                                  k.startsWith('model') &&
+                                  RE.registerModel(v.default),
                           )
 
                       return <Component {...props} />
