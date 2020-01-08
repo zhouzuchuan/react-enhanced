@@ -1,11 +1,21 @@
 import get from 'lodash.get'
-import { isFunction, isArray, isObject, isString, isUndefined, console } from '../utils'
+import {
+    isFunction,
+    isArray,
+    isObject,
+    isString,
+    isUndefined,
+    console,
+} from '../utils'
 
 import { LOADING_MODEL_NAME } from '../const'
 
 const take = (obj, path) => get(obj, path)
 
-export default ({ requestCallback = () => true, requestError = () => null, resultLimit }, store) => {
+export default (
+    { requestCallback = () => true, requestError = () => null, resultLimit },
+    store,
+) => {
     return next => action => {
         const { dispatch, getState } = store
 
@@ -14,7 +24,15 @@ export default ({ requestCallback = () => true, requestError = () => null, resul
             return
         }
 
-        const { request, will, error, callback, failCallback, did, ...rest } = action
+        const {
+            request,
+            will,
+            error,
+            callback,
+            failCallback,
+            did,
+            ...rest
+        } = action
 
         if (!request) {
             return next(action)
@@ -55,7 +73,11 @@ export default ({ requestCallback = () => true, requestError = () => null, resul
                     : isArray(resultLimit)
                     ? resultLimit.reduce((r, v) => {
                           if (!isString(v)) {
-                              console.warn(`${JSON.stringify(v)} 不符合字段截取规则；请使用"result.data"这种规则！`)
+                              console.warn(
+                                  `${JSON.stringify(
+                                      v,
+                                  )} 不符合字段截取规则；请使用"result.data"这种规则！`,
+                              )
                               return r
                           }
                           return [...r, take(transferData, v) || []]
@@ -69,15 +91,16 @@ export default ({ requestCallback = () => true, requestError = () => null, resul
                 let throttle = true
 
                 if (isFunction(requestCallback)) {
-                    throttle = requestCallback(transferData, rest, dispatch, getState)
+                    throttle = requestCallback(
+                        transferData,
+                        rest,
+                        dispatch,
+                        getState,
+                    )
                 }
 
                 // 如果没有请求不合格 则返回
                 if (!throttle) {
-                    dispatch({
-                        type: `${LOADING_MODEL_NAME}/remove`,
-                        payload: [requestName, timestamp],
-                    })
                     if (isFunction(failCallback)) {
                         failCallback(transferData)
                     }
@@ -111,22 +134,24 @@ export default ({ requestCallback = () => true, requestError = () => null, resul
                         })
                     }
 
-                    dispatch({
-                        type: `${LOADING_MODEL_NAME}/remove`,
-                        payload: [requestName, timestamp],
-                    })
                     return limitData
                 }
             })
-            .catch(err => {
-                if (isFunction(mergeError)) {
-                    mergeError(err)
-                } else if (isString(mergeError)) {
-                    dispatch({
-                        type: mergeError,
-                        ...rest,
-                    })
-                }
+            .finally(() => {
+                dispatch({
+                    type: LOADING_MODEL_NAME + '/remove',
+                    payload: [requestName, timestamp],
+                })
             })
+        // .catch(err => {
+        //     if (isFunction(mergeError)) {
+        //         mergeError(err)
+        //     } else if (isString(mergeError)) {
+        //         dispatch({
+        //             type: mergeError,
+        //             ...rest,
+        //         })
+        //     }
+        // })
     }
 }
