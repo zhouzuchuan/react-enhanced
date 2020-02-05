@@ -62,18 +62,37 @@ export function configureStore({
                 ...(!isEmpty(apiParams) && {
                     [name]: new ApiManage({
                         ...apiParams,
+
                         hooks: {
+                            ...(apiParams.hooks || {}),
                             start(serveName, timestamp) {
                                 store.dispatch({
                                     type: `${LOADING_MODEL_NAME}/set`,
                                     payload: [serveName, timestamp],
                                 })
+                                if (
+                                    apiParams.hooks ||
+                                    typeof apiParams.hooks.start === 'function'
+                                ) {
+                                    apiParams.hooks.start(serveName, timestamp)
+                                }
                             },
                             finally(serveName, timestamp) {
                                 store.dispatch({
                                     type: `${LOADING_MODEL_NAME}/remove`,
                                     payload: [serveName, timestamp],
                                 })
+
+                                if (
+                                    apiParams.hooks ||
+                                    typeof apiParams.hooks.finally ===
+                                        'function'
+                                ) {
+                                    apiParams.hooks.finally(
+                                        serveName,
+                                        timestamp,
+                                    )
+                                }
                             },
                         },
                     }),
