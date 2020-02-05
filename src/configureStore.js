@@ -71,7 +71,7 @@ export function configureStore({
                                     payload: [serveName, timestamp],
                                 })
                                 if (
-                                    apiParams.hooks ||
+                                    apiParams.hooks &&
                                     typeof apiParams.hooks.start === 'function'
                                 ) {
                                     apiParams.hooks.start(serveName, timestamp)
@@ -84,7 +84,7 @@ export function configureStore({
                                 })
 
                                 if (
-                                    apiParams.hooks ||
+                                    apiParams.hooks &&
                                     typeof apiParams.hooks.finally ===
                                         'function'
                                 ) {

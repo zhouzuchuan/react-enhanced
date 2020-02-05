@@ -21,7 +21,10 @@ export const useWarehouse = (warehouse = TOP_WAREHOUSE_NAME) => {
  * 使用封装的request action
  * */
 // export const useRequest = (warehouse = SERVE_NAME) => request(warehouse, true)
-export const useRequest = (warehouse = SERVE_NAME) => RE[warehouse].getService()
+export const useRequest = (warehouse = SERVE_NAME) => {
+    const apiManage = useWarehouse(warehouse)[0]
+    return apiManage === null || !apiManage ? {} : apiManage.getService()
+}
 
 /**
  * 使用封装Action
