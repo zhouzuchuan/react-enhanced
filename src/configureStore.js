@@ -1,7 +1,7 @@
 import pick from 'lodash.pick'
 
 import 'babel-regenerator-runtime'
-import apiManage from 'api-manage'
+import ApiManage from 'api-manage'
 import modelRedux from 'model-redux'
 import Provider from './components/Provider'
 
@@ -30,7 +30,9 @@ export function configureStore({
             persist: {
                 blacklist: [
                     LOADING_MODEL_NAME,
-                    ...(isArray(modelConfig.persist.blacklist) ? modelConfig.persist.blacklist : []),
+                    ...(isArray(modelConfig.persist.blacklist)
+                        ? modelConfig.persist.blacklist
+                        : []),
                 ],
                 ...(isObject(modelConfig.persist) ? modelConfig.persist : {}),
             },
@@ -57,7 +59,25 @@ export function configureStore({
                 ...r,
             }),
             {
-                ...(!isEmpty(apiParams) && { [name]: apiManage.init(apiParams) }),
+                ...(!isEmpty(apiParams) && {
+                    [name]: new ApiManage({
+                        ...apiParams,
+                        hooks: {
+                            start(serveName, timestamp) {
+                                store.dispatch({
+                                    type: `${LOADING_MODEL_NAME}/set`,
+                                    payload: [serveName, timestamp],
+                                })
+                            },
+                            finally(serveName, timestamp) {
+                                store.dispatch({
+                                    type: `${LOADING_MODEL_NAME}/remove`,
+                                    payload: [serveName, timestamp],
+                                })
+                            },
+                        },
+                    }),
+                }),
                 [TOP_WAREHOUSE_NAME]: {},
             },
         ),
@@ -71,13 +91,19 @@ export function configureStore({
     RE.__store__ = store
 
     RE.registerModel = fns => {
-        return registerModel(isFunction(fns) ? [fns(pick(RE, ['pull', 'push', 'request']))] : fns)
+        return registerModel(
+            isFunction(fns)
+                ? [fns(pick(RE, ['pull', 'push', 'request']))]
+                : fns,
+        )
     }
 
     RE.dispatch = RE.__store__.dispatch
 
     // 注入默认model
-    ;[...(isArray(models) ? models : [models]), loadingModel].forEach(v => RE.registerModel(v))
+    ;[...(isArray(models) ? models : [models]), loadingModel].forEach(v =>
+        RE.registerModel(v),
+    )
 
     return { Provider, dispatch: RE.dispatch }
 }
