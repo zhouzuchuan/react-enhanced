@@ -64,7 +64,8 @@ rollup.config.js
 .gitignore
 .babelrc
 .gitignore
-.eslintrc.js
+.eslintrc
+.pretterrc
 .travis.yml
 yarn.lock
 *.lock
