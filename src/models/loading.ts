@@ -1,12 +1,13 @@
 import { LOADING_MODEL_NAME } from '../constant'
 
+export type ModelState = string[]
+
 export default {
     namespace: LOADING_MODEL_NAME,
-    state: new Map(),
+    state: [],
     reducers: {
-        remove: (state: Map<string, number>, { payload }: any) =>
-            state.delete(payload),
-        set: (state: Map<string, number>, { payload }: any) =>
-            state.set(payload, 1),
+        remove: (state: ModelState, { payload }: any) =>
+            state.filter((v) => v !== payload),
+        set: (state: ModelState, { payload }: any) => [...state, payload],
     },
 }

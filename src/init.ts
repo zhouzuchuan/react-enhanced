@@ -1,22 +1,27 @@
-import React from 'react'
 import ApiManage from 'api-manage'
 import modelRedux from 'model-redux'
-import Provider from './Provider'
 
+import Provider from './Provider'
 import loadingModel from './models/loading'
 
 import { toArray } from './utils'
-import { ReStore } from './store'
-
+import { addStore } from './store'
 import { LOADING_MODEL_NAME } from './constant'
+import Loading from './components/Loading'
 
-const init = ({ models = [], loading = 'wave', apiConfig, modelConfig }) => {
+interface Init {
+    models: any[]
+    apiConfig: any
+    modelConfig: any
+}
+
+const init = ({ models = [], apiConfig, modelConfig }: Init) => {
     const { store, registerModel } = modelRedux.create(modelConfig)
 
     const apiHookStart = modelConfig?.hooks?.start
     const apiHookFinally = modelConfig?.hooks?.finally
 
-    const a = new ApiManage({
+    const apiManage = new ApiManage({
         ...apiConfig,
 
         hooks: {
@@ -24,15 +29,15 @@ const init = ({ models = [], loading = 'wave', apiConfig, modelConfig }) => {
             start(serveName, timestamp) {
                 store.dispatch({
                     type: `${LOADING_MODEL_NAME}/set`,
-                    payload: `${serveName}-${timestamp}`,
+                    payload: [...arguments].join('--'),
                 })
 
                 if (typeof apiHookStart === 'function') apiHookStart(arguments)
             },
-            finally(serveName, timestamp) {
+            finally() {
                 store.dispatch({
                     type: `${LOADING_MODEL_NAME}/remove`,
-                    payload: `${serveName}-${timestamp}`,
+                    payload: [...arguments].join('--'),
                 })
 
                 if (typeof apiHookFinally === 'function')
@@ -41,24 +46,31 @@ const init = ({ models = [], loading = 'wave', apiConfig, modelConfig }) => {
         },
     })
 
-    ReStore.set('store', store)
-    ReStore.set('registerModel', registerModel)
-    ReStore.set('dispatch', store.dispatch)
+    const requestList = apiManage.getService()
+
+    const ReRegisterModel = (data: Object | Function) =>
+        registerModel(
+            toArray(data).map((v) =>
+                typeof v === 'function' ? v(requestList) : v,
+            ),
+        )
+
+    addStore({
+        store,
+        registerModel: ReRegisterModel,
+        apiManage,
+        ComponentLoading: Loading,
+    })
 
     // 注入默认model
     ;[...toArray(models), loadingModel].forEach((v) => {
-        ReStore.get('registerModel')(v)
+        ReRegisterModel(v)
     })
-    // RE.registerModel = (fns) => {
-    //     return registerModel(
-    //         isFunction(fns)
-    //             ? [fns(pick(RE, ['pull', 'push', 'request']))]
-    //             : fns,
-    //     )
-    // }
 
     return {
         Provider,
         dispatch: store.dispatch,
     }
 }
+
+export { init }

@@ -1,10 +1,12 @@
 import React from 'react'
 import { Provider } from 'react-redux'
-import { ReStore } from './store'
+import { ReactEnhancedContext, ReStore } from './store'
 
 const ReactEnhancedProvider: React.FC = ({ children, ...otherProps }) => (
-    <Provider {...{ store: ReStore.get('store'), ...otherProps }}>
-        {children}
-    </Provider>
+    <ReactEnhancedContext.Provider value={ReStore}>
+        <Provider {...{ store: Reflect.get(ReStore, 'store'), ...otherProps }}>
+            {children}
+        </Provider>
+    </ReactEnhancedContext.Provider>
 )
 export default ReactEnhancedProvider
