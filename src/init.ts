@@ -2,20 +2,23 @@ import ApiManage from 'api-manage'
 import modelRedux from 'model-redux'
 
 import Provider from './Provider'
-import loadingModel from './models/loading'
-
 import { toArray } from './utils'
-import { addStore } from './store'
-import { LOADING_MODEL_NAME } from './constant'
-import Loading from './components/Loading'
+import { addStore, TReStore } from './store'
+import loadingModel, { LOADING_MODEL_NAME } from './loadingModel'
 
 interface Init {
-    models: any[]
-    apiConfig: any
-    modelConfig: any
+    models?: any[]
+    apiConfig?: any
+    modelConfig?: any
+    requestLoadingConfig?: TReStore['requestLoadingProps']
 }
 
-const init = ({ models = [], apiConfig, modelConfig }: Init) => {
+const init = ({
+    models = [],
+    apiConfig,
+    modelConfig,
+    requestLoadingConfig,
+}: Init) => {
     const { store, registerModel } = modelRedux.create(modelConfig)
 
     const apiHookStart = modelConfig?.hooks?.start
@@ -26,7 +29,7 @@ const init = ({ models = [], apiConfig, modelConfig }: Init) => {
 
         hooks: {
             ...(apiConfig.hooks || {}),
-            start(serveName, timestamp) {
+            start() {
                 store.dispatch({
                     type: `${LOADING_MODEL_NAME}/set`,
                     payload: [...arguments].join('--'),
@@ -59,7 +62,11 @@ const init = ({ models = [], apiConfig, modelConfig }: Init) => {
         store,
         registerModel: ReRegisterModel,
         apiManage,
-        ComponentLoading: Loading,
+        requestLoadingProps: {
+            fadeIn: 'quarter',
+            name: 'wave',
+            ...(requestLoadingConfig || {}),
+        },
     })
 
     // 注入默认model

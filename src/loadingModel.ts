@@ -1,6 +1,8 @@
-import { LOADING_MODEL_NAME } from '../constant'
-
 export type ModelState = string[]
+
+// loading model 名称
+export const LOADING_MODEL_NAME =
+    'React-Enhnaced-Loading-Model-' + new Date().getTime()
 
 export default {
     namespace: LOADING_MODEL_NAME,

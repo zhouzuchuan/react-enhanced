@@ -1,43 +1,37 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo, useContext } from 'react'
 import { useSelector } from 'react-redux'
-import Loading from './components/Loading'
-import { LOADING_MODEL_NAME } from './constant'
-import { ModelState } from './models/loading'
+import Loading, { LoadingProps } from './components/Loading'
+import { ModelState, LOADING_MODEL_NAME } from './loadingModel'
 import { toArray } from './utils'
+import { ReactEnhancedContext } from './store'
 
-// const returnArray = (v, s = Map()) =>
-//     (isArray(v) ? v : [v]).some((o) => !(s.get(o) || Map()).isEmpty())
-
-// const returnUpdate = (include, exclude, store) => {
-//     if (isNull(include)) {
-//         return isNull(exclude) ? true : !returnArray(exclude, store)
-//     } else {
-//         return returnArray(include, store)
-//     }
-// }
-
-export interface RequestLoadingProps {
+export interface RequestLoadingProps extends LoadingProps {
     include?: string[] | string
     exclude?: string[] | string
+    visible?: boolean
 }
 
-export default function RequestLoading({
-    include,
-    exclude,
-    ...otherProps
-}: RequestLoadingProps) {
-    const modelState = useSelector<any, ModelState>((store) => {
-        return Reflect.get(store, LOADING_MODEL_NAME)
-    })
-
-    const loading = useMemo(
-        () =>
-            toArray(
-                include ??
-                    modelState.filter((v) => !toArray(exclude).includes(v)),
-            ).some((v) => modelState.includes(v)),
-        [modelState, include, exclude],
+export default function RequestLoading(props: RequestLoadingProps) {
+    const { include, exclude, visible, ...otherProps } = props
+    const modelState = useSelector<any, ModelState>((store) =>
+        Reflect.get(store, LOADING_MODEL_NAME),
     )
 
-    return <Loading {...otherProps} loading={loading} />
+    const { requestLoadingProps } = useContext(ReactEnhancedContext)
+
+    const loading = useMemo(() => {
+        const currRequestName = modelState.map((v) => v.split('--')[0])
+        return toArray(
+            include ??
+                currRequestName.filter((v) => !toArray(exclude).includes(v)),
+        ).some((v) => currRequestName.includes(v))
+    }, [modelState, include, exclude])
+
+    return (
+        <Loading
+            {...otherProps}
+            loading={visible ?? loading}
+            spinnerProps={requestLoadingProps}
+        />
+    )
 }

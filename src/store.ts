@@ -1,10 +1,11 @@
 import React from 'react'
+import { RequestLoadingProps } from './RequestLoading'
 
 export type TReStore = Partial<{
     store: any
     registerModel: any
     apiManage: any
-    ComponentLoading: any
+    requestLoadingProps: RequestLoadingProps['spinnerProps']
 }> & {}
 
 export const ReStore: TReStore = {}

@@ -1,4 +1,4 @@
-import { LOADING_MODEL_NAME } from './constant'
+import { LOADING_MODEL_NAME } from './loadingModel'
 
 import RequestLoading from './RequestLoading'
 
@@ -6,12 +6,6 @@ import { asyncComponent } from './AsyncComponent'
 
 import { init } from './init'
 
-const ReactEnhancedVersion = '3.0.0'
+import { useApi } from './Hooks'
 
-export {
-    ReactEnhancedVersion as version,
-    LOADING_MODEL_NAME,
-    asyncComponent,
-    RequestLoading,
-    init,
-}
+export { LOADING_MODEL_NAME, asyncComponent, RequestLoading, init, useApi }

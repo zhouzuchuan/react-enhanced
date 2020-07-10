@@ -1,10 +1,17 @@
 import React from 'react'
 import { ReactEnhancedContext } from './store'
 import { toArray } from './utils'
+import Loading from './components/Loading'
+
+type Ta = () => Promise<{
+    default: any
+}>
 
 export interface AsyncComponentProps {
-    models: Function[]
-    component: any
+    models: Ta[]
+    component: () => Promise<{
+        default: React.ComponentType<any>
+    }>
     componentProps: React.Props<any>
 }
 
@@ -16,7 +23,7 @@ export const AsyncComponent = ({
     const [rely, setRely] = React.useState(false)
     const LazyComponents = React.lazy(component)
 
-    const { registerModel, ComponentLoading } = React.useContext(
+    const { registerModel, requestLoadingProps } = React.useContext(
         ReactEnhancedContext,
     )
 
@@ -35,30 +42,32 @@ export const AsyncComponent = ({
     }, [registerModel])
 
     return rely ? (
-        <React.Suspense fallback={<ComponentLoading />}>
+        <React.Suspense
+            fallback={<Loading spinnerProps={requestLoadingProps} />}
+        >
             <LazyComponents {...componentProps} />
         </React.Suspense>
     ) : (
-        <ComponentLoading />
+        <Loading spinnerProps={requestLoadingProps} />
     )
 }
 
 /**
  * 异步加载组件
  *
- * @param {function} component 组件地址
- * @param {object} options 组件地址
- * @param {array} options.models 组件地址
- * @param {object} options.props 组件地址
+ * @param {promise} component 异步加载组件 import()
+ * @param {object} options 组件配置
+ * @param {array} options.models 当前组件需要的 model
+ * @param {object} options.props 当前组件 props
  * @returns
  */
 export const asyncComponent: (
     component: AsyncComponentProps['component'],
-    options: {
+    options?: Partial<{
         models: AsyncComponentProps['models']
         props: AsyncComponentProps['componentProps']
-    },
-) => React.ReactNode = (component, options) => () => (
+    }>,
+) => React.ComponentType<any> = (component, options) => () => (
     <AsyncComponent
         {...{
             component: component,

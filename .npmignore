@@ -56,8 +56,7 @@ typings/
 
 # dotenv environment variables file
 .env
-
-webpack.config.js
+ 
 rollup.config.js
 .prettierignore
 .editorconfig
@@ -69,13 +68,7 @@ rollup.config.js
 .travis.yml
 yarn.lock
 *.lock
-src/*
-example/*
-config/*
-public/*
-scripts/*
-releaseNotes.md
-plan.md
+src/*   
 .stylelintrc.json
 
 
