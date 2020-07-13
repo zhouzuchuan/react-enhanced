@@ -2,7 +2,7 @@ import React, { useMemo, useContext } from 'react'
 import { useSelector } from 'react-redux'
 import Loading, { LoadingProps } from './components/Loading'
 import { ModelState, LOADING_MODEL_NAME } from './loadingModel'
-import { toArray } from './utils'
+import { toArray } from './utils/index'
 import { ReactEnhancedContext } from './store'
 
 export interface RequestLoadingProps extends LoadingProps {

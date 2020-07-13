@@ -2,7 +2,7 @@ import ApiManage from 'api-manage'
 import modelRedux from 'model-redux'
 
 import Provider from './Provider'
-import { toArray } from './utils'
+import { toArray } from './utils/index'
 import { addStore, TReStore } from './store'
 import loadingModel, { LOADING_MODEL_NAME } from './loadingModel'
 

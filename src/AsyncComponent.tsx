@@ -1,6 +1,6 @@
 import React from 'react'
-import { ReactEnhancedContext } from './store'
-import { toArray } from './utils'
+import { ReactEnhancedContext, ReStore } from './store'
+import { toArray } from './utils/index'
 import Loading from './components/Loading'
 
 type Ta = () => Promise<{
@@ -9,19 +9,16 @@ type Ta = () => Promise<{
 
 export interface AsyncComponentProps {
     models: Ta[]
-    component: () => Promise<{
-        default: React.ComponentType<any>
-    }>
+    Component: React.ComponentType<any>
     componentProps: React.Props<any>
 }
 
 export const AsyncComponent = ({
     models,
-    component,
+    Component,
     componentProps,
 }: AsyncComponentProps) => {
     const [rely, setRely] = React.useState(false)
-    const LazyComponents = React.lazy(component)
 
     const { registerModel, requestLoadingProps } = React.useContext(
         ReactEnhancedContext,
@@ -39,13 +36,13 @@ export const AsyncComponent = ({
         } else {
             setRely(true)
         }
-    }, [registerModel])
+    }, [])
 
     return rely ? (
         <React.Suspense
             fallback={<Loading spinnerProps={requestLoadingProps} />}
         >
-            <LazyComponents {...componentProps} />
+            <Component {...componentProps} />
         </React.Suspense>
     ) : (
         <Loading spinnerProps={requestLoadingProps} />
@@ -62,17 +59,22 @@ export const AsyncComponent = ({
  * @returns
  */
 export const asyncComponent: (
-    component: AsyncComponentProps['component'],
+    Component: () => Promise<{
+        default: React.ComponentType<any>
+    }>,
     options?: Partial<{
         models: AsyncComponentProps['models']
         props: AsyncComponentProps['componentProps']
     }>,
-) => React.ComponentType<any> = (component, options) => () => (
-    <AsyncComponent
-        {...{
-            component: component,
-            models: toArray(options?.models || []),
-            componentProps: options?.props || {},
-        }}
-    />
-)
+) => React.ComponentType<any> = (Component, options) => {
+    const LazyComponents = React.lazy(Component)
+    return () => (
+        <AsyncComponent
+            {...{
+                Component: LazyComponents,
+                models: toArray(options?.models || []),
+                componentProps: options?.props || {},
+            }}
+        />
+    )
+}
