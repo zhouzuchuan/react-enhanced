@@ -81,18 +81,14 @@ const StyledLoading: StyledComponent<any, TLoading> = styled.div`
         bottom: 0;
         background: rgba(255, 255, 255, 0.8);
         filter: blur(1px);
-        z-index: 1;
+        z-index: 9999999999;
         display: none;
         display: ${({ display }: TLoading) => display};
     }
 
-    img {
-        position: relative;
-        z-index: 2;
-    }
-
     & > :first-child {
-        z-index: 2;
+        position: relative;
+        z-index: 99999999991;
     }
 `
 const StyledWrap = styled.div`

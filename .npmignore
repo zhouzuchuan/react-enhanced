@@ -68,10 +68,15 @@ rollup.config.js
 .travis.yml
 yarn.lock
 *.lock
-src/*   
+src/*
+src_copy/*
 .stylelintrc.json
 
 
-docs/
+docs/*
+
+tsconfig.base.json
+tsconfig.json
+.pretterrc
 
 node_modules/*
