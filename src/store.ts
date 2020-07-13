@@ -19,3 +19,11 @@ export const addStore = (data: Record<string, any>) => {
 export const getStore = (key: keyof TReStore) => Reflect.get(ReStore, key)
 
 export const ReactEnhancedContext = React.createContext(ReStore)
+
+export const setRequestLoadingProps = (
+    data: Record<keyof RequestLoadingProps['spinnerProps'], any>,
+) => {
+    addStore({
+        requestLoadingProps: { ...getStore('requestLoadingProps'), ...data },
+    })
+}

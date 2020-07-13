@@ -1,7 +1,7 @@
 import React, { useMemo, useContext } from 'react'
 import { useSelector } from 'react-redux'
 import Loading, { LoadingProps } from './components/Loading'
-import { ModelState, LOADING_MODEL_NAME } from './loadingModel'
+import { ModelState, LOADING_MODEL_NAME, splitStr } from './loadingModel'
 import { toArray } from './utils/index'
 import { ReactEnhancedContext } from './store'
 
@@ -20,7 +20,7 @@ export default function RequestLoading(props: RequestLoadingProps) {
     const { requestLoadingProps } = useContext(ReactEnhancedContext)
 
     const loading = useMemo(() => {
-        const currRequestName = modelState.map((v) => v.split('--')[0])
+        const currRequestName = modelState.map((v) => v.split(splitStr)[0])
         return toArray(
             include ??
                 currRequestName.filter((v) => !toArray(exclude).includes(v)),

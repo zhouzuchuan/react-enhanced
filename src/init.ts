@@ -4,7 +4,7 @@ import modelRedux from 'model-redux'
 import Provider from './Provider'
 import { toArray } from './utils/index'
 import { addStore, TReStore } from './store'
-import loadingModel, { LOADING_MODEL_NAME } from './loadingModel'
+import loadingModel, { LOADING_MODEL_NAME, splitStr } from './loadingModel'
 
 interface Init {
     models?: any[]
@@ -32,7 +32,7 @@ const init = ({
             start() {
                 store.dispatch({
                     type: `${LOADING_MODEL_NAME}/set`,
-                    payload: [...arguments].join('--'),
+                    payload: [...arguments].join(splitStr),
                 })
 
                 if (typeof apiHookStart === 'function') apiHookStart(arguments)
@@ -40,7 +40,7 @@ const init = ({
             finally() {
                 store.dispatch({
                     type: `${LOADING_MODEL_NAME}/remove`,
-                    payload: [...arguments].join('--'),
+                    payload: [...arguments].join(splitStr),
                 })
 
                 if (typeof apiHookFinally === 'function')
