@@ -10,8 +10,6 @@ import pkg from './package.json'
 const extensions = ['.js', '.ts', '.tsx']
 const exclude = ['./node_modules/**']
 
-const ReactEnhancedVersion = pkg.version
-
 export default [
     {
         input: 'src/index.ts',
@@ -19,7 +17,7 @@ export default [
             dir: 'lib',
             format: 'cjs',
             banner: `
-/** @license React-Enhanced ${ReactEnhancedVersion}
+/** @license React-Enhanced ${pkg.version}
  *
  * Copyright (c) ${pkg.author}, ${pkg.description}.
  *
@@ -28,7 +26,13 @@ export default [
  */
             `,
         },
-        external: ['react', 'react-redux', 'styled-components'],
+        external: [
+            'react',
+            'react-redux',
+            'styled-components',
+            './components/Loading',
+            './utils/index',
+        ],
         acornInjectPlugins: [jsx()],
         plugins: [
             resolve({

@@ -4,7 +4,7 @@ import RequestLoading from './RequestLoading'
 
 import { asyncComponent } from './AsyncComponent'
 
-import { setRequestLoadingProps } from './store'
+import { setRequestLoadingProps, getRequestLoadingProps } from './store'
 
 import { init } from './init'
 
@@ -17,4 +17,5 @@ export {
     init,
     useApi,
     setRequestLoadingProps,
+    getRequestLoadingProps,
 }

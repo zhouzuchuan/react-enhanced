@@ -68,12 +68,12 @@ export const asyncComponent: (
     }>,
 ) => React.ComponentType<any> = (Component, options) => {
     const LazyComponents = React.lazy(Component)
-    return () => (
+    return (props) => (
         <AsyncComponent
             {...{
                 Component: LazyComponents,
                 models: toArray(options?.models || []),
-                componentProps: options?.props || {},
+                componentProps: { ...(options?.props || {}), ...props },
             }}
         />
     )
