@@ -1,5 +1,5 @@
 import React, { useMemo, useContext } from 'react'
-import { useSelector } from 'react-redux'
+import { useSelector, shallowEqual } from 'react-redux'
 import Loading, { LoadingProps } from './components/Loading'
 import { ModelState, LOADING_MODEL_NAME, splitStr } from './loadingModel'
 import { toArray } from './utils/index'
@@ -11,10 +11,11 @@ export interface RequestLoadingProps extends LoadingProps {
     visible?: boolean
 }
 
-export default function RequestLoading(props: RequestLoadingProps) {
+export default React.memo(function RequestLoading(props: RequestLoadingProps) {
     const { include, exclude, visible, ...otherProps } = props
-    const modelState = useSelector<any, ModelState>((store) =>
-        Reflect.get(store, LOADING_MODEL_NAME),
+    const modelState = useSelector<any, ModelState>(
+        (store) => Reflect.get(store, LOADING_MODEL_NAME),
+        shallowEqual,
     )
 
     const { requestLoadingProps } = useContext(ReactEnhancedContext)
@@ -30,8 +31,8 @@ export default function RequestLoading(props: RequestLoadingProps) {
     return (
         <Loading
             {...otherProps}
-            loading={visible ?? loading}
+            loading={!(visible ?? true) || loading}
             spinnerProps={requestLoadingProps}
         />
     )
-}
+})

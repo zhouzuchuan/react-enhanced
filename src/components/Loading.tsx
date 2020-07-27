@@ -14,7 +14,6 @@ const mapList = {
 }
 
 export interface LoadingProps {
-    mask?: boolean
     loading?: boolean
     className?: string
     wrapClassName?: string

@@ -64,6 +64,7 @@ releaseNotes.md
 plan.md
 *.lock
 .stylelintrc.json
+package-lock.json
 
 
 lib/
