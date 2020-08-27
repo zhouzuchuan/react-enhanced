@@ -63,8 +63,7 @@ rollup.config.js
 .gitignore
 .babelrc
 .gitignore
-.eslintrc
-.pretterrc
+.eslintrc 
 .travis.yml
 yarn.lock
 *.lock
@@ -73,10 +72,11 @@ src/
 
 
 docs/
-
 tsconfig.base.json
 tsconfig.json
 .pretterrc
+rollup.config.js
+.travis.yml
 
 node_modules/
 package-lock.json

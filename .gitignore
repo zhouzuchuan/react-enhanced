@@ -62,7 +62,7 @@ src/.*
 .editorconfig
 releaseNotes.md
 plan.md
-*.lock
+yarn.lock
 .stylelintrc.json
 package-lock.json
 

@@ -1,5 +1,5 @@
-import ApiManage from 'api-manage'
-import modelRedux from 'model-redux'
+import modelRedux, { ModelConfig } from 'model-redux'
+import ApiManage, { ApiManageOptions } from 'api-manage'
 
 import Provider from './Provider'
 import { toArray } from './utils/index'
@@ -8,12 +8,12 @@ import loadingModel, { LOADING_MODEL_NAME, splitStr } from './loadingModel'
 
 interface Init {
     models?: any[]
-    apiConfig?: any
-    modelConfig?: any
+    apiConfig?: ApiManageOptions
+    modelConfig?: ModelConfig
     requestLoadingConfig?: TReStore['requestLoadingProps']
 }
 
-const init = ({
+const init = <RequestMethods>({
     models = [],
     apiConfig,
     modelConfig,
@@ -21,21 +21,21 @@ const init = ({
 }: Init) => {
     const { store, registerModel } = modelRedux.create(modelConfig)
 
-    const apiHookStart = modelConfig?.hooks?.start
-    const apiHookFinally = modelConfig?.hooks?.finally
+    const apiHookStart = apiConfig?.hooks?.start
+    const apiHookFinally = apiConfig?.hooks?.finally
 
-    const apiManage = new ApiManage({
+    const apiManage = new ApiManage<RequestMethods>({
         ...apiConfig,
-
         hooks: {
-            ...(apiConfig.hooks || {}),
+            ...(apiConfig?.hooks || {}),
             start() {
                 store.dispatch({
                     type: `${LOADING_MODEL_NAME}/set`,
                     payload: [...arguments].join(splitStr),
                 })
 
-                if (typeof apiHookStart === 'function') apiHookStart(arguments)
+                if (typeof apiHookStart === 'function')
+                    apiHookStart(...arguments)
             },
             finally() {
                 store.dispatch({
@@ -44,10 +44,10 @@ const init = ({
                 })
 
                 if (typeof apiHookFinally === 'function')
-                    apiHookFinally(arguments)
+                    apiHookFinally(...arguments)
             },
         },
-    })
+    } as ApiManageOptions)
 
     const requestList = apiManage.getService()
 
