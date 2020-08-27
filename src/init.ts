@@ -13,7 +13,7 @@ interface Init {
     requestLoadingConfig?: TReStore['requestLoadingProps']
 }
 
-const init = <RequestMethods>({
+const init = ({
     models = [],
     apiConfig,
     modelConfig,
@@ -24,7 +24,7 @@ const init = <RequestMethods>({
     const apiHookStart = apiConfig?.hooks?.start
     const apiHookFinally = apiConfig?.hooks?.finally
 
-    const apiManage = new ApiManage<RequestMethods>({
+    const apiManage = new ApiManage({
         ...apiConfig,
         hooks: {
             ...(apiConfig?.hooks || {}),
